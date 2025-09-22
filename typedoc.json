@@ -1,0 +1,5 @@
+{
+  "entryPoints": ["/Users/rajanyadav/Documents/work/truestate_eden/src"],
+  "out": "docs",
+  "entryPointStrategy": "expand"
+}

@@ -1,0 +1,203 @@
+.HeadingReport {
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+
+/* Heading/Bold/Medium */
+font-family: Montserrat;
+font-size: 1.5rem;
+font-style: normal;
+font-weight: 700;
+line-height: 150%; /* 2.25rem */
+}
+
+.configbuttontext {
+    overflow: hidden;
+color: var(--Neutrals-Grey-900, #252626);
+text-align: center;
+text-overflow: ellipsis;
+
+/* Paragraph/Bold/Small */
+font-family: Lato;
+font-size: 0.875rem;
+font-style: normal;
+font-weight: 700;
+line-height: 150%; /* 1.3125rem */
+}
+
+.configbutton {
+    display: flex;
+padding: 0.625rem;
+justify-content: center;
+align-items: center;
+gap: 0.5rem;
+border-radius: 0.25rem;
+border: 1px solid var(--Neutrals-Neutrals200, #CCCBCB);
+max-width: 116px;
+}
+
+.configselected {
+    border-radius: 0.25rem;
+    border: 1px solid var(--Primary-Dark-Green-P, #153E3B);
+    background: var(--Primary-Primary100, #153E3B);
+    
+  }
+
+  .customSlider {
+    width: 100%;
+    height: 8px;
+    appearance: none;
+    background: var(--Primary-Dark-Green-P, #153E3B);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+  }
+  
+  /* For WebKit browsers (Chrome, Safari, etc.) */
+.customSlider::-webkit-slider-thumb {
+    appearance: none;
+    width: 30px; /* Adjust size based on your SVG */
+    height: 30px;
+    background: url('/assets/unused/report-button-bg.svg'); /* Path to your SVG */
+    background-size: cover;
+    border: none;
+    margin-top: 3px;
+    cursor: pointer;
+  }
+  
+  /* For Firefox */
+  .customSlider::-moz-range-thumb {
+    width: 30px; /* Adjust size based on your SVG */
+    height: 30px;
+    background: url('/assets/unused/report-button-bg.svg'); /* Path to your SVG */
+    background-size: cover;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* Fallback for older browsers */
+  .customSlider::-ms-thumb {
+    width: 30px;
+    height: 30px;
+    background: url('/assets/unused/report-button-bg.svg'); /* Path to your SVG */
+    background-size: cover;
+    border: none;
+    cursor: pointer;
+  }
+
+  .customSlider2 {
+    --c: var(--Primary-Dark-Green-P, #153E3B); /* active color */
+    --g: 0px; /* the gap */
+    --l: 6px; /* line thickness*/
+    --s: 25px; /* thumb size*/
+    --thumb-color: var(--c); /* thumb color */
+    
+    width: 100%;
+    height: var(--s); /* needed for Firefox*/
+    --_c: color-mix(in srgb, var(--c), #000 var(--p,0%));
+    -webkit-appearance :none;
+    -moz-appearance :none;
+    appearance :none;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .customSlider2:focus-visible,
+  .customSlider2:hover{
+    --p: 25%;
+  }
+  .customSlider2:active,
+  .customSlider2:focus-visible{
+    --_b: var(--s)
+  }
+  /* chromium */
+  .customSlider2[type="range" i]::-webkit-slider-thumb{
+    width: var(--s); /* Explicitly setting width */
+    height: var(--s); /* Explicitly setting height */
+    border-radius: 50%;
+    /* background-color: var(--thumb-color); */
+    box-shadow: 0 0 0 var(--_b,var(--l)) inset var(--thumb-color);
+    border-image: linear-gradient(90deg,var(--_c) 50%,#CCCBCB 0) 0 1/calc(50% - var(--l)/2) 100vw/0 calc(100vw + var(--g));
+    -webkit-appearance: none;
+    appearance: none;
+    transition: .3s;
+  }
+  /* Firefox */
+  input[type="range"]::-moz-range-thumb {
+    height: var(--s);
+    width: var(--s);
+    background: none;
+    border-radius: 50%;
+    box-shadow: 0 0 0 var(--_b,var(--l)) inset var(--_c);
+    border-image: linear-gradient(90deg,var(--_c) 50%,#CCCBCB 0) 0 1/calc(50% - var(--l)/2) 100vw/0 calc(100vw + var(--g));
+    -moz-appearance: none;
+    appearance: none;
+    transition: .3s;
+  }
+  @supports not (color: color-mix(in srgb,red,red)) {
+    .customSlider2 {
+      --_c: var(--c);
+    }
+  }
+
+  .LeftSideH {
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+
+/* Heading/Semi-Bold/XX Small */
+font-family: Montserrat;
+font-size: 0.875rem;
+font-style: normal;
+font-weight: 600;
+line-height: 150%; /* 1.3125rem */
+letter-spacing: 0.01563rem;
+  }
+
+  .disc {
+    font-family: Lato;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 150%; /* 1.5rem */
+    color: #5A5555;
+  }
+
+
+.cancel{
+    width: 100px;
+    height: 37px;
+    padding: 8px 16px;
+    gap: 6px; /* If you're referring to a gap between elements inside the container */
+    border-radius: 4px 0px 0px 0px;
+    background-color: #FAFAFA;
+    color: red;
+  }
+
+.apply{
+    width: 250px; /* Fill to 250px */
+    height: 48px; /* Hug to 48px */
+    padding: 12px 24px; /* 12px top/bottom, 24px left/right */
+    gap: 8px; /* Gap between inner elements */
+    border-radius: 4px 0px 0px 0px; /* Rounded top-left corner */
+    background-color: #153E3B; /* Background color */
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #FAFBFC));
+
+/* Paragraph/Bold/Medium */
+font-family: Lato;
+font-size: 1rem;
+font-style: normal;
+font-weight: 600;
+line-height: 150%; /* 1.5rem */
+  }
+  
+
+  
+.configbuttontext1{
+  overflow: hidden;
+color: var(--Neutrals-Grey-900, #252626);
+text-align: center;
+text-overflow: ellipsis;
+
+/* Paragraph/Bold/Small */
+font-family: Lato;
+font-size: 0.75rem;
+font-style: normal;
+font-weight: 500;
+line-height: 150%; /* 1.3125rem */
+}

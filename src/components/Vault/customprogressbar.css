@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+
+
+ 
+
+
+
+.custom-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0px;
+
+}
+
+.custom-wrapper ._2_g61{
+    display: none;
+}
+
+.custom-progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;  /* Adjusted width to give some space around */
+   
+}
+
+.custom-step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 33%; /* Each step takes 1/3rd of the total space */
+}
+
+.custom-step span {
+    width: 32px !important ;
+    height: 32px  !important ;
+    padding: 4px 6px 4px 6px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    color: #000;
+    transition: background-color 0.3s, border-color 0.3s;
+    font-family: Montserrat;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 18px !important;
+    color: var(--Neutral-N600, #0A0B0A);
+    
+}
+
+.custom-step.completed .circle {
+    background-color: #28a745;  /* Green for completed step */
+    border-color: #28a745;
+    color: white;
+}
+
+.custom-step.active .circle {
+    background-color: #007bff;  /* Blue for active step */
+    border-color: #007bff;
+    color: white;
+    
+}
+
+.custom-step.upcoming .circle {
+    background-color: white;
+    border-color: #ccc;  /* Grey for upcoming steps */
+}
+
+.custom-step .line {
+    height: 2px;
+    width: 100%; /* Full width for connecting line */
+    background-color: #ccc;
+    margin: 0 10px;
+}
+
+.custom-step.completed .line {
+    background-color: #28a745;
+}
+
+.custom-label {
+    width: 100px;
+    flex-wrap:nowrap;
+    font-size: 14px;
+    color: #555;
+}
+
+.custom-buttons {
+    display: none;
+    width: 0px;  /* Hide next and previous buttons */
+}
+
+
+@media (max-width: 768px) {
+    .custom-step span {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}
+
+/* .content-Class {
+     color: #ff0048  !important;
+} 
+
+.custom-subtitle{
+    color: #ff0048 !important;
+}
+
+.primary-BtnClass{
+    color: #ff00d0;
+} */

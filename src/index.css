@@ -1,0 +1,146 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Noticia+Text:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+      display: none;
+  }
+ /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+}
+}
+
+.text-radial-gradient {
+  background: radial-gradient(circle at center, #ffcc84, #d67d00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline;
+}
+
+.item {
+  width: 32%;
+  margin-bottom: 2%;
+}
+
+.item:nth-child(3n + 1) {
+  order: 1;
+  width: 32%;
+}
+.item:nth-child(3n + 2) {
+  order: 2;
+  width: 32%;
+}
+.item:nth-child(3n) {
+  order: 3;
+  width: 32%;
+}
+
+.custom-checkbox {
+  position: relative;
+  display: inline-block;
+  width: 18px; /* Width of the custom checkbox */
+  height: 18px; /* Height of the custom checkbox */
+  top: 0;
+}
+
+.custom-checkbox input[type="checkbox"] {
+  opacity: 0; /* Make the actual checkbox fully transparent */
+  position: absolute;
+  cursor: pointer;
+  height: 18px;
+  width: 18px;
+  z-index: 1; /* Ensure the checkbox is above the custom graphic */
+}
+
+.custom-checkbox .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: #eee;
+  border-radius: 4px; /* Optional: for rounded corners */
+}
+
+.custom-checkbox input[type="checkbox"]:checked ~ .checkmark {
+  background-color: #153e3b;
+}
+
+.custom-checkbox .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.custom-checkbox input[type="checkbox"]:checked ~ .checkmark:after {
+  display: block;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.react-phone-number-input__input > div > input {
+  border: none !important;
+}
+
+.react-markdown a {
+  color: #1a0dab; /* Hyperlink blue */
+  text-decoration: underline; /* Underline for clarity */
+}
+
+.react-markdown a:hover {
+  color: #c71585; /* A different color on hover */
+}
+
+:root {
+  --header-height: 4rem; /* Assuming 16px = 1rem, adjust accordingly */
+}
+
+.main-content {
+  height: calc(100vh - var(--header-height));
+}
+
+.success-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(37, 38, 38, 0.6); /* #252626 with 60% opacity */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10; /* Ensure it sits above other content */
+}
+
+/* Custom scrollbar styles */
+.parent-div::-webkit-scrollbar {
+  width: 12px; /* width of the entire scrollbar */
+}
+
+.parent-div::-webkit-scrollbar-track {
+  background: #f0f0f0; /* color of the track */
+}
+
+.parent-div::-webkit-scrollbar-thumb {
+  background-color: #b6b6b6; /* color of the scroll thumb */
+  border-radius: 20px; /* roundness of the scroll thumb */
+  border: 3px solid #f0f0f0; /* creates padding around scroll thumb */
+}
+
+.parent-div::-webkit-scrollbar-thumb:hover {
+  background: #949494; /* color of the scroll thumb when hovered */
+}

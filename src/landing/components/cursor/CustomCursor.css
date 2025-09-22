@@ -1,0 +1,9 @@
+/* Canvas takes full screen */
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999; /* Ensures it stays on top */
+  pointer-events: none; /* Allows clicks to pass through the canvas */
+}
+

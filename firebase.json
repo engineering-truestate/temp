@@ -1,0 +1,35 @@
+{
+  "hosting": [
+    {
+      "target": "production",
+      "projectId": "masal-db-6cc78",
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "*/.",
+        "*/node_modules/*"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "testing",
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "*/.",
+        "*/node_modules/*"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ]
+}

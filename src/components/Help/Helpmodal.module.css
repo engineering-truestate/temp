@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+.helpModal {
+  background-color: #FAFAFA;
+  border: 1px solid #CCCBCB; /* Set the width, style, and color in one line */
+  border-radius: 12px; /* Optional: Add some rounding to the corners */
+
+}
+
+.modalContent {
+  font-family: Lato, sans-serif;
+}
+
+.modalHeader {
+  border-bottom: 0.0625rem solid #E5E7EB; /* 1px */
+  padding-bottom: 1rem; /* 16px */
+  margin-bottom: 1rem; /* 16px */
+}
+
+.helpHeading {
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.6875rem; /* 27px */
+  color: #2B2928;
+}
+
+.tutorialHeading {
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.3125rem; /* 21px */
+  color: #2B2928;
+}
+
+.card {
+  background-color: #FAFAFA;
+}
+
+.cardHeading {
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.3125rem; /* 21px */
+  color: #2B2928;
+}
+
+.cardText {
+  font-family: Lato, sans-serif;
+  font-weight: 500;
+  font-size: 0.75rem; /* 12px */
+  line-height: 1.125rem; /* 18px */
+  color: #5A5555;
+}
+
+.labelSmall {
+  font-family: Lato, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.3125rem; /* 21px */
+  color: #153E3B;
+}
+
+.labelSmall1 {
+  font-family: Lato, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.3125rem; /* 21px */
+  color: #000000;
+}

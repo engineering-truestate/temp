@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+.bkg{
+  background: var(--Neutrals-Base-White, #FAFAFA) !important;
+}
+
+
+  .buttonx {
+    border-radius: 0.5rem;
+    background: var(--Neutrals-Neutrals100, #FAFAFA);
+    padding: 0.625rem 1rem;
+    display: flex;
+    align-items: center;
+    text-wrap: nowrap;
+    cursor: default;
+    border-width: 1px;
+    border-color: #CCCBCB;
+  }
+
+  .xlbl{
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%;
+    margin-right: 0.2rem;
+    text-wrap: wrap;
+  }
+
+  .xval{
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%;
+    text-wrap: wrap;
+  }
+
+  .btnpar{
+    max-width: 100vw;
+    gap: 0.75rem;
+  }
+  
+  

@@ -1,0 +1,29 @@
+{
+  "projects": {
+    "default": "masal-db-6cc78"
+  },
+  "targets": {
+    "masal-db-6cc78": {
+      "hosting": {
+        "production": [
+          "truetest-truestate-abc"
+        ],
+        "testing": [
+          "masal-db-6cc78-cea0d"
+        ]
+      }
+    },
+    "truetest-truestate": {
+      "hosting": {
+        "production": [
+          "truetest-truestate-abc"
+        ],
+        "testing": [
+          "masal-db-6cc78-cea0d"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}

@@ -1,0 +1,350 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700&family=Montserrat:wght@700&display=swap');
+.table-container {
+  width: 100%;
+  height: 80vh; /* Set a fixed height for the container */
+  overflow-y: auto;
+  overflow-x: auto;
+  background:#FAFAFA;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+.emptyh {
+  color: var(--Neutrals-Grey-900, #252626);
+text-align: center;
+
+/* Heading/Bold/Medium 2 */
+font-family: Montserrat;
+font-size: 1.375rem;
+font-style: normal;
+font-weight: 700;
+line-height: 150%; /* 2.0625rem */
+}
+
+.emptyp {
+  color: var(--Neutrals-Grey-700, var(--Neutrals-Neutrals700, #5A5555));
+text-align: center;
+
+/* Paragraph/Regular/Small */
+font-family: Lato;
+font-size: 1rem;
+font-style: normal;
+font-weight: 500;
+line-height: 150%; /* 1.5rem */
+}
+
+.table_x {
+  width: 100%;
+  border-spacing: 0;
+  border: 1px solid #E0E0E0;
+  overflow-y: auto; 
+}
+
+.project-table-header {
+  font-family: Montserrat;
+  font-size: 0.90rem;
+  font-weight: 700;
+  line-height: 150%;
+  color: var(--Neutral-N600, #313534);
+  white-space: nowrap;
+  min-width: 5rem;
+  position: sticky;
+  top: 0;  /* Ensure the headers stick to the top */
+  background-color: #fff;  /* Set a background color to avoid overlap issues */
+  z-index: 2; /* Ensure headers are above other content */
+  text-align: left;
+  padding-left: 1rem;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+  border-bottom: 2px solid #E0E0E0; /* Border under the header */
+  width: 200px;
+  height: 42px;
+
+}
+
+.project-table-cell {
+  font-family: Lato;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--Neutrals-Grey-1000, var(--Neutrals-Neutrals1000, #151413));
+  white-space: nowrap;
+  overflow-wrap: break-word;
+  text-overflow: ellipsis;
+ 
+  text-align: left;  /* Ensures left alignment */
+  padding-left: 1rem; /* Consistent padding */
+  width: 200px; /* Fill */
+  height: 66px; /* Hug */
+
+  border: 0px 0px 1px 0px solid; /* Top, Right, Bottom, Left */
+  
+  padding: 12px 8px 12px 24px; /* Top, Right, Bottom, Left */
+
+  gap: 8px; /* Gap between elements */
+}
+
+.fixed-column {
+  position: sticky;
+  background-color: #fff;
+  z-index: 1;
+}
+
+.first-column {
+  left: 0;
+  min-width: 13rem ; /* Ensure sufficient width */
+  width: auto;
+  
+  white-space: normal; /* Allow text wrapping */
+  overflow-wrap: break-word; /* Break long words if necessary */
+  
+}
+
+.last-column {
+  right: 0;
+  min-width: 7rem !important;
+  
+}
+
+.actions-column {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 6rem;
+ 
+
+}
+
+.status-cell {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: #F5F5F5;
+  position: relative; /* Or use position: fixed if you want it always at the bottom of the viewport */
+
+ 
+}
+
+.pageButton {
+  padding: 8px 16px;
+  border: none;
+  background-color: #153E3B;
+  color: white;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.pageButton:disabled {
+  background-color: #E0E0E0;
+  cursor: not-allowed;
+}
+
+
+.btnsty {
+  color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+  font-family: Lato;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%; /* 21px */
+}
+
+.btnsty1 {
+  color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+  font-family: Lato;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 21px */
+}
+
+
+.selected1{
+  background: var(--Primary-Primary200, #BFE9E6);
+}
+
+
+
+.emptyPageDiv {
+  width: 15.4375rem; /* 247px */
+  height: 23.75rem; /* Hug the content */
+  position: absolute;
+  top: 12.2rem; /* 180px */
+  left: 48rem; /* 720px */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.875rem; /* 24px */
+
+}
+
+.emptyImage {
+  width: 15rem; /* 240px */
+  height: 15rem; /* 240px */
+  border-radius: 0.080625rem; /* 4px */
+}
+
+.emptyContent {
+  width: 15.4375rem; /* 247px */
+  height: 6.875rem; /* Hug the content */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.875rem; /* 24px */
+  
+}
+
+.secondarydiv{
+  width: 15.4375rem;
+  height: 3.0625rem;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.emptyButton {
+  width: 15.4375rem; /* 247px */
+  height: 2.3125rem; /* 37px */
+  border-radius: 0.25rem; /* 4px */
+  padding: 0.5rem 1.5rem; /* 8px 24px */
+  background-color: #153E3B;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+ 
+  cursor: pointer;
+  text-align: center;
+  gap: 0.5rem; /* 8px */
+  color: var(--Neutrals-Grey-50, #FAFBFC);
+  text-align: center;
+  /* Label/Small */
+  font-family: Lato;
+  font-size: 0.875rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%;
+}
+
+.tertiarydiv{
+  color: var(--Neutrals-Grey-800, var(--Neutrals-Neutrals800, #433F3E));
+  text-align: center;
+  
+  /* Paragraph/Regular/X Small */
+  font-family: Lato;
+  font-size: 0.875rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 1.3125rem */
+   margin-top: 0.25rem;
+   
+
+}
+
+.projname {
+  color: #000;
+text-align: center;
+
+/* Heading/Bold/X Small */
+font-family: Montserrat;
+font-size: 1rem;
+font-style: normal;
+font-weight: 700;
+line-height: 150%; /* 1.5rem */
+letter-spacing: 0.01563rem;
+}
+
+.status-cell {
+  border-radius: 4px;
+}
+
+.status-not-interested {
+  background-color: var(--Error-Error200, #F9ABB9);
+}
+
+.status-not-discussed {
+  background-color: var(--Alert-Alert300, #FBDD97);
+}
+
+.status-default {
+  background-color: var(--Success-Success200, #B6F7D4);
+}
+
+@media (max-width: 768px) { /* Tablet view */
+  .first-column {
+    min-width: 6rem !important; /* Reduce the minimum width for smaller screens */
+    max-width: 12rem; /* Set a max width */
+    white-space: nowrap; /* Prevent text wrapping */
+  }
+}
+
+.pagination {
+
+
+  width: 100%; /* The width of the complete div */
+  height: 42px; /* The height of the complete div */
+  position: relative;
+  
+}
+
+
+.pageButton {
+  padding: 8px 16px;
+  border: none;
+  background-color: #153E3B;
+  color: white;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.pageButton:disabled {
+  background-color: #E0E0E0;
+  cursor: not-allowed;
+}
+
+
+.font1 {
+  color: var(--Neutrals-Grey-1000, var(--Neutrals-Neutrals1000, #313534));
+
+/* Heading/Semi-Bold/XX Small */
+font-family: Montserrat;
+font-size: 0.750rem;
+font-style: normal;
+font-weight: 700;
+line-height: 150%; 
+letter-spacing: 0.01563rem;
+}
+
+
+
+.font2{
+  color: var(--Neutrals-Grey-800, var(--Neutrals-Neutrals800, #5A5555));
+text-align: center;
+
+/* Paragraph/Regular/X Small */
+font-family: Lato;
+font-size: 0.750rem;
+font-style: normal;
+font-weight: 500;
+line-height: 150%; 
+
+}
+
+.pagination1{
+  color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #000000));
+  font-family: Lato;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%; /* 21px */
+}
+

@@ -1,0 +1,16 @@
+@media (max-width: 344px) {
+  .xs-flex-col {
+    flex-direction: column-reverse;
+    align-items: flex-start !important;
+    gap: 4px;
+  }
+}
+
+
+/* Media query for screens between 1024px and 1440px */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .md-lg-flex-col {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+  }
+}

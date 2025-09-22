@@ -1,0 +1,28 @@
+.ais-SearchBox-input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .hide-loader .ais-Loader, 
+  .hide-loader .ais-InstantSearch__loader {
+    display: none !important;
+  }
+
+
+  .ais-SearchBox-input:focus {
+    outline: none !important;
+  }
+
+
+
+  
+  /* Optional: If you want to be extra thorough, also hide the icon */
+  .ais-SearchBox-submitIcon {
+    display: none !important;
+  }
+
+  .ais-SearchBox-input {
+    background: none !important;
+    /* background-color: transparent !important;
+    background-image: none !important;
+    background-clip: none !important; */
+  }

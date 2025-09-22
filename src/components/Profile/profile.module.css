@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+.heading {
+    color: #000;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.125rem; /* 18px */
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.5; /* 150% / 27px */
+  }
+  
+  .subheading {
+    color: var(--Neutrals-Base-Black, #0A0B0A);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.875rem; /* 14px */
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.5; /* 150% / 21px */
+  }
+
+  .button {
+    border-radius: 0.5rem;
+    border: 0.1rem solid var(--Neutrals-Neutrals200, #CCCBCB); /* 1px converted to rem */
+    background: var(--Neutrals-Base-White, #FAFAFA);
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%;
+    padding: 0.5rem 0.875rem;
+    display: flex;
+    align-items: center;
+    /* margin: 0.25rem; */
+  }
+  
+  .selected {
+    background: var(--Primary-Primary100, #DFF4F3) !important;
+    border-color: var(--Primary-Primary900, #205E59) !important;;
+  }
+
+  .button2{
+    border-radius: 0.25rem;
+    border: 1px solid var(--Primary-Dark-Green-P, #153E3B);
+    padding: 0.5rem 2rem;
+  }
+
+  .button2_txt{
+    color: var(--Primary-Dark-Green-P, var(--Primary-Primary, #153E3B));
+    text-align: center;
+    /* Label/Small */
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%; /* 21px */
+  }
+
+  .bottomPanel {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 12.5rem;
+    display: flex;
+    justify-content: flex-end;
+    /* justify-content: space-between; */
+    background-color: #FAFAFA;
+    padding: 8px 33px;
+    border-top: 1px solid var(--Neutrals-Neutrals200, #CCCBCB);
+  }
+
+  .saveButton {
+    background: var(--Primary-Dark-Green-P, #153E3B);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap:8px;
+  }
+
+  .deleteButton {
+    border-radius: 4px;
+    padding: 8px 16px;
+  }
+
+  @media (max-width: 1023px) and (min-width: 768px) {
+    .bottomPanel {
+      left: 7.437rem; /* Adjust to sidebar width for this range */
+    }
+  }
+
+  @media (max-width: 767px) {
+    .bottomPanel {
+      left: 0; /* Sidebar typically collapses or disappears on smaller screens */
+      right: 0; /* Take full width */
+    }
+  
+    .logoutbtnctn{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .wrt{
+      width: 100%;
+    }
+  }

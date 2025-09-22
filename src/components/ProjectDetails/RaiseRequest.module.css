@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+.bkg {
+  background: var(--Neutrals-Base-White, #FAFAFA) !important;
+}
+.modalContainer {
+  max-width: 29.6875rem; /* 475px */
+  width: 90vw;
+  border-radius: 0.5rem; /* 8px */
+  border: 0.0625rem solid #FAFAFA; /* 1px */
+  padding: 1.25rem 1.5rem; /* 20px 24px */
+  background-color: #FAFAFA;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem; /* 20px */
+}
+
+.tickImageContainer {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.tickImage {
+  width: 7.375rem; /* 118px */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.textContainer,
+.targeteddiv { /* Both containers have the same width rules */
+  width: 100%;
+  max-width: 26.6875rem; /* 427px */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* 8px */
+  align-items: center;
+  text-align: center;
+}
+
+.headingText {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+  letter-spacing: 0.015625rem; /* 0.25px */
+  color: #0A0B0A; /* Neutrals / Base Black */
+}
+
+.subText {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.3125rem; /* 21px */
+  letter-spacing: 0.015625rem; /* 0.25px */
+  color: #433F3E; /* Neutrals / Grey 800 */
+}
+
+.continuebtn {
+  width: 100%; /* Make the button fill its container */
+  max-width: 100%; /* Ensure it does not exceed its parent */
+  height: 3rem; /* 48px */
+  border-radius: 0.25rem; /* 4px */
+  padding: 0.75rem 2rem; /* 12px 32px */
+  background-color: #153E3B; /* Primary/Dark Green */
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem; /* 14px */
+  text-align: center;
+  line-height: 1.3125rem; /* 21px */
+  cursor: pointer;
+}
+
+.continuebtn:hover {
+  background-color: #122e2b; /* Darker shade for hover */
+}
+
+/* Mobile view adjustments */
+@media (max-width: 48rem) { /* 768px */
+  .modalContainer {
+    max-width: 22.375rem; /* 358px */
+    padding: 1.25rem 1.5rem; /* 20px 24px */
+  }
+
+  .textContainer,
+  .targeteddiv {
+    max-width: 19.375rem; /* 310px */
+  }
+}

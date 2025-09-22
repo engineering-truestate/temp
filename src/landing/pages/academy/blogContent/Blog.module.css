@@ -1,0 +1,389 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+div::-webkit-scrollbar {
+    display: none;
+}
+
+div {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+
+
+.blog_h1{
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading/Bold/Large */
+    font-family: Montserrat;
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 39px */
+   
+}
+
+.blog_h2{
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading/Bold/Medium */
+    font-family: Montserrat;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 36px */
+ 
+}
+
+.blog_h3{
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading / Bold / Small */
+    font-family: Montserrat;
+    font-size: 1.125;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 27px */
+   
+}
+
+.blog_h4{
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading/Bold/X Small */
+    font-family: Montserrat;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.015625rem;
+  
+}
+
+
+.blog_h5{
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading/Bold/X Small */
+    font-family: Montserrat;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.015625rem;
+
+}
+
+
+.blog_h6{
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading/Bold/X Small */
+    font-family: Montserrat;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.015625rem;
+
+}
+
+
+.blog_p{
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+    /* Paragraph/Regular/Large */
+    font-family: Lato;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 27px */
+    margin-top: 1.25rem !important;
+    margin-bottom: 1.25rem !important;
+ 
+}
+
+.blog_img{
+    border-radius: 0.5rem;
+    height: 20rem;
+    width: 45rem;
+    object-fit: cover;
+}
+
+.low{
+    color: var(--Neutrals-Grey-700, var(--Neutrals-Neutrals700, #5A5555));
+    text-align: right;
+    /* Label/Large */
+    font-family: Lato;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 27px */
+}
+
+.high{
+    color: var(--Neutrals-Grey-700, var(--Neutrals-Neutrals700, #5A5555));
+    text-align: right;
+    /* Label/Large */
+    font-family: Lato;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%; /* 27px */
+}
+
+.text0 {
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #5A5555));
+    /* Heading/Bold/X Small */
+    font-family: Montserrat;
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.015625rem;
+
+  }
+
+.text1 {
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading/Bold/X Small */
+    font-family: Montserrat;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.015625rem;
+ 
+    margin-bottom: 1rem !important;
+  }
+
+ .text2{
+    font-family: 'Lato', sans-serif;
+    font-weight: 500;
+    font-size: 0.75rem; /* 12px */
+    line-height: 1.125rem; /* 18px */
+    color: #5A5555;
+    overflow: hidden; /* Prevent overflow */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+ } 
+
+ .text3{
+    font-family: 'Lato', sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem; /* 12px */
+    line-height: 1.250rem; /* 18px */
+    color: #5A5555;
+
+ } 
+
+ .blog_h7{
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #433F3E));
+ 
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%;
+
+}
+
+.blog_h8{
+    color: var(--Neutrals-Grey-700, var(--Neutrals-Neutrals700, #2B2928));
+        font-family: Montserrat, sans-serif;
+        font-weight: 600;
+        font-size: 1rem; /* 18px */
+        line-height: 1.5rem; /* 27px */
+    
+
+}
+
+.blog_h9{
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+ 
+    font-family: Montserrat;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%;
+
+}
+
+.blog_h10{
+  color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+ 
+  font-family: Montserrat;
+  font-size: 0.875rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%;
+}
+
+
+
+
+
+.text10 {
+    color: var(--Neutrals-Grey-700, var(--Neutrals-Neutrals700, 
+    #000000));
+    text-align: right;
+   
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%;
+
+  }
+
+  .font2{
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #153E3B));
+ 
+    font-family: Lato;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%;
+  }
+
+
+  .font3{
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading/Bold/X Small */
+    font-family: Montserrat;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.015625rem;
+ 
+    margin-bottom: 1rem !important;
+  }
+
+  .font4{
+    
+        color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+        /* Heading/Bold/X Small */
+        font-family: Montserrat;
+        font-size: 2rem;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 120%; /* 24px */
+        letter-spacing: 0.015625rem;
+     
+        margin-bottom: 1rem !important;
+      
+  }
+
+  .font5{
+    
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    /* Heading/Bold/X Small */
+    font-family: Montserrat;
+    font-size: 1.5rem;
+   
+    font-weight: 700;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.015625rem;
+ 
+  
+   
+
+
+  }
+
+  .font2{
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+ 
+    font-family: Lato;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%;
+  }
+
+
+  .high1{
+    color: var(--Neutrals-Grey-700, var(--Neutrals-Neutrals700, #5A5555));
+    text-align: right;
+    /* Label/Large */
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 21px */
+}
+/* For h1 (Headings) */
+.headingLabelSmall {
+    font-family: Montserrat, sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 21px;
+    text-align: right;
+    color: #0A0B0A;
+  }
+  
+  /* List items for the Table of Contents */
+  .inlineList {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  .number {
+    margin-right: 8px; /* Adjust the space between number and text */
+    flex-shrink: 0;    /* Prevent number from shrinking */
+  }
+  
+  .text {
+    flex-grow: 1;      /* Make sure the text takes up the remaining space */
+    text-align: left;  /* Align text to the left */
+    
+  }
+  
+
+  .head1{
+    color: var(--Neutrals-Grey-700, var(--Neutrals-Neutrals700, #5A5555));
+    
+    /* Label/Large */
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%; /* 21px */
+}
+
+
+/* Green scrollbar for the div */
+#toc-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#toc-container::-webkit-scrollbar-track {
+  background: #d1fae5; /* Light green background for scrollbar track */
+}
+
+#toc-container::-webkit-scrollbar-thumb {
+  background-color: #10b981; /* Green color for scrollbar */
+  border-radius: 10px;
+}
+
+#toc-container::-webkit-scrollbar-thumb:hover {
+  background-color: #059669; /* Darker green when hovered */
+}
+
+
+/* Add some scroll margin to the headings */
+h2, h3 {
+  scroll-margin-top: 100px; /* Adjust this value based on your fixed header size */
+}
+
+
+.text11{
+  color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+  /* Heading/Bold/X Small */
+  font-family: Montserrat;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 24px */
+  letter-spacing: 0.015625rem;
+
+}

@@ -1,0 +1,38 @@
+/* src/components/Breadcrumb.css */
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+.breadcrumb {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.breadcrumb-item {
+  font-family: Lato;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  text-align: left;
+  color: black; /* Default style for parent paths */
+}
+
+.breadcrumb-item.active {
+  color: gray; /* Style for the current path */
+}
+
+.separator {
+  margin: 0 8px;
+}
+
+  
+  .breadcrumb-item a {
+    text-decoration: none;
+   
+  }
+  
+  .breadcrumb-item a:hover {
+    text-decoration: underline;
+  }
+  

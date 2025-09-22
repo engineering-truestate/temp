@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+.agentName {
+    overflow: hidden;
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+    text-overflow: ellipsis;
+    font-family: Montserrat;
+    font-size: 0.9rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.015625rem;
+}
+
+.agentDesignation {
+    overflow: hidden;
+    color: var(--Neutrals-Grey-900, var(--Neutrals-Neutrals900, #2B2928));
+    text-overflow: ellipsis;
+    font-family: Lato;
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 18px */
+}
+
+.icon {
+    font-size: 1.5rem;
+}
+
+.contactText {
+    color: var(--Neutrals-Grey-800, var(--Neutrals-Neutrals800, #433F3E));
+    font-family: Montserrat;
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%; /* 18px */
+}
+
+.contactDetail {
+    color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%; /* 21px */
+}
+
+.actionButton1 {
+    border-color: var(--Primary-Dark-Green-P, #153E3B);
+    color: var(--Primary-Dark-Green-P, #153E3B);
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 150%; /* 21px */
+}
+
+.actionButton2 {
+    border-color: var(--Primary-Dark-Green-P, #153E3B);
+    color: var(--Neutrals-Grey-50, #FAFBFC);
+    background: var(--Primary-Dark-Green-P, #153E3B);
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 150%; /* 21px */
+}
+
+.divider {
+    border-top-color: #ddd;
+}
+
+.subheading {
+    font-family: Montserrat;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.meetingCard {
+    border-color: #ddd;
+}
+
+.meetingTitle {
+    font-family: Montserrat;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #2B2928;
+}
+
+.meetingDate {
+    font-family: Lato;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #433F3E;
+}
+
+.yellow {
+    background: var(--Alert-Alert600, #F4B00B);
+    border-bottom-left-radius: 0.5rem;
+    border-top-left-radius: 0.5rem;
+}
+
+.mh{
+    max-height: 40vh;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.mh::-webkit-scrollbar {
+    display: none;
+}
+
+.modalContent {
+    left: 18rem;
+}
+
+.bxs{
+    box-shadow: 0px 4px 24px 0px rgba(0, 0, 0, 0.20);
+}

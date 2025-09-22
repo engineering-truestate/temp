@@ -1,0 +1,31 @@
+@media (max-width: 340px) {
+  .team-member-card {
+    padding: 15px 8px;
+    width: 100%; /* Allows the card to span full width on small screens */
+    min-width: 150px;
+  }
+}
+
+
+@media (max-width: 340px) {
+  .tex-disp-xxxxs{
+    font-size: 14px !important;
+  }
+
+  .numeric-detail-small-padding{
+    padding: 8px !important;
+  }
+
+  .numeric-detail-zero-padding{
+    padding: 0px !important;
+  }
+
+  .num-card-parent-w-auto{
+    width: auto !important;
+  }
+  .num-card-w-fit{
+    width: auto !important;
+    min-width: 74px;
+  }
+}
+

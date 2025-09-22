@@ -1,0 +1,31 @@
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 20px;
+  height: 16px;
+  cursor: pointer;
+  z-index: 50; /* Ensure it's above other content */
+}
+
+.line {
+  width: 100%;
+  height: 2px;
+  background-color: #000;
+  transition: all 0.4s ease;
+}
+
+/* Rotate the first line to 45 degrees and move it */
+.hamburger.open .line:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+/* Hide the middle line */
+.hamburger.open .line:nth-child(2) {
+  opacity: 0;
+}
+
+/* Rotate the third line to -45 degrees and move it */
+.hamburger.open .line:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}

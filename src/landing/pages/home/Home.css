@@ -1,0 +1,65 @@
+
+
+
+@media (max-width: 340px) {
+  /* Base Card adjustments */
+  .PropCard .flex {
+    padding: 0.5rem;
+  }
+
+  /* Project Status Icons */
+  .PropCard .flex img.h-6 {
+    height: 1.25rem !important;
+  }
+
+  /* Location and Status Text */
+  .PropCard .text-paragraph-xxxs, .PropCard .text-paragraph-xxs {
+    font-size: 0.5rem !important;
+  }
+
+  /* Padding adjustments for Card Header and Card Body */
+  .PropCard .px-4 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  .PropCard .pt-3 {
+    padding-top: 0.25rem !important;
+  }
+  .PropCard .pb-4 {
+    padding-bottom: 0.5rem !important;
+  }
+
+  /* Text Details - IRR, Starting Price, Duration, Min. Investment */
+  .PropCard .text-heading-medium-xxxxs,
+  .PropCard .text-heading-medium-xxxs,
+  .PropCard .text-paragraph-bold-sm,
+  .PropCard .text-paragraph-bold-xs {
+    font-size: 0.6rem !important;
+    min-width: auto !important;
+  }
+
+  /* Separator Line */
+  .PropCard hr {
+    margin: 0.25rem 0 !important;
+  }
+
+  /* Growth Potential and Value Estimation Icons */
+  .PropCard .h-6 {
+    height: 1.25rem !important;
+  }
+
+  .know-more-fs {
+    font-size: 0.625rem !important;}
+};
+
+
+
+@media (min-width: 340px) and (max-width: 375px) {
+  /* Styles for screens between 340px and 375px */
+  .know-more-fs {
+    font-size: 2rem !important;}
+
+  .height-5dot5{
+    height: 22px !important;
+  }
+}

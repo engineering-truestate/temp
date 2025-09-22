@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900&display=swap');
+
+div::-webkit-scrollbar {
+  display: none;
+}
+
+div {
+  -ms-overflow-style: none;
+  scrollbar-width: none; 
+}
+
+/* Styles for the Action Button */
+.actionButton2 {
+  border-color: var(--Primary-Dark-Green-P, #153E3B);
+  color: var(--Neutrals-Grey-50, #FAFBFC);
+  background: var(--Primary-Dark-Green-P, #153E3B);
+  font-family: Lato;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 150%; /* 21px */
+}
+
+.wholesearch {
+  background-color: #FAFAFA;
+}
+
+/* Styles for Icons */
+.icon {
+  font-size: 1.5rem;
+}
+
+/* Button Styles */
+.btnsty {
+  color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+  font-family: Lato;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%; /* 21px */
+}
+
+.btnsty1 {
+  color: var(--Neutrals-Base-Black, var(--Neutrals-Base-Black, #0A0B0A));
+  font-family: Lato;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 21px */
+}
+
+/* Sticky Heading */
+.heading {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: #FAFAFA;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.headingbar {
+  background-color: #FAFAFA;
+}
+
+/* Selected Button State */
+.selected1 {
+  background: var(--Primary-Primary200, #BFE9E6);
+}
+
+/* Check Details Button */
+.checkDetailsButton {
+  width: 152px;
+  height: 37px;
+  border-radius: 4px;
+  padding: 8px 24px;
+  background-color: var(--Primary-Dark-Green-P, #153E3B);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Lato;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 21px;
+  cursor: pointer;
+  text-align: center;
+  gap: 8px;
+}
+
+.mainhead{
+  color: var(--Neutrals-Grey-900, #252626) !important;
+  font-family: Montserrat !important;
+  font-size: 1.125rem !important;
+  font-style: normal;
+  font-weight: 700 !important;
+  line-height: 150% !important;
+  }
+
+/* Mobile Specific Styles */
+@media (max-width: 768px) {
+  .projectColumn {
+    width: 180px;
+    height: 887px;
+  }
+
+  .checkDetailsButton {
+    width: 152px;
+    height: 37px;
+  }
+
+  .btnsty, .btnsty1 {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .headingbar {
+    padding-left: 16px;
+  }
+}
+
+
+.agnme{
+  color: var(--Neutrals-Grey-50, #FAFBFC);
+text-align: center;
+/* Label/Small */
+font-family: Lato;
+font-size: 0.875rem;
+font-style: normal;
+font-weight: 600;
+line-height: 150%;
+}
+
+
+
+.sortbycontainer {
+  display: none !important;
+}
+
+@media (min-width: 345px) {
+  .sortbycontainer {
+    display: block !important;
+  }
+}

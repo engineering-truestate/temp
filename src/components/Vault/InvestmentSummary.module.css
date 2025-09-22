@@ -1,0 +1,213 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+.bkg{
+  background: var(--Neutrals-Base-White, #FAFAFA) !important;
+}
+
+
+.investmentSummary {
+    /* padding: 20px; */
+  }
+  
+  .heading {
+    font-family: Montserrat, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 27px;
+    text-align: left;
+ 
+  }
+  
+  .lastUpdate {
+    font-family: Lato, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 18px;
+    text-align: left;
+
+  }
+  
+  .summaryContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    /* flex-wrap:nowrap; */
+  }
+  
+  .summaryBox {
+    display: flex;
+    flex-direction: column;
+    
+    height: 98px;
+    padding: 12px 10px;
+    border-radius: 8px;
+    border: 1px solid #CCCBCB;
+    background-color: #FAFAFA;
+  }
+  
+  .labelWithIcon {
+    display: flex;
+    align-items: center;
+  }
+  
+  .labelWithIcon .icon {
+    margin-right: 8px;
+  }
+  
+  .label {
+
+    font-family: Montserrat;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 150%;
+    color: #000000;
+   
+  }
+  
+  .value {
+    font-family: Lato, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 8px;
+    line-height: 150%;
+    color:#000000;
+  }
+  
+  .value1{
+
+    font-family: Montserrat;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 150%;
+    color: #313534;
+   
+  }
+
+  .value2{
+    font-family: Lato, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 150%;
+    color: #433F3E;
+  
+  }
+
+  .valueGreen {
+    font-family: Lato, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 8px;
+    line-height: 150%;
+    color: #25A244; /* Green color */
+  }
+
+  .valueRed {
+    font-family: Lato, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 8px;
+    color: red;
+    line-height: 150%;
+  }
+
+  
+  /* For Mobile View */
+  @media (max-width: 768px) {
+    .summaryBox {
+      width: 171px;
+      height: 88px;
+    }
+  }
+  
+
+  .heading {
+    font-family: Montserrat, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0A0B0A;
+  }
+  
+  .propertyName {
+    font-family: Montserrat, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000000;
+  }
+  
+  .propertyDetails {
+    font-family: Lato, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #666666;
+  }
+  
+  .propertyDetails2{
+    font-family: Lato, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #666666;
+  }
+
+
+  .label {
+    font-family: Montserrat, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #000000;
+  }
+  
+  .value {
+    font-family: Lato, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000000;
+  }
+  
+  .valueGreen {
+    font-family: Lato, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #25A244; /* Green color */
+  }
+  
+  .button {
+    padding: 8px 24px;
+    background-color: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-family: Montserrat, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0A0B0A;
+    cursor: pointer;
+  }
+  
+  .addButton {
+    padding: 8px 24px;
+    background-color: #153E3B;
+    color: #ffffff;
+    border-radius: 4px;
+    font-family: Lato, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  @media (max-width: 768px) {
+    .button {
+      width: 163px;
+      height: 44px;
+      display: flex;
+      justify-content: center;
+    }
+  }
+
+
+  .h10{
+    font-family: Lato, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 150%;
+    text-align: left;
+
+  }
+  

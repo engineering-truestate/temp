@@ -1,0 +1,14 @@
+/* styles.css */
+.toc {
+    position: relative;
+    transition: top 0.3s;
+  }
+  
+  .fixed-toc {
+    position: fixed;
+    top: 1rem; /* Adjust this value as needed */
+    right: 1rem; /* Adjust this value as needed */
+    max-height: calc(100vh - 2rem); /* Adjust this value as needed */
+    overflow-y: auto; /* Allows scrolling within the TOC if it gets too long */
+  }
+  

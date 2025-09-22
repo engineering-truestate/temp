@@ -1,0 +1,93 @@
+.select-container {
+    position: absolute;
+    top: 10px;
+    left: 30%;
+    z-index: 1000; /* Ensure the dropdown appears above the map */
+    width: 40%; /* Adjust the width as needed */
+  }
+  
+  .map .container {
+    height: 90vh;
+    width: 100%;
+    position: relative; /* Ensure the select container is positioned relative to the map container */
+  }
+ /* Map.css */
+.popup-content {
+  width: 100%;
+ /* Adjust the max width as needed */
+}
+
+.popup-card {
+  width: 100%;
+  height: 50vh; /* Set the height to 50% of the map container height */
+  overflow-y: auto; /* Add scroll if content exceeds height */
+}
+
+.leaflet-popup-content-wrapper {
+  width: 50vh; /* Set the width to 1/4th of the map container */
+  height: auto; /* Adjust height automatically */
+  margin-bottom: 40px; /* Ensure popup appears above the marker */
+}
+
+.leaflet-popup-tip-container {
+  display: none; /* Hide the default popup tip */
+}
+
+.leaflet-tooltip {
+  background-color: #FAFAFA; /* Change background color if needed */
+  color: black;            /* Change text color */
+  border-radius: 5px;       /* Add a slight border radius */
+  padding: 8px;            /* Add some padding */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add shadow */
+}
+
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before,
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before {
+  display: none !important; /* Ensure arrow is removed from all directions */
+}
+
+.marker-cluster-small{
+  background-color: #10302D !important;
+  color: white !important;
+  font-weight: 700 !important;
+  size: 14px !important;
+}
+
+.marker-cluster-small div{
+  background-color: #10302D !important;
+  color: white !important;
+  font-weight: 700 !important;
+  size: 14px !important;
+}
+
+.marker-cluster-medium{
+  background-color: #10302D !important;
+  color: white !important;
+  font-weight: 700 !important;
+  size: 14px !important;
+}
+
+.marker-cluster-medium div{
+  background-color: #10302D !important;
+  color: white !important;
+  font-weight: 700 !important;
+  size: 14px !important;
+}
+
+.marker-cluster-large{
+  background-color: #10302D !important;
+  color: white !important;
+  font-weight: 700 !important;
+  size: 14px !important;
+}
+
+.marker-cluster-large div{
+  background-color: #10302D !important;
+  color: white !important;
+  font-weight: 700 !important;
+  size: 14px !important;
+}
+
+.leaflet-container {z-index:0}
