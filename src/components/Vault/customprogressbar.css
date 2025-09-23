@@ -106,7 +106,7 @@
 
 /* .content-Class {
      color: #ff0048  !important;
-} 
+}
 
 .custom-subtitle{
     color: #ff0048 !important;
@@ -115,3 +115,25 @@
 .primary-BtnClass{
     color: #ff00d0;
 } */
+
+/* New styles for react-step-progress-bar */
+.indexedStep {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ccc;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 14px;
+    border: 2px solid #ccc;
+    transition: all 0.3s ease;
+}
+
+.indexedStep.accomplished {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
