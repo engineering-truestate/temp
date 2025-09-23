@@ -9,7 +9,6 @@ import { saveFormData } from "../../slices/apis/vault";
 import { useDispatch, useSelector } from "react-redux";
 import { addVaultForm } from "../../slices/userAuthSlice";
 import VaultDropdown from "./VaultDropdown";
-// import Loader from "../Loader/Loader";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
 import projectPopupStyles from "../Project_popup/ProjectPopup.module.css";
@@ -20,28 +19,24 @@ import { useToast } from "../../hooks/useToast";
 const UnitDetailsForm = forwardRef(
   ({ formData, setFormData, selectedProperty, setLoading }, ref) => {
     const dispatch = useDispatch();
-    // console.log(selectedProperty);
     const { assetType } = selectedProperty;
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [errors, setErrors] = useState({}); // Track errors for each field
     const { userDocId, userPhoneNumber , name} = useSelector((state) => state.userAuth);
     const { addToast } = useToast();
 
-    // Handle form submission via ref from parent
     useImperativeHandle(ref, () => ({
       submitForm() {
-        return handleSubmit(); // Trigger form submission programmatically
+        return handleSubmit();
       },
     }));
 
-    // prevent entering negative values
     const preventNegative = (e) => {
       if (e.key === "-" || e.key === "+" || e.key === "e") {
         e.preventDefault();
       }
     };
 
-    // Generic input change handler
     const handleInputChange = (e) => {
       const { name, value } = e.target;
 
@@ -51,21 +46,13 @@ const UnitDetailsForm = forwardRef(
       }));
       setErrors((prevErrors) => ({
         ...prevErrors,
-        [name]: "", // Clear error for the field on change
+        [name]: "",
       }));
     };
 
-    // Centralized validation function
     const validateFields = () => {
       const newErrors = {};
-      // console.log(assetType)
 
-      // if(!assetType || assetType.trim() === "" || assetType === undefined) {
-      //   addToast("Error", "error", "assetType is empty");
-      //   return newErrors;
-      // }
-
-      // Validate each field in formData
       if (!formData.yearOfPurchase || formData.yearOfPurchase.trim() === "") {
         console.log(1)
         newErrors["yearOfPurchase"] = "Year of Purchase is required";
@@ -80,11 +67,6 @@ const UnitDetailsForm = forwardRef(
         console.log(2)
         newErrors["yearOfPurchase"] = "Please enter a vaild year";
       }
-
-      // if (!formData.totalPricePaid || formData.totalPricePaid.trim() === "") {
-      //   newErrors["totalPricePaid"] = "Total Price Paid is required";
-      // }
-
       if (
         assetType !== "plot" &&
         (!formData.sbua || formData.sbua.trim() === "")
@@ -139,12 +121,9 @@ const UnitDetailsForm = forwardRef(
     };
 
     console.log(selectedProperty)
-
-    // Handle form submission
     const handleSubmit = async (e) => {
       if (e) e.preventDefault();
       const validationErrors = validateFields();
-      // const validationErrors = [];
 
       if(!assetType || assetType.trim() === "" || assetType === undefined) {
         addToast("Error", "error", "assetType is empty");
@@ -154,9 +133,8 @@ const UnitDetailsForm = forwardRef(
 
       if (Object.keys(validationErrors).length > 0) {
         console.log("Validation errors:", validationErrors);
-        setErrors(validationErrors); // Set errors if any field is invalid
-        console.log('ghj')
-        return false; // Return false to indicate invalid form
+        setErrors(validationErrors);
+        return false;
       } else {
         setLoading(true);
 
@@ -288,37 +266,6 @@ const UnitDetailsForm = forwardRef(
                 {renderError("purchaseAmount")}
               </div>
 
-              {/* <div className="mb-6">
-                <label className={` ${styles.h8} block mb-1 `}>
-                  Total Amount Paid Till Date*
-                   <div className={`${projectPopupStyles.tooltip} cursor-pointer  mb-[-4px]`}>
-                                <img src={infoIcon} alt="info" />
-                                <span className={`${projectPopupStyles.tooltiptext} min-w-[200px]`}>
-Down payment + Any construction-linked payments + Any loan amount repaid (Principal + Interest) + Others (Stamp duty, etc)
-                                </span>
-                                </div>
-                </label>
-                <div className="flex">
-                  <input
-                    type="number"
-                    name="totalPricePaid"
-                    value={formData.totalPricePaid}
-                    onChange={handleInputChange}
-                    onKeyDown={preventNegative}
-                    placeholder="Please Enter"
-                    autoComplete="off"
-                    className={`bg-[#FAFAFA] focus:outline-none border border-gray-300 border-r-0 rounded-l-lg px-4 py-2.5 w-[90%] `}
-                  />
-                  <input
-                    type="text"
-                    className={`bg-[#FAFAFA] focus:outline-none border border-gray-300 border-l-0 rounded-r-lg px-2.5 text-right pl-5 py-2.5 w-[calc(3.25rem+2rem)] ${styles.h12}`}
-                    value="Crs"
-                    disabled
-                  />
-                </div>
-        
-                {renderError("totalPricePaid")}
-              </div> */}
 
               {assetType === "plot" ? (
                 <div className="mb-6">
@@ -375,30 +322,7 @@ Down payment + Any construction-linked payments + Any loan amount repaid (Princi
                   </div>
                   {renderError("sbua")}
                 </div>
-                {/* <div className="mb-6">
-                  <label className={` ${styles.h8} block mb-1 `}>
-                    Area of Plot*
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="number"
-                      name="plotArea"
-                      value={formData.plotArea}
-                      onChange={handleInputChange}
-                      onKeyDown={preventNegative}
-                      placeholder="Please Enter"
-                      autoComplete="off"
-                      className={`bg-[#FAFAFA] focus:outline-none border border-gray-300 border-r-0 rounded-l-lg px-4 py-2.5 w-[90%] placeholder:font-['Lato']`}
-                      min="0"
-                    />
-                    <input
-                      type="text"
-                      className={`bg-[#FAFAFA] focus:outline-none border border-gray-300 border-l-0 px-2.5 text-right rounded-r-lg pl-5 py-2.5 w-[calc(3.25rem+2rem)]  ${styles.h12}`}
-                      value="Sq Ft"
-                      disabled
-                    />
-                  </div>
-                </div> */}
+              
                 </>
               ) : null}
 
@@ -561,32 +485,6 @@ Down payment + Any construction-linked payments + Any loan amount repaid (Princi
                     className={`w-full px-4 py-2.5 border bg-[#FAFAFA] border-gray-300 rounded-lg focus:outline-none placeholder:font-['Lato']`}
                   />
                 </div>
-                {/* <div className="mb-6">
-                  <label className={`${styles.h8} block mb-1`}>
-                    Land Size*
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="number"
-                      min="1"
-                      name="landSize"
-                      value={formData.landSize}
-                      onChange={handleInputChange}
-                      onKeyDown={preventNegative}
-                      placeholder="Please Enter"
-                      autoComplete="off"
-                      className="bg-[#FAFAFA] focus:outline-none border border-gray-300 border-r-0 rounded-l-lg px-4 py-2.5 w-[90%] placeholder:font-['Lato']"
-                    />
-
-                    <input
-                      type="text"
-                      className={`bg-[#FAFAFA] focus:outline-none border border-gray-300 border-l-0 px-2.5 text-right rounded-r-lg pl-5 py-2.5 w-[calc(3.25rem+2rem)] ${styles.h12}`}
-                      value="Sq ft"
-                      disabled
-                    />
-                  </div>
-                  {renderError("landSize")}
-                </div> */}
                 </>
               ) : assetType === "villa or rowhouse" || assetType === "villa" ? (
                 <div className="mb-6">
@@ -633,8 +531,6 @@ Down payment + Any construction-linked payments + Any loan amount repaid (Princi
                 />
               </div>
             </div>
-
-            {/* Submit Button */}
           </form>
         </div>
       </div>
