@@ -9,8 +9,8 @@ import {
   fetchInitialProjects,
   fetchMoreProjects,
   setSearchTerm,
-} from "../../slices/projectSlice"; // Correct import for fetching projects
-import { setVaultFormActive } from "../../slices/vaultConfirmationSlice"; // Import the action
+} from "../../slices/projectSlice"; 
+import { setVaultFormActive } from "../../slices/vaultConfirmationSlice"; 
 import { useToast } from "../../hooks/useToast.jsx";
 import whatsapp from "/assets/icons/social/whatsapp-3.svg";
 import Investment from "./Investment.jsx";
@@ -34,26 +34,22 @@ const FindProjectPage = () => {
   const { userDocId, userPhoneNumber } = useSelector((state) => state.userAuth);
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { addToast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0); // Manage current step
+  const [currentStep, setCurrentStep] = useState(0); 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false); // Control dropdown visibility
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal control
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(true); // Track unsaved changes
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(true);
   const [pendingRoute, setPendingRoute] = useState(null);
-  const [pendingFormSubmit, setPendingFormSubmit] = useState(false); // Track if we're waiting for auth to submit
+  const [pendingFormSubmit, setPendingFormSubmit] = useState(false);
   const isVaultFormActive = useSelector(
     (state) => state.vaultConfirmation.isVaultFormActive
   );
 
-  // const { projects, loading, searchTerm } = useSelector(
-  //   (state) => state.projectsState
-  // ); // Get projects from the state
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSelected, setisSelected] = useState(false);
   const [iserror, setiserror] = useState(false);
-  const [filteredProjects, setFilteredProjects] = useState([]); // Filtered projects
-  // let selectedproperty = null;const currentStep = 0
+  const [filteredProjects, setFilteredProjects] = useState([]); 
   const [projects, setProjects] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState(null);
 
@@ -87,7 +83,6 @@ const FindProjectPage = () => {
   }, []);
 
   useEffect(() => {
-    // If user is now authenticated and we have a pending form submission
     if (isAuthenticated && pendingFormSubmit && formData) {
       submitFormData();
       setPendingFormSubmit(false);

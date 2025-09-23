@@ -1,3 +1,10 @@
+import infoIcon from '/assets/icons/ui/info.svg';
+import ElectricityBill from "/assets/icons/features/electricity-bill.svg";
+import house from "/assets/icons/ui/house.svg";
+import KahataTransfer from "/assets/icons/features/kahata-transfer.svg";
+import SellProperty from "/assets/icons/ui/money-bag.svg";
+import TitleClearence from "/assets/icons/features/title-clearance.svg";
+import Wallet from "/assets/icons/ui/wallet.svg";
 const serviceCardData = [
   {
     title: "Khata Transfer",
