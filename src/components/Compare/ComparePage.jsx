@@ -165,7 +165,7 @@ const ComparePage = () => {
                             <div
                               className="absolute z-0 bg-center bg-cover h-[7.5rem] w-[90%]"
                               style={{
-                                backgroundImage: `url(${project.images.length > 0 ? project.images[0] : cardpic})`,
+                                backgroundImage: `url(${project.images?.length > 0 ? project.images[0] : cardpic})`,
                                 filter: "blur(20px)", // Adjust the blur level as needed
                               }}
                             ></div>

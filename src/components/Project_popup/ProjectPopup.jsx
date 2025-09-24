@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader, CardBody } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUserPhoneNumber, selectUserDocId } from "../../slices/userAuthSlice";
+import {
+  selectUserPhoneNumber,
+  selectUserDocId,
+} from "../../slices/userAuthSlice";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
 import { APARTMENT_CONFIGURATION_KEYS } from "../../constants/apartmentTypes";
 
 // Import your icons here
 
-const truSelected = '/assets/properties/icons/recommended-badge.svg';
+const truSelected = "/assets/properties/icons/recommended-badge.svg";
 import LitigationIcon from "/assets/icons/status/litigation.svg";
 import rerasel from "/assets/icons/brands/rera.svg";
 // import limited from "/icons-1/LimitedAvb.svg"; // File no longer exists
@@ -22,15 +25,22 @@ import selon from "/assets/icons/features/wishlist-active.svg";
 import styles from "./ProjectPopup.module.css";
 import locicon from "/assets/icons/navigation/arrow-down.svg";
 // import status from "/icons-1/Status.svg"; // File no longer exists
-const cardpic = '/assets/properties/images/placeholder.webp';
+const cardpic = "/assets/properties/images/placeholder.webp";
 import growth from "/assets/icons/features/home.svg";
 import value from "/assets/icons/features/valuation-report.svg";
 import asset from "/assets/icons/features/properties.svg";
 import xirrLock from "/assets/icons/features/vault.svg";
 import infoIcon from "/assets/icons/ui/info.svg";
 
-import { fetchCompareProjects, selectCompareProjects } from "../../slices/compareSlice";
-import { fetchWishlistedProjects, selectWishlistItems } from "../../slices/wishlistSlice";
+import {
+  fetchCompareProjects,
+  removeProjectFromComparison,
+  selectCompareProjects,
+} from "../../slices/compareSlice";
+import {
+  fetchWishlistedProjects,
+  selectWishlistItems,
+} from "../../slices/wishlistSlice";
 import { useToast } from "../../hooks/useToast.jsx";
 import {
   formatCostSuffix,
@@ -123,19 +133,23 @@ const PropCard = ({ project }) => {
 
   // Update local state based on Redux store
   useEffect(() => {
-    const isProjectWishlisted = wishlistItems.some(item => item.projectId === project.projectId);
+    const isProjectWishlisted = wishlistItems.some(
+      (item) => item.projectId === project.projectId
+    );
     console.log("PropCard wishlist state update:", {
       projectId: project.projectId,
       wishlistItemsCount: wishlistItems.length,
-      wishlistItems: wishlistItems.map(item => item.projectId),
+      wishlistItems: wishlistItems.map((item) => item.projectId),
       isProjectWishlisted,
-      previousState: isWishlisted
+      previousState: isWishlisted,
     });
     setIsWishlisted(isProjectWishlisted);
   }, [wishlistItems, project.projectId]);
 
   useEffect(() => {
-    const isProjectCompared = compareProjects.some(item => item.projectId === project.projectId);
+    const isProjectCompared = compareProjects.some(
+      (item) => item.projectId === project.projectId
+    );
     setIsCompared(isProjectCompared);
   }, [compareProjects, project.projectId]);
 
@@ -155,98 +169,127 @@ const PropCard = ({ project }) => {
   };
 
   const toggleWishlist = async () => {
-    console.log("PropCard toggleWishlist called:", {
-      projectId: project.projectId,
-      projectName: project.projectName,
-      propertyType: project.propertyType,
-      defaultPropertyType: project.propertyType || "preLaunch",
-      showOnTruEstate: project.showOnTruEstate,
-      isAuthenticated,
-      userId,
-      currentWishlistState: isWishlisted,
-      wishlistItems: wishlistItems.length
-    });
+  console.log("PropCard toggleWishlist called:", {
+    projectId: project.projectId,
+    projectName: project.projectName,
+    propertyType: project.propertyType,
+    defaultPropertyType: project.propertyType || "preLaunch",
+    showOnTruEstate: project.showOnTruEstate,
+    isAuthenticated,
+    userId,
+    currentWishlistState: isWishlisted,
+    wishlistItems: wishlistItems.length,
+  });
 
-    const newState = !isWishlisted;
-    setIsWishlisted(newState); // Optimistic update
+  const newState = !isWishlisted;
+  setIsWishlisted(newState); // Optimistic update
 
-    try {
-      logEvent(analytics, newState ? "added-to-wishlist" : "removed-from-wishlist", {
-        name: project.projectName,
-      });
+  try {
+    logEvent(
+      analytics,
+      newState ? "added-to-wishlist" : "removed-from-wishlist",
+      { name: project.projectName }
+    );
 
-      if (newState) {
-        const result = await dispatch(updateWishlist({
+    if (newState) {
+      await dispatch(
+        updateWishlist({
           userId,
           propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId
-        }));
-        console.log("updateWishlist result:", result);
-        const fetchResult = await dispatch(fetchWishlistedProjects(userId));
-        console.log("fetchWishlistedProjects result after update:", fetchResult);
-      } else {
-        const result = await dispatch(removeWishlist({
+          projectId: project.projectId,
+        })
+      );
+    } else {
+      await dispatch(
+        removeWishlist({
           userId,
           propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId
-        }));
-        console.log("removeWishlist result:", result);
-        const fetchResult = await dispatch(fetchWishlistedProjects(userId));
-        console.log("fetchWishlistedProjects result after remove:", fetchResult);
-      }
-
-      addToast(
-        "Dummy",
-        "success",
-        newState ? "Property Added to Wishlist" : "Property Removed from Wishlist",
-        newState
-          ? "The property has been added to the Wishlist."
-          : "The property has been removed from the Wishlist."
+          projectId: project.projectId,
+        })
       );
-    } catch (error) {
-      console.error("Error in toggleWishlist:", error);
-      addToast(
-        "Dummy",
-        "error",
-        "Wishlist Action Failed",
-        error.message || "An unexpected error occurred. Please try again."
-      );
-      setIsWishlisted(!newState); // Revert UI on error
     }
-  };
-  const toggleCompare = async () => {
-    const newState = !isCompared;
-    setIsCompared(newState); // Optimistic UI update
 
-    try {
-      logEvent(analytics, newState ? "added-to-compare" : "removed-from-compare", {
-        name: project.projectName,
-      });
+    // ✅ Success toast for add, negative/error toast for remove
+    addToast(
+      "Dummy",
+      newState ? "success" : "error",
+      newState
+        ? "Property Added to Wishlist"
+        : "Property Removed from Wishlist",
+      newState
+        ? "The property has been added to the Wishlist."
+        : "The property has been removed from the Wishlist."
+    );
 
-      if (newState) {
-        await dispatch(addProjectForComparison(project.projectId));
-      }
+    // Refresh wishlist
+    await dispatch(fetchWishlistedProjects(userId));
+  } catch (error) {
+    console.error("Error in toggleWishlist:", error);
+    addToast(
+      "Dummy",
+      "error",
+      "Wishlist Action Failed",
+      error.message || "An unexpected error occurred. Please try again."
+    );
+    setIsWishlisted(!newState); // Revert UI on error
+  }
+};
 
-      addToast(
-        "Dummy",
-        "success",
-        newState ? "Property Added to Compare" : "Property Removed from Compare",
-        newState
-          ? "The property has been added to the compare list."
-          : "The property has been removed from the compare list."
-      );
-      dispatch(fetchCompareProjects());
-    } catch (error) {
-      console.error("Error in toggleCompare:", error);
-      addToast(
-        "Dummy",
-        "error",
-        "Compare Action Failed",
-        error.message || "An unexpected error occurred. Please try again."
-      );
-      setIsCompared(!newState); // Revert UI
+const toggleCompare = async () => {
+  const newState = !isCompared;
+
+  // 🔒 Check max 4 projects before adding
+  if (!isCompared && compareProjects.length >= 4) {
+    addToast(
+      "Compare Limit Reached",
+      "error",
+      "You can only compare 4 properties at a time.",
+      "Remove a property from compare before adding a new one."
+    );
+    return;
+  }
+
+  setIsCompared(newState); // Optimistic UI update
+
+  try {
+    logEvent(
+      analytics,
+      newState ? "added-to-compare" : "removed-from-compare",
+      { name: project.projectName }
+    );
+
+    if (newState) {
+      await dispatch(addProjectForComparison(project.projectId));
+    } else {
+      await dispatch(removeProjectFromComparison(project.projectId));
     }
-  };
+
+    // ✅ Success toast for add, negative/error toast for remove
+    addToast(
+      "Dummy",
+      newState ? "success" : "error",
+      newState
+        ? "Property Added to Compare"
+        : "Property Removed from Compare",
+      newState
+        ? "The property has been added to the compare list."
+        : "The property has been removed from the compare list."
+    );
+
+    // Refresh compare projects
+    dispatch(fetchCompareProjects());
+  } catch (error) {
+    console.error("Error in toggleCompare:", error);
+    addToast(
+      "Dummy",
+      "error",
+      "Compare Action Failed",
+      error.message || "An unexpected error occurred. Please try again."
+    );
+    setIsCompared(!newState); // Revert UI on failure
+  }
+};
+
 
 
   const imageUrl = project?.images?.length > 0 ? project?.images[0] : null;
@@ -501,8 +544,8 @@ const PropCard = ({ project }) => {
                 {project?.projectOverview?.pricePerSqft
                   ? formatCost(project.projectOverview.pricePerSqft)
                   : maxPricePerSqft
-                    ? formatCost(maxPricePerSqft)
-                    : "NA"}
+                  ? formatCost(maxPricePerSqft)
+                  : "NA"}
               </p>
             </div>
 
