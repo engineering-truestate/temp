@@ -5,7 +5,6 @@ import {
   query,
   where,
   getDocs,
-  getDoc,
   updateDoc,
   arrayRemove,
 } from "firebase/firestore";
@@ -13,15 +12,11 @@ import { db } from "../firebase";
 import { selectUserPhoneNumber } from "./userAuthSlice";
 import { APARTMENT_CONFIGURATION_KEYS } from "../constants/apartmentTypes";
 
-// Async thunk to fetch the compare projects
-// Helper function to create data array from configuration for price calculations
+// Helper: collect all unit prices for price calculations
 const createDataFromConfiguration = (configuration) => {
   if (!configuration) return [];
-
   const allPrices = [];
-  const configKeys = APARTMENT_CONFIGURATION_KEYS;
-
-  configKeys.forEach((key) => {
+  APARTMENT_CONFIGURATION_KEYS.forEach((key) => {
     if (configuration[key] && Array.isArray(configuration[key])) {
       configuration[key].forEach((unit) => {
         if (unit.currentPrice) {
@@ -30,14 +25,12 @@ const createDataFromConfiguration = (configuration) => {
       });
     }
   });
-
   return allPrices;
 };
 
-// Helper function to get configurations list
+// Helper: collect list of configurations (1 BHK, 2 BHK, etc.)
 const getConfigurationsList = (configuration) => {
   if (!configuration) return [];
-
   const configs = [];
   const configMap = {
     studio: "Studio",
@@ -67,6 +60,7 @@ const getConfigurationsList = (configuration) => {
   return configs;
 };
 
+// 🔹 Fetch projects for comparison
 export const fetchCompareProjects = createAsyncThunk(
   "compare/fetchCompareProjects",
   async (arg = null, { getState, rejectWithValue }) => {
@@ -80,43 +74,44 @@ export const fetchCompareProjects = createAsyncThunk(
         : value;
 
     try {
-      // 1️⃣ Fetch user document by phone number
+      // 1️⃣ Fetch user doc
       const q = query(
         collection(db, "truEstateUsers"),
         where("phoneNumber", "==", userPhoneNumber)
       );
       const querySnapshot = await getDocs(q);
-
       if (querySnapshot.empty) return compareProjects;
 
       let compareData = { prelaunch: [], auction: [] };
 
       querySnapshot.forEach((doc) => {
         const existingCompare = doc.data().compare;
-
-        if (existingCompare && typeof existingCompare === "object" && !Array.isArray(existingCompare)) {
+        if (
+          existingCompare &&
+          typeof existingCompare === "object" &&
+          !Array.isArray(existingCompare)
+        ) {
           compareData = {
             prelaunch: existingCompare.prelaunch || [],
             auction: existingCompare.auction || [],
           };
-        } else if (existingCompare && Array.isArray(existingCompare)) {
+        } else if (Array.isArray(existingCompare)) {
           compareData = { prelaunch: existingCompare, auction: [] };
         }
       });
 
-      // 2️⃣ Fetch project details from truEstatePreLaunch
+      // 2️⃣ Fetch only showOnTruEstate projects
       if (compareData.prelaunch.length > 0) {
         const projectQuery = query(
           collection(db, "truEstatePreLaunch"),
-          where("projectId", "in", compareData.prelaunch.slice(0, 4))
+          where("projectId", "in", compareData.prelaunch.slice(0, 4)),
+          where("showOnTruEstate", "==", true) // 🔒 enforce TruEstate-only
         );
         const projectSnapshot = await getDocs(projectQuery);
 
         projectSnapshot.forEach((doc) => {
           const projectData = doc.data();
-
-          // Only include projects with showOnTruEstate === true
-          if (!projectData.showOnTruEstate) return;
+          if (!projectData.showOnTruEstate) return; // safeguard
 
           const transformedProject = {
             id: doc.id,
@@ -126,16 +121,27 @@ export const fetchCompareProjects = createAsyncThunk(
             investmentOverview: projectData.investmentOverview || {},
             micromarket: handleUndefined(projectData.micromarket),
             cagr: handleUndefined(projectData.investmentOverview?.cagr),
-            commonPricePerSqft: handleUndefined(projectData.projectOverview?.pricePerSqft),
+            commonPricePerSqft: handleUndefined(
+              projectData.projectOverview?.pricePerSqft
+            ),
             data: createDataFromConfiguration(projectData.configuration) || [],
-            area: handleUndefined(projectData.locationAnalysis?.location || projectData.projectOverview?.zone),
+            area: handleUndefined(
+              projectData.locationAnalysis?.location ||
+                projectData.projectOverview?.zone
+            ),
             configurations: getConfigurationsList(projectData.configuration) || [],
             status: handleUndefined(projectData.projectOverview?.stage),
-            holdingPeriod: handleUndefined(projectData.investmentOverview?.holdingPeriod),
+            holdingPeriod: handleUndefined(
+              projectData.investmentOverview?.holdingPeriod
+            ),
             truEstimate: handleUndefined(projectData.truEstimate),
             assetType: handleUndefined(projectData.assetType),
             builder: handleUndefined(projectData.builder),
-            recommended: projectData.recommended !== undefined ? projectData.recommended : "Not Available",
+            recommended:
+              projectData.recommended !== undefined
+                ? projectData.recommended
+                : "Not Available",
+            showOnTruEstate: handleUndefined(projectData.showOnTruEstate),
           };
 
           compareProjects.push(transformedProject);
@@ -150,7 +156,7 @@ export const fetchCompareProjects = createAsyncThunk(
   }
 );
 
-// Async thunk to remove a project from comparison
+// 🔹 Remove project from comparison
 export const removeProjectFromComparison = createAsyncThunk(
   "compare/removeProjectFromComparison",
   async (id, { getState, dispatch }) => {
@@ -158,7 +164,6 @@ export const removeProjectFromComparison = createAsyncThunk(
     const userPhoneNumber = selectUserPhoneNumber(state);
 
     try {
-      // Step 1: Query the truEstateUsers collection to find the document for the current user
       const q = query(
         collection(db, "truEstateUsers"),
         where("phoneNumber", "==", userPhoneNumber)
@@ -167,29 +172,39 @@ export const removeProjectFromComparison = createAsyncThunk(
 
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
-        const compareArray = userDoc.data().compare || [];
-
-        // Step 2: Update the compare array in Firestore by removing the id
         await updateDoc(userDoc.ref, {
           compare: arrayRemove(id),
         });
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
 
-    // Re-fetch the compare projects to get the updated list
     const newCompareProjects = await dispatch(fetchCompareProjects()).unwrap();
     return newCompareProjects;
   }
 );
 
+// 🔹 Add project for comparison (only if showOnTruEstate = true)
 export const addProjectForComparison = createAsyncThunk(
   "compare/addProjectForComparison",
-  async (id, { getState }) => {
+  async (id, { getState, rejectWithValue, dispatch }) => {
     const state = getState();
     const userPhoneNumber = selectUserPhoneNumber(state);
 
     try {
-      // Step 1: Query the truEstateUsers collection to find the document for the current user
+      // 1️⃣ Validate project is TruEstate
+      const pq = query(
+        collection(db, "truEstatePreLaunch"),
+        where("projectId", "==", id),
+        where("showOnTruEstate", "==", true)
+      );
+      const ps = await getDocs(pq);
+      if (ps.empty) {
+        throw new Error("Project not available on TruEstate");
+      }
+
+      // 2️⃣ Add to user doc
       const q = query(
         collection(db, "truEstateUsers"),
         where("phoneNumber", "==", userPhoneNumber)
@@ -199,19 +214,20 @@ export const addProjectForComparison = createAsyncThunk(
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const compareArray = userDoc.data().compare || [];
-
-        // Step 2: Update the compare array in Firestore by adding the id
         if (compareArray.length < 4) {
-          // Ensure only 4 projects can be added for comparison
           await updateDoc(userDoc.ref, {
             compare: arrayUnion(id),
           });
         }
-        return userDoc.data();
       }
-    } catch (error) {}
 
-    // Re-fetch the compare projects to get the updated list
+      // 3️⃣ Re-fetch latest projects
+      const refreshed = await dispatch(fetchCompareProjects()).unwrap();
+      return refreshed;
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.message);
+    }
   }
 );
 
@@ -233,20 +249,20 @@ const compareSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchCompareProjects.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.error = action.payload;
         state.loading = false;
       })
       .addCase(removeProjectFromComparison.fulfilled, (state, action) => {
         state.projects = action.payload;
       })
       .addCase(removeProjectFromComparison.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(addProjectForComparison.fulfilled, (state, action) => {
-        state.projects.push(action.payload);
+        state.projects = action.payload;
       })
       .addCase(addProjectForComparison.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.error = action.payload;
       });
   },
 });

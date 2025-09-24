@@ -26,7 +26,8 @@ import { InstantSearch, Configure } from "react-instantsearch";
 import { algoliaService } from "../services/algoliaService";
 import AppHeader from "./Headers/AppHeader";
 
-function MainContentLayout({ children, pageTitle }) {
+function MainContentLayout({ children, pageTitle, showLoader = true }) {
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
@@ -257,7 +258,7 @@ function MainContentLayout({ children, pageTitle }) {
             {/* Content area (below header) */}
             <div className="relative">
               {/* Loader only overlays children */}
-              <Loader />
+              {showLoader && <Loader />}
 
               <div className="relative">{children}</div>
             </div>
