@@ -1,31 +1,51 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { db } from '../firebase';
-import { collection, query, limit, getDocs, startAfter, getDoc, doc, where, or, and, orderBy, getCountFromServer, startAt } from 'firebase/firestore';
-import { useSearchParams } from 'react-router-dom';
-
-
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 const initialState = {
   currentProject: null,
+  allProjects: [], // Store all projects
   loading: false,
   error: null,
-  // Legacy state for compatibility
   searchTerm: '',
   sortOrder: '',
 };
 
+// Fetch all projects at once
+export const fetchAllProjects = createAsyncThunk(
+  'projects/fetchAllProjects',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Add a filter for assetType = 'truEstate'
+      const q = query(
+        collection(db, 'truEstatePreLaunch'),
+        where('showOnTruEstate', '==', true)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const projects = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log(projects);
+      return projects;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+// Fetch a project by name
 export const fetchProjectByName = createAsyncThunk(
   'projects/fetchProjectByName',
   async (projectName, { rejectWithValue }) => {
     try {
       const q = query(
-        collection(db, "truEstatePreLaunch"),
-        where("projectName", "==", projectName)
+        collection(db, 'truEstatePreLaunch'),
+        where('projectName', '==', projectName)
       );
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        throw new Error("Project not found");
+        throw new Error('Project not found');
       }
 
       const projectDoc = querySnapshot.docs[0];
@@ -72,14 +92,6 @@ export const fetchProjectById = createAsyncThunk(
   }
 );
 
-
-
-
-
-
-
-
-
 const projectsSlice = createSlice({
   name: 'projects',
   initialState,
@@ -91,7 +103,6 @@ const projectsSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    // Legacy reducers for compatibility
     setSearchTerm: (state, action) => {
       state.searchTerm = action.payload;
     },
@@ -101,6 +112,21 @@ const projectsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // fetchAllProjects
+      .addCase(fetchAllProjects.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllProjects.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allProjects = action.payload;
+      })
+      .addCase(fetchAllProjects.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.allProjects = [];
+      })
+      // fetchProjectByName
       .addCase(fetchProjectByName.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -108,7 +134,6 @@ const projectsSlice = createSlice({
       .addCase(fetchProjectByName.fulfilled, (state, action) => {
         state.loading = false;
         state.currentProject = action.payload;
-        state.error = null;
       })
       .addCase(fetchProjectByName.rejected, (state, action) => {
         state.loading = false;
@@ -122,6 +147,7 @@ export const { clearProject, clearError, setSearchTerm, setSortOrder } = project
 
 // Selectors
 export const selectCurrentProject = (state) => state.projectsState.currentProject;
+export const selectAllProjects = (state) => state.projectsState.allProjects;
 export const selectProjectLoading = (state) => state.projectsState.loading;
 export const selectProjectError = (state) => state.projectsState.error;
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { useSelector } from "react-redux";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
@@ -16,7 +15,7 @@ const AuctionPageHeader = ({
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   return (
-    <>i
+    <>
       {/* Auction Guide Banner */}
       <div
         className="pt-8 md:py-8 md:px-4 bg-[linear-gradient(to_left,#FAF1CE,#F5E39D)] font-montserrat cursor-pointer"

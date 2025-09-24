@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { Card, List } from "@material-tailwind/react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -105,6 +105,7 @@ const HelpSidebarItem = forwardRef(({ onClick, isSelected }, ref) => (
     ref={ref}
   />
 ));
+HelpSidebarItem.displayName = "HelpSidebarItem";
 
 // Main Component
 export default function Sidebar({
