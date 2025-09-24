@@ -87,6 +87,8 @@ class AlgoliaService {
     return INDEX_CONFIGS.truEstateAuctions;
   }
 
+
+
   /**
    * Search properties with given parameters
    */
