@@ -66,7 +66,7 @@ const SidebarItem = forwardRef(({ onClick, icon, label, isSelected }, ref) => (
       className="md:mb-[0.25rem] lg:mb-0 h-5 w-5 mr-3 md:mr-0 lg:mr-3 lg:h-5 flex-shrink-0"
     />
     <div
-      className={`font-lato text-wrap text-left md:text-center text-[0.8125rem] md:text-[0.75rem] lg:text-[0.8125rem] leading-[150%] flex-grow min-w-0 ${
+      className={`font-lato text-left md:text-center text-[0.8125rem] md:text-[0.75rem] lg:text-[0.8125rem] leading-[150%] flex-grow min-w-0 ${
         styles.field
       } ${isSelected ? styles.seltext : ""}`}
     >

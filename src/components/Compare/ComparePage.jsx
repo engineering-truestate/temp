@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchCompareProjects, selectCompareProjects, removeProjectFromComparison } from '../../slices/compareSlice';
 import styles from './Compare.module.css';
-import emptyImage from '../Compare/Compare.png';
+import emptyImage from '../../../src/components/Compare/Compare.png';
 import crossCompare from '/assets/icons/features/compare-remove.svg'; // Import your SVG icon
 const cardpic = '/assets/properties/images/placeholder.webp';
 import searchimage from '../Compare/searchimage.png';
@@ -344,9 +344,8 @@ const ComparePage = () => {
             <div className={`sticky bottom-0  bg-white w-full ${styles.targetedrow}`}   >
               <div className="flex justify-between bg-[#FAFAFA] w-fit  py-2">
                 {projectsToShow.map((project, index) => (
-                  <div className='  min-w-[180px] flex justify-center items-center'>
+                  <div key={index} className='  min-w-[180px] flex justify-center items-center'>
                     <button
-                      key={index}
                       className={`rounded-[4px] py-2 px-4 ${styles.btn} min-w-[144px] `}
                       onClick={() => handleViewMore(project)}
                     >

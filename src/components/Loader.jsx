@@ -1,4 +1,3 @@
-import React from "react";
 import { useSelector } from "react-redux";
 import { selectLoader } from "../slices/loaderSlice";
 import trueStateIcon from "../../public/assets/icons/ui/truestateIcon.svg";

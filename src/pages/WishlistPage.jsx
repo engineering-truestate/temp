@@ -17,7 +17,7 @@ const WishlistPage = () => {
   }, []);
 
   return (
-    <MainContentLayout pageTitle="Wish List">
+    <MainContentLayout pageTitle="Wish List" showLoader={false}>
       <WishlistPageHeader
         selectedSortOption={selectedSortOption}
         setSelectedSortOption={setSelectedSortOption}
