@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import WhatIcon2 from "/assets/icons/social/whatsapp.svg";
-import InvManagerIcon from "/assets/icons/features/home.svg";
+import WhatIcon2 from "/assets/icons/social/whatsapp-alt.svg";
+import InvManagerIcon from "../../../public/assets/icons/features/InvManagerIcon-black.svg";
 import styles from "./ProjectDetails.module.css";
 import InvManager from "../../utils/InvManager";
 import { useDispatch, useSelector } from "react-redux";

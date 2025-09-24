@@ -4,10 +4,10 @@ import JoinUsButton from "./JoinUsButton";
 import PhoneIcon from "../../assets/home/phoneIcon.png";
 import whatsappIcon from "../../assets/home/whatsappIcon.svg";
 // User icons now loaded from public assets
-const user1 = '/assets/ui/icons/user1.svg';
-const user2 = '/assets/ui/icons/user2.svg';
-const user3 = '/assets/ui/icons/user3.svg';
-const user4 = '/assets/ui/icons/user4.svg';
+import user1 from '../../../../public/assets/images/illustrations/user1.svg';
+import user2 from '../../../../public/assets/images/illustrations/user2.svg';
+import user3 from '../../../../public/assets/images/illustrations/user3.svg';
+import user4 from '../../../../public/assets/images/illustrations/user4.svg';
 
 const JoinOurWhatsappCommunity = () => {
   return (

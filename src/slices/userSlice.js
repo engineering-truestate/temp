@@ -9,10 +9,9 @@ import {
   updateDoc,
   setDoc,
 } from "firebase/firestore";
-import { db } from "../firebase"; // Make sure db is initialized Firestore instance
+import { db } from "../firebase"; 
 import { getUnixDateTime } from "../components/helper/dateTimeHelpers";
 import { COLLECTIONS } from "../constants/collections";
-
 
 export const fetchUserProfile = createAsyncThunk(
   "user/fetchUserProfile",
@@ -36,12 +35,88 @@ export const fetchUserProfile = createAsyncThunk(
   }
 );
 
+export const updateUserProfile = createAsyncThunk(
+  "user/updateUserProfile",
+  async ({ userData, currentPhoneNumber }, { rejectWithValue }) => {
+    try {
+      
+      const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      };
+
+      const validateLinkedInURL = (url) => {
+        const linkedInRegex = /^https:\/\/(www\.)?linkedin\.com\/.*$/i;
+        return linkedInRegex.test(url);
+      };
+      const validationErrors = [];
+      if (!userData.name || userData.name.trim().length === 0) {
+        validationErrors.push("Name is required");
+      }
+      
+      if (!userData.phoneNumber) {
+        validationErrors.push("Phone number is required");
+      }
+      if (userData.mail && !validateEmail(userData.mail)) {
+        validationErrors.push("Invalid email format");
+      }
+      
+      if (userData.linkedinProfile && !validateLinkedInURL(userData.linkedinProfile)) {
+        validationErrors.push("Invalid LinkedIn URL format");
+      }
+      if (userData.name && userData.name.length > 50) {
+        validationErrors.push("Name cannot exceed 50 characters");
+      }
+      
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join(", "));
+      }
+
+      const sanitizedData = Object.fromEntries(
+        Object.entries(userData).filter(([_, v]) => v !== undefined && v != null)
+      );
+
+      if (userData.phoneNumber !== currentPhoneNumber) {
+        // Check for duplicate phone number
+        const phoneQuery = query(
+          collection(db, COLLECTIONS.USERS),
+          where("phoneNumber", "==", userData.phoneNumber)
+        );
+        const phoneSnapshot = await getDocs(phoneQuery);
+        
+        if (!phoneSnapshot.empty) {
+          throw new Error("A user with this phone number already exists.");
+        }
+      }
+      
+      // Find and update user document
+      const q = query(
+        collection(db, COLLECTIONS.USERS),
+        where("phoneNumber", "==", currentPhoneNumber)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error("User not found");
+      }
+
+      const docRef = querySnapshot.docs[0].ref;
+      await updateDoc(docRef, {
+        ...sanitizedData,
+        lastModified: getUnixDateTime()
+      });
+
+      return { success: true, updatedData: sanitizedData };
+    } catch (error) {
+      return rejectWithValue(error?.message || "Something went wrong");
+    }
+  }
+);
+
 export const addTask = createAsyncThunk(
   "user/addTask",
   async ({ userId, taskDetails }, { rejectWithValue }) => {
     try {
-
-
       // Find user by userId (document ID)
       const userDocRef = doc(db, COLLECTIONS.USERS, userId);
       const userDocSnap = await getDoc(userDocRef);
@@ -164,6 +239,7 @@ const userSlice = createSlice({
     status: "idle",
     error: null,
     isEditing: false,
+    updateStatus: "idle", // Separate status for update operations
   },
   reducers: {
     setEditing(state, action) {
@@ -171,6 +247,9 @@ const userSlice = createSlice({
     },
     toggleEditing(state) {
       state.isEditing = !state.isEditing;
+    },
+    clearUpdateStatus(state) {
+      state.updateStatus = "idle";
     },
   },
   extraReducers: (builder) => {
@@ -190,6 +269,23 @@ const userSlice = createSlice({
         state.error = action.payload;
       })
 
+      // ✅ Update User Profile
+      .addCase(updateUserProfile.pending, (state) => {
+        state.updateStatus = "loading";
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.updateStatus = "succeeded";
+        // Update the profile with the new data
+        state.profile = { ...state.profile, ...action.payload.updatedData };
+        state.error = null;
+        state.isEditing = false;
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.updateStatus = "failed";
+        state.error = action.payload;
+      })
+
       // ✅ Add Task
       .addCase(addTask.pending, (state) => {
         state.status = "loading";
@@ -205,5 +301,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setEditing, toggleEditing } = userSlice.actions;
+export const { setEditing, toggleEditing, clearUpdateStatus } = userSlice.actions;
 export default userSlice.reducer;

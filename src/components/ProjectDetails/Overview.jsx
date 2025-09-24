@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./ProjectDetails.module.css";
 import projectPopupStyles from "../Project_popup/ProjectPopup.module.css";
-import truEstimateSymbol from "/assets/icons/features/valuation-report.svg";
+import truEstimateSymbol from "../../../public/assets/icons/brands/truestate-logo-alt.svg";
 import infoIcon from "/assets/icons/ui/info.svg";
 import lockIcon from "/assets/icons/features/vault.svg";
 import { toCapitalizedWords } from "../../utils/common";

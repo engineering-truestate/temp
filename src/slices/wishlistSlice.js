@@ -10,7 +10,11 @@ import {
   doc as fsDoc,
 } from "firebase/firestore";
 import { getUnixDateTime } from "../components/helper/dateTimeHelpers";
-import { PROPERTY_TYPES, COLLECTION_BY_TYPE, COLLECTIONS } from "../constants/collections";
+import {
+  PROPERTY_TYPES,
+  COLLECTION_BY_TYPE,
+  COLLECTIONS,
+} from "../constants/collections";
 
 function ensurePropertiesShape(userDocData) {
   const props = userDocData.properties || {};
@@ -24,14 +28,9 @@ function findIndexByProjectId(arr, projectId) {
   return arr.findIndex((p) => p?.projectId === projectId);
 }
 
-
 export const updateWishlist = createAsyncThunk(
   "wishlist/updateWishlist",
-  async (
-    { userId, propertyType, projectId, defaults = {} },
-    { rejectWithValue }
-  ) => {
-
+  async ({ userId, propertyType, projectId, defaults = {} }, { rejectWithValue }) => {
     try {
       if (!PROPERTY_TYPES[propertyType]) {
         throw new Error("Invalid propertyType");
@@ -43,16 +42,28 @@ export const updateWishlist = createAsyncThunk(
         throw new Error("userId is required");
       }
 
-      // 1) Locate user doc
+      // 1) Check if project exists AND showOnTruEstate = true
+      const collectionName = COLLECTION_BY_TYPE[propertyType];
+      const pq = query(
+        collection(db, collectionName),
+        where("projectId", "==", projectId),
+        where("showOnTruEstate", "==", true)
+      );
+      const ps = await getDocs(pq);
+      if (ps.empty) {
+        throw new Error("Project not available on TruEstate");
+      }
+
+      // 2) Locate user doc
       const userDocRef = fsDoc(db, COLLECTIONS.USERS, userId);
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) throw new Error("User not found");
 
-      // 2) Normalize properties shape
+      // 3) Normalize properties shape
       const properties = ensurePropertiesShape(userDoc.data());
 
-      // 3) Locate array and update/create entry
+      // 4) Locate array and update/create entry
       const list = properties[propertyType];
       const idx = findIndexByProjectId(list, projectId);
 
@@ -84,7 +95,7 @@ export const updateWishlist = createAsyncThunk(
 
       const nextProperties = { ...properties, [propertyType]: nextList };
 
-      // 4) Persist
+      // 5) Persist
       await updateDoc(userDocRef, { properties: nextProperties });
 
       return { userId, propertyType, projectId };
@@ -108,6 +119,19 @@ export const removeWishlist = createAsyncThunk(
         throw new Error("userId is required");
       }
 
+      // ✅ Only operate if project is showOnTruEstate = true
+      const collectionName = COLLECTION_BY_TYPE[propertyType];
+      const pq = query(
+        collection(db, collectionName),
+        where("projectId", "==", projectId),
+        where("showOnTruEstate", "==", true)
+      );
+      const ps = await getDocs(pq);
+      if (ps.empty) {
+        // Silently ignore — not part of wishlist
+        return { userId, propertyType, projectId };
+      }
+
       const userDocRef = fsDoc(db, COLLECTIONS.USERS, userId);
       const userDoc = await getDoc(userDocRef);
       if (!userDoc.exists()) throw new Error("User not found");
@@ -121,7 +145,11 @@ export const removeWishlist = createAsyncThunk(
         return { userId, propertyType, projectId };
       }
 
-      const updated = { ...list[idx], wishlisted: false, added: getUnixDateTime() };
+      const updated = {
+        ...list[idx],
+        wishlisted: false,
+        added: getUnixDateTime(),
+      };
       const nextList = [...list];
       nextList[idx] = updated;
 
@@ -135,7 +163,6 @@ export const removeWishlist = createAsyncThunk(
     }
   }
 );
-
 
 export const fetchWishlistedProjects = createAsyncThunk(
   "wishlist/fetchWishlistedProjects",
@@ -153,18 +180,18 @@ export const fetchWishlistedProjects = createAsyncThunk(
       for (const propertyType of Object.keys(PROPERTY_TYPES)) {
         const arr = properties[propertyType] || [];
         const picks = arr.filter((p) => p?.wishlisted === true);
-        // stash type for enrichment
         picks.forEach((p) => wishlisted.push({ ...p, propertyType }));
       }
 
-      // 3) Enrich each pick from its collection by projectId
+      // 3) Enrich only if showOnTruEstate = true
       const enriched = await Promise.all(
         wishlisted.map(async (item) => {
           try {
             const collectionName = COLLECTION_BY_TYPE[item.propertyType];
             const pq = query(
               collection(db, collectionName),
-              where("projectId", "==", item.projectId)
+              where("projectId", "==", item.projectId),
+              where("showOnTruEstate", "==", true)
             );
             const ps = await getDocs(pq);
 
@@ -178,26 +205,15 @@ export const fetchWishlistedProjects = createAsyncThunk(
               };
             }
 
-            // Fallback to user entry if no project doc found
-            return {
-              userStatus: item.stage ?? null,
-              propertyType: item.propertyType,
-              ...item,
-            };
+            return null;
           } catch (e) {
             console.error(`Enrich failed for ${item.projectId}:`, e);
-            return {
-              userStatus: item.stage ?? null,
-              propertyType: item.propertyType,
-              ...item,
-            };
+            return null;
           }
         })
       );
 
-      // For wishlisted items, we should show them regardless of showOnTruEstate
-      // since the user explicitly added them to their wishlist
-      return enriched;
+      return enriched.filter(Boolean);
     } catch (err) {
       return rejectWithValue(err.message);
     }

@@ -1,4 +1,3 @@
-import React, { useRef, useCallback, useEffect } from 'react';
 import PropCard from './Project_popup/ProjectPopup';
 import AuctionCard from './Project_popup/AuctionPopup'
 import styles from './Project_popup/ProjectPopup.module.css';
@@ -18,7 +17,7 @@ const WishlistProjectGrid = ({ projects, trueS }) => {
           />
           <p className={`${styles.emptyh}`}>No property available</p>
           <p className={`${styles.emptyp}`}>
-          {trueS == "true" ? <span className="w-[50px]">Due to some technical issue we're unable to show the recommended properties. <br /> Please try again later!</span> : <span>Please edit your preferences and try again.</span>}
+          {trueS == "true" ? <span className="w-[50px]">Due to some technical issue we&apos;re unable to show the recommended properties. <br /> Please try again later!</span> : <span>Please edit your preferences and try again.</span>}
           </p>
         </div>
       ) : (

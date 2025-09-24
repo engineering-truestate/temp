@@ -1,4 +1,3 @@
-import React from "react";
 import { useSelector } from "react-redux";
 import PageSortBy from "../InstantSearch/PageSortBy";
 import styles from "../MainContent.module.css";
@@ -25,11 +24,6 @@ const WishlistPageHeader = ({
             isAuthenticated ? "px-4 md:px-8" : ""
           } gap-2`}
         >
-          <div className="flex gap-4 sm:gap-2 flex-row w-fit">
-            <div className="text-lg font-semibold text-gray-700">
-              Your Wishlist
-            </div>
-          </div>
 
           {/* Sort By Component for Wishlist */}
           {isVisible && (
