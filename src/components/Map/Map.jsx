@@ -40,6 +40,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
 import Footer from "../../landing/pages/home/Footer";
 import NoPropertiesFound from "../NoPropertiesFound/NoPropertiesFound.jsx";
+import algoliaService from "../../services/algoliaService.js";
 
 const defaultCenter = [12.9021306, 77.5976507];
 
@@ -723,13 +724,13 @@ const MapComponent = ({
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
 
-            {mapType === "all" && micromarketsData && (
+            {/* {mapType === "all" && micromarketsData && (
               <GeoJSON
                 data={micromarketsData}
                 style={micromarketsStyle}
                 onEachFeature={onEachFeature}
               />
-            )}
+            )} */}
 
             <ClusteredMarkers markers={updatedProjects} />
             <Markers markers={metroData} />

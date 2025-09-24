@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Card, CardHeader, CardBody } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -43,6 +43,7 @@ import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { Loader } from "lucide-react";
 import { updateWishlist, removeWishlist } from "../../slices/wishlistSlice";
 import { addProjectForComparison } from "../../slices/compareSlice";
+import { handleStatus, handleStatusColour, handleTruGrowthStatus, handleTruValueStatus, handleGrowthAndValueStatusColour, handleGrowthStatusColour, handleGrowthStatusTextColour } from "../../utils/propertyHelpers.js";
 
 const PropCard = ({ project }) => {
   const navigate = useNavigate();
@@ -59,62 +60,51 @@ const PropCard = ({ project }) => {
   const { addToast } = useToast(); // Access the toast function
 
   // console.log(isAuthenticated);
-  let maxPricePerSqft;
+  const maxPricePerSqft = useMemo(() => {
+    if (project?.assetType === "plot") {
+      if (project?.configuration && Array.isArray(project.configuration)) {
+        return project.configuration.reduce((max, item) => {
+          const pricePerSqft = item.pricePerSqft || 0;
+          return pricePerSqft > max ? pricePerSqft : max;
+        }, 0);
+      }
+      return 0;
+    } 
+    
+    if (project?.assetType === "apartment") {
+      const configKeys = APARTMENT_CONFIGURATION_KEYS;
+      let maxPrice = 0;
 
-  if (project?.assetType === "plot") {
-    // For plots, use ConfigurationPlot array
-    if (project?.configuration && Array.isArray(project.configuration)) {
-      maxPricePerSqft = project.configuration.reduce((max, item) => {
-        const pricePerSqft = item.pricePerSqft || 0;
-        return pricePerSqft > max ? pricePerSqft : max;
-      }, 0);
-    } else {
-      maxPricePerSqft = 0;
+      if (project?.configuration) {
+        configKeys.forEach((configKey) => {
+          const configData = project.configuration[configKey];
+          if (configData && Array.isArray(configData)) {
+            configData.forEach((item) => {
+              if (item.available && item.sbua > 0) {
+                const pricePerSqft = parseInt(item.currentPrice / item.sbua);
+                maxPrice = pricePerSqft > maxPrice ? pricePerSqft : maxPrice;
+              }
+            });
+          }
+        });
+      }
+      return maxPrice;
+    } 
+    
+    if (project?.assetType === "villa") {
+      if (project?.configuration && Array.isArray(project.configuration)) {
+        return project.configuration.reduce((max, item) => {
+          const pricePerSqft = item.pricePerSqft || 0;
+          return pricePerSqft > max ? pricePerSqft : max;
+        }, 0);
+      }
+      return 0;
     }
-  } else if (project?.assetType === "apartment") {
-    // For apartments, iterate through all BHK configurations
-    const configKeys = APARTMENT_CONFIGURATION_KEYS;
-
-    maxPricePerSqft = 0;
-
-    if (project?.configuration) {
-      configKeys.forEach((configKey) => {
-        const configData = project.configuration[configKey];
-        if (configData && Array.isArray(configData)) {
-          configData.forEach((item) => {
-            if (item.available && item.sbua > 0) {
-              const pricePerSqft = parseInt(item.currentPrice / item.sbua);
-              maxPricePerSqft =
-                pricePerSqft > maxPricePerSqft ? pricePerSqft : maxPricePerSqft;
-            }
-          });
-        }
-      });
-    }
-  } else if (project?.assetType === "villa") {
-    // For villas, use ConfigurationVilla array
-    if (project?.configuration && Array.isArray(project.configuration)) {
-      maxPricePerSqft = project.configuration.reduce((max, item) => {
-        const pricePerSqft = item.pricePerSqft || 0;
-        return pricePerSqft > max ? pricePerSqft : max;
-      }, 0);
-    } else {
-      maxPricePerSqft = 0;
-    }
-  } else {
-    maxPricePerSqft = 0;
-  }
+    
+    return 0;
+  }, [project?.assetType, project?.configuration]);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(fetchCompareProjects());
-  }, [dispatch]);
-
-  // const maxCompareItems = 4; // Maximum number of properties to compare
-  // const projectsToShow = compareProjects.slice(0, maxCompareItems);
-  // const remainingSlots = maxCompareItems - projectsToShow.length;
-
-  // Fetch user's wishlist and compare data on mount
   useEffect(() => {
     if (userId) {
       dispatch(fetchWishlistedProjects(userId));
@@ -125,13 +115,6 @@ const PropCard = ({ project }) => {
   // Update local state based on Redux store
   useEffect(() => {
     const isProjectWishlisted = wishlistItems.some(item => item.projectId === project.projectId);
-    console.log("PropCard wishlist state update:", {
-      projectId: project.projectId,
-      wishlistItemsCount: wishlistItems.length,
-      wishlistItems: wishlistItems.map(item => item.projectId),
-      isProjectWishlisted,
-      previousState: isWishlisted
-    });
     setIsWishlisted(isProjectWishlisted);
   }, [wishlistItems, project.projectId]);
 
@@ -155,18 +138,7 @@ const PropCard = ({ project }) => {
     });
   };
 
-  const toggleWishlist = async () => {
-    console.log("PropCard toggleWishlist called:", {
-      projectId: project.projectId,
-      projectName: project.projectName,
-      propertyType: project.propertyType,
-      defaultPropertyType: project.propertyType || "preLaunch",
-      showOnTruEstate: project.showOnTruEstate,
-      isAuthenticated,
-      userId,
-      currentWishlistState: isWishlisted,
-      wishlistItems: wishlistItems.length
-    });
+  const toggleWishlist = useCallback(async () => {
 
     const newState = !isWishlisted;
     setIsWishlisted(newState); // Optimistic update
@@ -182,18 +154,14 @@ const PropCard = ({ project }) => {
           propertyType: project.propertyType || "preLaunch",
           projectId: project.projectId
         }));
-        console.log("updateWishlist result:", result);
         const fetchResult = await dispatch(fetchWishlistedProjects(userId));
-        console.log("fetchWishlistedProjects result after update:", fetchResult);
       } else {
         const result = await dispatch(removeWishlist({
           userId,
           propertyType: project.propertyType || "preLaunch",
           projectId: project.projectId
         }));
-        console.log("removeWishlist result:", result);
         const fetchResult = await dispatch(fetchWishlistedProjects(userId));
-        console.log("fetchWishlistedProjects result after remove:", fetchResult);
       }
 
       addToast(
@@ -214,8 +182,20 @@ const PropCard = ({ project }) => {
       );
       setIsWishlisted(!newState); // Revert UI on error
     }
-  };
-  const toggleCompare = async () => {
+  }, [
+    isWishlisted,
+    project.projectId,
+    project.projectName,
+    project.propertyType,
+    isAuthenticated,
+    userId,
+    wishlistItems.length,
+    dispatch,
+    addToast
+  ]);
+
+
+  const toggleCompare = useCallback(async () => {
     const newState = !isCompared;
     setIsCompared(newState); // Optimistic UI update
 
@@ -247,85 +227,13 @@ const PropCard = ({ project }) => {
       );
       setIsCompared(!newState); // Revert UI
     }
-  };
+  }, [isCompared, project.projectName, project.projectId, dispatch, addToast]);
 
 
-  const imageUrl = project?.images?.length > 0 ? project?.images[0] : null;
-
-  const handleStatus = (status) => {
-    if (status === "Shared") {
-      return "Being Discussed";
-    }
-    if (status.includes("Back")) {
-      return "Not Interested";
-    }
-    return toCapitalizedWords(status);
-  };
-
-  const handleStatusColour = (status) => {
-    if (status === "Not Discussed") {
-      return "#FBDD97";
-    } else if (status === "Being Discussed") {
-      return "#FCE9BA";
-    } else if (status === "Booking Amount") {
-      return "#91F3BF";
-    } else if (status === "Not Interested") {
-      return "#F9ABB9";
-    } else if (status === "Short Listed") {
-      return "#F6BC2F";
-    } else {
-      return "#C2EFE9";
-    }
-  };
-
-  // const handleTruGrowthStatus = (status) => {
-  //   return toCapitalizedWords(status) + " growth";
-  // };
-
-  const handleTruGrowthStatus = (cagr) => {
-    if (cagr <= 4) {
-      return "Low CAGR";
-    } else if (cagr <= 8) {
-      return "Medium CAGR";
-    } else if (cagr > 8) {
-      return "High CAGR";
-    }
-  };
-
-  const handleTruValueStatus = (status) => {
-    return toCapitalizedWords(status);
-  };
-
-  const handleGrowthAndValueStatusColour = (status) => {
-    if (status === "Undervalued") {
-      return "#DAFBEA";
-    } else if (status === "Overvalued") {
-      return "#F9ABB9";
-    } else if (status === "Fairly Valued") {
-      return "#FBDD97";
-    }
-  };
-
-  const handleGrowthStatusColour = (status) => {
-    if (status === "High CAGR") {
-      return "#DAFBEA";
-    } else if (status === "Low CAGR") {
-      return "#FCD5DC";
-    } else if (status === "Medium CAGR") {
-      return "#FBDD97";
-    }
-  };
-
-  const handleGrowthStatusTextColour = (status) => {
-    if (status === "High CAGR") {
-      // return "#0E8345";
-      return "#151413";
-    } else if (status === "Low CAGR") {
-      return "#BD0E2D";
-    } else if (status === "Medium CAGR") {
-      return "#866106";
-    }
-  };
+  const imageUrl = useMemo(() => 
+    project?.images?.length > 0 ? project.images[0] : cardpic, 
+    [project?.images]
+  );
 
   const handleClickLock = (e) => {
     e.stopPropagation();
