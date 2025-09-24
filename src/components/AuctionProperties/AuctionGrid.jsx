@@ -35,6 +35,7 @@ const AuctionGrid = ({ trueS, mainContentRef }) => {
     refresh();
   }, [refresh]);
 
+
   // Hide Recaptcha iframe and badge
   const observer = new MutationObserver(() => {
     const iframe = document.querySelector('iframe[title="reCAPTCHA"]');
