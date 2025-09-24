@@ -15,11 +15,12 @@ import verified from "/assets/icons/status/verified.svg";
 import seloff from "/assets/icons/features/wishlist-inactive.svg";
 import selon from "/assets/icons/features/wishlist-active.svg";
 import styles from "./ProjectPopup.module.css";
-import locicon from "/assets/icons/navigation/arrow-down.svg";
+import locicon from "../../../public/assets/icons/navigation/location.svg";
 const cardpic = '/assets/properties/images/placeholder.webp';
 import growth from "/assets/icons/features/home.svg";
-import value from "/assets/icons/features/valuation-report.svg";
+import value from "../../../public/assets/icons/features/Value.svg";
 import asset from "/assets/icons/features/properties.svg";
+import target from "../../../public/assets/icons/features/targetst.svg";
 import infoIcon from "/assets/icons/ui/info.svg";
 
 import {
@@ -417,7 +418,7 @@ const AuctionCard = ({ project }) => {
                       backgroundColor: "#DAFBEA",
                     }}
                   >
-                    {/* <img src={target} alt="value" /> */}
+                    <img src={target} alt="value" />
                     <span className="font-lato text-[12px] leading-[18px] text-center text-[#151413] font-bold">
                       {handleTruValueStatus(strat)}
                     </span>

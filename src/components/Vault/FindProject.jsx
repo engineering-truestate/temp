@@ -9,8 +9,8 @@ import {
   fetchInitialProjects,
   fetchMoreProjects,
   setSearchTerm,
-} from "../../slices/projectSlice"; // Correct import for fetching projects
-import { setVaultFormActive } from "../../slices/vaultConfirmationSlice"; // Import the action
+} from "../../slices/projectSlice"; 
+import { setVaultFormActive } from "../../slices/vaultConfirmationSlice"; 
 import { useToast } from "../../hooks/useToast.jsx";
 import whatsapp from "/assets/icons/social/whatsapp-3.svg";
 import Investment from "./Investment.jsx";
@@ -34,26 +34,22 @@ const FindProjectPage = () => {
   const { userDocId, userPhoneNumber } = useSelector((state) => state.userAuth);
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { addToast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0); // Manage current step
+  const [currentStep, setCurrentStep] = useState(0); 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false); // Control dropdown visibility
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal control
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(true); // Track unsaved changes
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(true);
   const [pendingRoute, setPendingRoute] = useState(null);
-  const [pendingFormSubmit, setPendingFormSubmit] = useState(false); // Track if we're waiting for auth to submit
+  const [pendingFormSubmit, setPendingFormSubmit] = useState(false);
   const isVaultFormActive = useSelector(
     (state) => state.vaultConfirmation.isVaultFormActive
   );
 
-  // const { projects, loading, searchTerm } = useSelector(
-  //   (state) => state.projectsState
-  // ); // Get projects from the state
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSelected, setisSelected] = useState(false);
   const [iserror, setiserror] = useState(false);
-  const [filteredProjects, setFilteredProjects] = useState([]); // Filtered projects
-  // let selectedproperty = null;const currentStep = 0
+  const [filteredProjects, setFilteredProjects] = useState([]); 
   const [projects, setProjects] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState(null);
 
@@ -65,60 +61,21 @@ const FindProjectPage = () => {
   const [searchLoading, setSearchLoading] = useState(false);
 
 
-  // useEffect(() => {
-  //   dispatch(fetchInitialProjects()); // Only fetch once on mount
-  // }, [dispatch, searchTerm]);
-
-  // Filter the projects based on the search term
-
-  // useEffect(()=>{
-  //     const uploadData = ()=>{
-  //       const transformedData = [];
-  //       projects.forEach((project) => {
-  //         // Normalize the 'type' field by splitting on commas and trimming whitespace
-  //         const types = project["type"]
-  //           .replace("villa or rowhouse", "villa") // Replace "villa or rowhouse" with "villa"
-  //           .split(",")
-  //           .map((type) => type.trim()); // Split by commas and trim spaces
-
-  //         // For each type, create a new project entry
-  //         types.forEach((type) => {
-  //           const newProject = {
-  //             projectName:project["project name"],
-  //             promoterBrandName: project["developer"],
-  //             assetType: type, // Assign the single type to the new project
-  //           };
-  //           transformedData.push(newProject); // Add the new project to the transformed data array
-  //         });
-  //       });
-  //       // bulkUploadLarge(transformedData);
-  //     }
-
-  //     uploadData();
-  // },[]);
-
   useEffect(() => {
     if (currentStep === 1) {
-      // Prevent the default back navigation action by pushing the current state
       history.pushState(null, null, window.location.href);
 
       const handlePopState = (event) => {
-        // const userConfirmed = window.confirm("Are you sure you want to go back?");
         setShowExitFormModal(true);
 
         if (showExitFormModal) {
-          // Allow back navigation
           window.history.back();
         } else {
-          // Block back navigation by pushing the state again
           history.pushState(null, null, window.location.href);
         }
       };
 
-      // Add event listener for popstate
       window.addEventListener("popstate", handlePopState);
-
-      // Cleanup the event listener on component unmount
       return () => {
         window.removeEventListener("popstate", handlePopState);
       };
@@ -126,7 +83,6 @@ const FindProjectPage = () => {
   }, []);
 
   useEffect(() => {
-    // If user is now authenticated and we have a pending form submission
     if (isAuthenticated && pendingFormSubmit && formData) {
       submitFormData();
       setPendingFormSubmit(false);
@@ -136,14 +92,11 @@ const FindProjectPage = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       const fetchedData = await getAllProjects();
-      console.log(fetchedData, "fetched projects *****************");
       setProjects(fetchedData);
     };
     fetchProjects();
   }, []);
 
-  console.log(projects, formData, "looking for projects");
-  
   useEffect(() => {
     if (searchTerm?.trim().length > 0) {
       setSearchLoading(true);
@@ -164,7 +117,6 @@ const FindProjectPage = () => {
   const handleProjectSelect = async (project, event) => {
     try {
       const searchValue2 = toCapitalizedWords(project.projectName);
-      // dispatch(setSearchTerm(searchValue2)) ;
       setSearchTerm(searchValue2);
       setIsDropdownVisible(false);
       setisSelected(true);
@@ -172,22 +124,20 @@ const FindProjectPage = () => {
       // selectedproperty = project;
       const assetType = project.assetType; // Default to "apartment" if assetType is not defined
       project.assetType = assetType; // Ensure assetType is set on the project object
-      console.log(project);
       setSelectedProperty(project);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const submitFormData = async () => {
     try {
       dispatch(showLoader());
-      console.log(userDocId, "forn ");
 
       if (!selectedProperty) {
         addToast("Error", "error", "No property selected");
         dispatch(hideLoader());
         return;
       }
-      
+
       if (!formData || Object.keys(formData).length === 0) {
         addToast("Error", "error", "Form data is missing");
         dispatch(hideLoader());
@@ -195,40 +145,14 @@ const FindProjectPage = () => {
       }
 
       if (!userDocId || !userPhoneNumber) {
-        console.error("User authentication data missing");
         return;
-    }
-      
-      // const formId = await saveFormData({
-      //   ...formData,
-      //   projectId: selectedProperty?.projectId,
-      //   assetType: selectedProperty?.assetType || "apartment",
-      //   purchasePrice: (formData.purchasePrice * 10000000).toString(),
-      //   userId: userDocId,
-      //   userPhoneNumber,
-      // });
+      }
+      const reportUrl = `${window.location.origin
+        }/vault/investment/${encodeURIComponent(selectedProperty.projectName)}`;
 
-      // if (!formId) {
-      //   throw new Error("Failed to save form data");
-      // }
-
-      //console.log("formid", formId);
-      console.log("i am in find project", selectedProperty);
-      const reportUrl = `${
-        window.location.origin
-      }/vault/investment/${encodeURIComponent(selectedProperty.projectName)}`;
-
-      // dispatch(
-      //   addVaultForm({
-      //     formId,
-      //     projectName: selectedProperty?.projectName,
-      //     reportUrl: reportUrl,
-      //   })
-      // );
 
       setFormData(null);
       setCurrentStep((prevStep) => prevStep + 1);
-      // navigate("/vault/investment");
       dispatch(setVaultFormActive(false));
       addToast(
         "Form Submitted",
@@ -247,10 +171,7 @@ const FindProjectPage = () => {
     }
   };
 
-  console.log(formData);
-
   const handleNextClick = async () => {
-    // Perform validation before allowing progress to the next step
     if (currentStep === 0) {
       if (!isSelected || searchTerm === "") {
         setiserror(true);
@@ -273,17 +194,15 @@ const FindProjectPage = () => {
       }
 
       if (vaultFormRef.current) {
-        const isValid = await vaultFormRef.current.submitForm(); // Call submitForm in Vaultform and capture result
+        const isValid = await vaultFormRef.current.submitForm();
 
         if (!isValid) {
-          return; // If form is invalid, do not proceed
+          return; 
         }
-
-        // Form is valid, submit the data and navigate
         await submitFormData();
         navigate("/vault");
       } else {
-        return; // If the form reference doesn't exist, stop execution
+        return;
       }
     }
   };
@@ -433,7 +352,7 @@ const FindProjectPage = () => {
                         <div className="flex justify-center items-center py-3">
                           <Loader /> {/* or any small spinner */}
                         </div>
-                     ):  filteredProjects.length == 0 && searchTerm != "" ? (
+                      ) : filteredProjects.length == 0 && searchTerm != "" ? (
                         <div className="flex py-3 px-5 ">
                           <p className={` ${styles.h2} text-[#433F3E] `}>
                             Can't find your project?
@@ -461,32 +380,32 @@ const FindProjectPage = () => {
                             </button>
                           </div>
                         </div>
-                      ):(
+                      ) : (
 
-                      filteredProjects.map((project) => (
-                        <div
-                          className="flex items-center hover:bg-gray-100"
-                          onClick={(event) => {
-                            handleProjectSelect(project, event);
-                            logEvent(
-                              analytics,
-                              `choose_inside_vault_${project.assetType}`,
-                              { Name: `choose_${project.assetType}` }
-                            );
-                          }}
-                        >
-                          <li
-                            key={project.id}
-                            className={`py-3 px-5 cursor-pointer  ${styles.h2}  `}
+                        filteredProjects.map((project) => (
+                          <div
+                            className="flex items-center hover:bg-gray-100"
+                            onClick={(event) => {
+                              handleProjectSelect(project, event);
+                              logEvent(
+                                analytics,
+                                `choose_inside_vault_${project.assetType}`,
+                                { Name: `choose_${project.assetType}` }
+                              );
+                            }}
                           >
-                            {toCapitalizedWords(project.projectName)}
-                          </li>
+                            <li
+                              key={project.id}
+                              className={`py-3 px-5 cursor-pointer  ${styles.h2}  `}
+                            >
+                              {toCapitalizedWords(project.projectName)}
+                            </li>
 
-                          <p className={`ml-auto mr-5  ${styles.h2} italic`}>
-                            {toCapitalizedWords(project.assetType)}
-                          </p>
-                        </div>
-                      )))}
+                            <p className={`ml-auto mr-5  ${styles.h2} italic`}>
+                              {toCapitalizedWords(project.assetType)}
+                            </p>
+                          </div>
+                        )))}
                     </ul>
                   )}
                 </div>
@@ -500,6 +419,13 @@ const FindProjectPage = () => {
                     setFormData={setFormData}
                     selectedProperty={selectedProperty}
                     loading={loading}
+                    setLoading={(loading) => {
+                      if (loading) {
+                        dispatch(showLoader());
+                      } else {
+                        dispatch(hideLoader());
+                      }
+                    }}
                   />
                 </div>
               )}
@@ -517,8 +443,7 @@ const FindProjectPage = () => {
                   {
                     logEvent(
                       analytics,
-                      `click_inside_vault_form_${
-                        currentStep === 1 ? "Submit" : "Next"
+                      `click_inside_vault_form_${currentStep === 1 ? "Submit" : "Next"
                       }_button`,
                       { Name: "vault_form_button" }
                     );

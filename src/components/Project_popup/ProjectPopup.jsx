@@ -23,11 +23,12 @@ import compon from "/assets/icons/features/compare-active.svg";
 import seloff from "/assets/icons/features/wishlist-inactive.svg";
 import selon from "/assets/icons/features/wishlist-active.svg";
 import styles from "./ProjectPopup.module.css";
-import locicon from "/assets/icons/navigation/arrow-down.svg";
+import locicon from "/assets/icons/navigation/location.svg";
 // import status from "/icons-1/Status.svg"; // File no longer exists
 const cardpic = "/assets/properties/images/placeholder.webp";
+import statu from "/assets/icons/navigation/Status.svg";
 import growth from "/assets/icons/features/home.svg";
-import value from "/assets/icons/features/valuation-report.svg";
+import value from "../../../public/assets/icons/features/Value.svg";
 import asset from "/assets/icons/features/properties.svg";
 import xirrLock from "/assets/icons/features/vault.svg";
 import infoIcon from "/assets/icons/ui/info.svg";
@@ -521,7 +522,7 @@ const toggleCompare = async () => {
             </div>
 
             <div className="flex items-center gap-1 pr-2 w-fit border-r-[1px]">
-              <img src={status} className="w-[14px] h-[14px]" />
+              <img src={statu} className="w-[14px] h-[14px]" />
               <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
                 {toCapitalizedWords(project.projectOverview?.stage)}
               </p>

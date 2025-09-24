@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import styles from "./profile.module.css";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { fetchUserProfile, setEditing } from "../../slices/userSlice";
+import { fetchUserProfile, setEditing,updateUserProfile, clearUpdateStatus } from "../../slices/userSlice";
 import { selectUserPhoneNumber } from "../../slices/userAuthSlice";
 import tickIcon from "/assets/icons/status/tick-white.svg";
 import editIcon from "/assets/icons/actions/edit-white.svg";
@@ -27,9 +27,9 @@ import { analytics } from "../../firebase";
 const Profile = () => {
   const { addToast } = useToast();
   const dispatch = useDispatch();
-  const { profile, status, error, isEditing } = useSelector(
-    (state) => state.user
-  );
+  const { profile, status, error, isEditing, updateStatus } = useSelector(
+  (state) => state.user
+);
   const userPhoneNumber = useSelector(selectUserPhoneNumber);
 
   const setEditTrue = () => {
@@ -145,7 +145,7 @@ const Profile = () => {
           : [...prevState, value] // Add to the array
     );
   };
-
+  
   const handleToggleCreditScore = (value) => {
     setEditTrue();
     setCreditScore((prevValue) => (prevValue === value ? "" : value)); // Deselect if the value is the same, otherwise set the new value
@@ -186,90 +186,59 @@ const Profile = () => {
     );
 
   const handleUpdateProfile = async () => {
-    let isValid = true;
-    setEmailError("");
-    setLinkedinError("");
+  let isValid = true;
+  setEmailError("");
+  setLinkedinError("");
 
-    if (mail.length > 0 && !validateEmail(mail)) {
-      setEmailError("Please enter a valid email address.");
-      isValid = false;
-    }
-    if (linkedinProfile.length > 0 && !validateLinkedInURL(linkedinProfile)) {
-      setLinkedinError("Please enter a valid LinkedIn profile URL.");
-      isValid = false;
-    }
+  if (mail.length > 0 && !validateEmail(mail)) {
+    setEmailError("Please enter a valid email address.");
+    isValid = false;
+  }
+  if (linkedinProfile.length > 0 && !validateLinkedInURL(linkedinProfile)) {
+    setLinkedinError("Please enter a valid LinkedIn profile URL.");
+    isValid = false;
+  }
 
-    if (isValid) {
-      setIsSaving(true);
-      const userData = {
-        name: name.toLowerCase(),
-        gender: gender,
-        previousInvestments: previousInvestments,
-        creditScore: creditScore,
-        phoneNumber: phoneNumber,
-        mail: mail,
-        linkedinProfile: linkedinProfile,
-      };
+  if (isValid) {
+    const userData = {
+      name: name.toLowerCase(),
+      gender: gender,
+      previousInvestments: previousInvestments,
+      creditScore: creditScore,
+      phoneNumber: phoneNumber,
+      mail: mail,
+      linkedinProfile: linkedinProfile,
+    };
 
-      const sanitizedData = sanitizeDetails(userData);
+    try {
+      const result = await dispatch(updateUserProfile({
+        userData,
+        currentPhoneNumber: userPhoneNumber
+      })).unwrap();
 
-      if (phoneNumber != userPhoneNumber) {
-        try {
-          const phoneQuery = query(
-            collection(db, "truEstateUsers"),
-            where("phoneNumber", "==", phoneNumber)
-          );
-          const phoneSnapshot = await getDocs(phoneQuery);
-          if (!phoneSnapshot.empty) {
-            addToast(
-              "Dummy",
-              "error",
-              "Duplicate Number Found",
-              "A user with this phone number already exists."
-            );
-            return;
-          }
-
-          const q = query(
-            collection(db, "truEstateUsers"),
-            where("phoneNumber", "==", userPhoneNumber)
-          );
-          const querySnapshot = await getDocs(q);
-          
-
-          if (!querySnapshot.empty) {
-            const docRef = querySnapshot.docs[0].ref;
-            await updateDoc(docRef, sanitizedData);
-          } else {
-            console.log("Hari")
-          }
-        } catch (error) {}
-      } else {
-        try {
-          const q = query(
-            collection(db, "truEstateUsers"),
-            where("phoneNumber", "==", userPhoneNumber)
-          );
-          const querySnapshot = await getDocs(q);
-
-          if (!querySnapshot.empty) {
-            const docRef = querySnapshot.docs[0].ref;
-            await updateDoc(docRef, sanitizedData);
-          } else {
-          }
-        } catch (error) {}
-      }
-
+      // Success handling
+      localStorage.removeItem("unsavedProfileData");
+      addToast("Success", "success", "Profile Updated", "Your profile has been updated successfully.");
+      
+      // Optionally refetch the profile to ensure data consistency
       if (userPhoneNumber) {
         dispatch(fetchUserProfile(userPhoneNumber));
       }
-
-      setEditFalse();
-      setIsSaving(false);
-
-      localStorage.removeItem("unsavedProfileData");
+    } catch (error) {
+      // Error handling
+      if (error.includes("phone number already exists")) {
+        addToast(
+          "Dummy",
+          "error",
+          "Duplicate Number Found",
+          "A user with this phone number already exists."
+        );
+      } else {
+        addToast("Error", "error", "Update Failed", error || "Failed to update profile.");
+      }
     }
-  };
+  }
+};
 
   const handleCancel = () => {
     setEmailError("");
@@ -525,28 +494,28 @@ const Profile = () => {
         {isEditing ? (
           <div className="flex">
             <button
-              className={`${styles.saveButton}`}
-              onClick={() => {
-                handleUpdateProfile();
-                logEvent(analytics, "click_user_profile_save_button", {
-                  Name: "profile_save_button",
-                });
-              }}
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <span className="font-lato text-[16px] leading-[24px] text-center text-[#FAFBFC] font-medium">
-                  Saving...
-                </span>
-              ) : (
-                <>
-                  <img src={tickIcon} alt="Tick Icon" className="w-5 h-5" />
-                  <span className="font-lato text-[16px] leading-[24px] text-center text-[#FAFBFC] font-medium">
-                    Save
-                  </span>
-                </>
-              )}
-            </button>
+  className={`${styles.saveButton}`}
+  onClick={() => {
+    handleUpdateProfile();
+    logEvent(analytics, "click_user_profile_save_button", {
+      Name: "profile_save_button",
+    });
+  }}
+  disabled={updateStatus === "loading"}
+>
+  {updateStatus === "loading" ? (
+    <span className="font-lato text-[16px] leading-[24px] text-center text-[#FAFBFC] font-medium">
+      Saving...
+    </span>
+  ) : (
+    <>
+      <img src={tickIcon} alt="Tick Icon" className="w-5 h-5" />
+      <span className="font-lato text-[16px] leading-[24px] text-center text-[#FAFBFC] font-medium">
+        Save
+      </span>
+    </>
+  )}
+</button>
             <button
               className={`${styles.deleteButton}`}
               onClick={() => {
