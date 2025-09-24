@@ -5,7 +5,6 @@ import SidebarWithLogo from "./Sidebar/sidebar";
 
 import HelpModal from "./Help/HelpModal";
 import AgentModal from "./AgentModal/AgentModal";
-import styles from "./MainContent.module.css";
 
 import { useDispatch, useSelector } from "react-redux";
 import { NavBlocker } from "./helper/navBlocker";
@@ -204,7 +203,7 @@ function MainContentLayout({ children, pageTitle, showLoader = true }) {
           <div
             className={`fixed h-full transition-transform duration-300   ${
               sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            } md:translate-x-0 z-20 w-auto`}
+            } md:translate-x-0 z-[200] w-auto`}
           >
             <SidebarWithLogo
               sidebarOpen={sidebarOpen}

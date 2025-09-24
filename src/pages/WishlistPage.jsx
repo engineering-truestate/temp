@@ -1,29 +1,45 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import WishList from "../components/WishList/WishList";
 import MainContentLayout from "../components/MainContentLayout";
-import WishlistPageHeader from "../components/Headers/WishlistPageHeader";
+import {
+  fetchWishlistedProjects,
+  selectWishlistItems,
+} from "../slices/wishlistSlice";
+import { selectUserDocId } from "../slices/userAuthSlice";
+import { showLoader, hideLoader, selectLoader } from "../slices/loaderSlice";
+import Loader from "../components/Loader";
+import { divIcon } from "leaflet";
 
 const WishlistPage = () => {
-  const [selectedSortOption, setSelectedSortOption] = useState("");
-  const [isVisible, setIsVisible] = useState(window.innerWidth > 640);
+  const dispatch = useDispatch();
+
+  const userDocId = useSelector(selectUserDocId);
+  const wishlistedProjects = useSelector(selectWishlistItems);
+  const isLoading = useSelector(selectLoader);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsVisible(window.innerWidth > 640);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    if (userDocId) {
+      dispatch(showLoader());
+      dispatch(fetchWishlistedProjects(userDocId)).finally(() =>
+        dispatch(hideLoader())
+      );
+    }
+  }, [dispatch, userDocId]);
 
   return (
     <MainContentLayout pageTitle="Wish List" showLoader={false}>
-      <WishlistPageHeader
-        selectedSortOption={selectedSortOption}
-        setSelectedSortOption={setSelectedSortOption}
-        isVisible={isVisible}
+      {isLoading && (
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader />
+        </div>
+      )}
+      <WishList
+        view="grid"
+        trueS="all"
+        projects={wishlistedProjects}
+        isLoading={isLoading}
       />
-      <WishList view="grid" trueS="all" />
     </MainContentLayout>
   );
 };
