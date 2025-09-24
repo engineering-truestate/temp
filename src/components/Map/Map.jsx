@@ -40,7 +40,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
 import Footer from "../../landing/pages/home/Footer";
 import NoPropertiesFound from "../NoPropertiesFound/NoPropertiesFound.jsx";
-import algoliaservice from "../../services/algoliaService";
+import algoliaService from "../../services/algoliaService.js";
 
 const defaultCenter = [12.9021306, 77.5976507];
 
@@ -241,46 +241,19 @@ const MapComponent = ({
 
   const { hits, results } = useHits();
   const isReduxLoading = useSelector(selectLoader);
-  // const [updatedProjects, setUpdatedProjects] = useState([]);
 
-  // // Memoize updated projects to prevent unnecessary recalculations
-  // const updatedProjects = useMemo(() => {
-  //   if (mapType === "all") {
-  //     const filtered = hits.filter(
-  //       (project) =>
-  //         parseFloat(project?.locationAnalysis?.lat) &&
-  //         parseFloat(project?.locationAnalysis?.long)
-  //     );
-  //     return filtered.map((proj) => ({ ...proj, id: proj.objectID }));
-  //   }
-  //   return projects;
-  // }, [mapType, hits, projects]);
-  const [updatedProjects, setUpdatedProjects] = useState([]);
-
-useEffect(() => {
-  async function fetchProjects() {
+  // Memoize updated projects to prevent unnecessary recalculations
+  const updatedProjects = useMemo(() => {
     if (mapType === "all") {
-      const res = await algoliaservice.getMapProperties({
-        isAuthenticated,             
-        hitsPerPage: 1000,                
-        page: 0                          
-      });
-
-      const filtered = res?.hits?.filter(
+      const filtered = hits.filter(
         (project) =>
           parseFloat(project?.locationAnalysis?.lat) &&
           parseFloat(project?.locationAnalysis?.long)
-      ) || [];
-
-      setUpdatedProjects(filtered.map((proj) => ({ ...proj, id: proj.objectID })));
-    } else {
-      setUpdatedProjects(projects);
+      );
+      return filtered.map((proj) => ({ ...proj, id: proj.objectID }));
     }
-  }
-
-  fetchProjects();
-}, [mapType, projects]);
-
+    return projects;
+  }, [mapType, hits, projects]);
 
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { loading } = useSelector((state) => state.projectsState);

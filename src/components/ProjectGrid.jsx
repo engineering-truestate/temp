@@ -21,7 +21,6 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
   );
   const { currentScrollPosition } = useSelector((state) => state.projectsState);
   const { indexUiState, setIndexUiState } = useInstantSearch();
-  console.log({ hits });
 
   // current status state represents the current state of the status (idle , loading, stagged)
   // const [currentStatusState, setCurrentStatusState] = useState(0);
@@ -29,7 +28,6 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const isReduxLoading = useSelector(selectLoader);
 
-  // console.log(searchTerm, "searchTerm");
 
   const resetAllFilters = () => {
     logEvent(analytics, "reset_all_filters", {
@@ -47,31 +45,12 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
     }));
   };
 
-  // useEffect(()=>{
-  //  console.log(currentStatusState, 'currentStatusState');
-  //  setCurrentStatusState(currentStatusState+1);
-  // },[status]);
 
   // Initial refresh
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  // Debug logging
-  useEffect(() => {
-    // console.log("Hits:", hits.length);
-    // console.log("Status:", status);
-  }, [hits, status]);
-
-  // document.addEventListener("DOMContentLoaded", () => {
-  //   const iframe = document.querySelector('iframe[title="reCAPTCHA"]');
-  //   if (iframe) {
-  //     iframe.style.display = "none";
-  //     console.log("Iframe with title 'reCAPTCHA' hidden successfully.");
-  //   } else {
-  //     console.log("Iframe with title 'reCAPTCHA' not found.");
-  //   }
-  // });
 
   const observer = new MutationObserver(() => {
     const iframe = document.querySelector('iframe[title="reCAPTCHA"]');
@@ -87,7 +66,6 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
     recaptchaDivs.forEach((div) => {
       div.style.display = "none";
     });
-    // console.log(`${recaptchaDivs.length} div(s) with class 'grecaptcha-logo' hidden.`);
   });
 
   const div = document.getElementById("recaptcha-container");
@@ -153,16 +131,6 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
       }
       window.scrollTo(0, 0);
     }, 100);
-
-    console.log("Brutal scroll attempted", {
-      pathname: location.pathname,
-      search: location.search,
-      mainContentExists: !!mainContentRef.current,
-      windowPageYOffset: window.pageYOffset,
-      documentScrollTop: document.documentElement.scrollTop,
-      bodyScrollTop: document.body.scrollTop,
-      mainContentScrollTop: mainContentRef.current?.scrollTop,
-    });
   }, [location.pathname, location.search]); // Listen to both pathname and search changes
 
 
@@ -183,7 +151,6 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
          .sort((a, b) => {
          if (!isAuthenticated) {
          // Only sort when user is NOT logged in
-         console.log("Sorting projects for unauthenticated user");
          return (b.recommended === true) - (a.recommended === true);
         }
         // Keep original order when logged in
