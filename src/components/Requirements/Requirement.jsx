@@ -442,7 +442,6 @@ const Requirement = () => {
 
   return (
     <div className={`${styles.bkg} flex flex-col h-screen `}>
-      <Loader />
       <div>
           <div
             className={`${styles.tabs}  px-4 md:px-8 border-b-2 fixed bg-[#FAFAFA] w-[100vw] z-[9] overflow-x-auto `}

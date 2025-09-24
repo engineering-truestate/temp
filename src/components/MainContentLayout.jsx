@@ -7,11 +7,11 @@ import HelpModal from "./Help/HelpModal";
 import AgentModal from "./AgentModal/AgentModal";
 import styles from "./MainContent.module.css";
 
-
 import { useDispatch, useSelector } from "react-redux";
 import { NavBlocker } from "./helper/navBlocker";
 
 import ConfirmationModal from "./Vault/ConfirmationModal";
+import Loader from "./Loader";
 import { setEditing } from "../slices/userSlice";
 import { setVaultFormActive } from "../slices/vaultConfirmationSlice";
 import { selectUserPhoneNumber } from "../slices/userAuthSlice";
@@ -25,7 +25,6 @@ import { analytics } from "../firebase";
 import { InstantSearch, Configure } from "react-instantsearch";
 import { algoliaService } from "../services/algoliaService";
 import AppHeader from "./Headers/AppHeader";
-
 
 function MainContentLayout({ children, pageTitle }) {
   const navigate = useNavigate();
@@ -55,8 +54,6 @@ function MainContentLayout({ children, pageTitle }) {
 
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
-
-
   const [currentIndex, setCurrentIndex] = useState(
     algoliaService.getIndexName(isAuthenticated)
   );
@@ -64,7 +61,6 @@ function MainContentLayout({ children, pageTitle }) {
   useEffect(() => {
     setCurrentIndex(algoliaService.getIndexName(isAuthenticated));
   }, [isAuthenticated]);
-
 
   const [initialProperties, setInitialProperties] = useState(
     "showOnTruEstate:true"
@@ -91,8 +87,6 @@ function MainContentLayout({ children, pageTitle }) {
 
     setAgentModalOpen(!AgentmodalOpen);
   };
-
-
 
   const mainContentRef = useRef(null);
 
@@ -138,7 +132,6 @@ function MainContentLayout({ children, pageTitle }) {
       }
       window.scrollTo(0, 0);
     }, 100);
-
   }, [location.pathname, location.search]);
 
   const helpModalRef = useRef(null);
@@ -202,7 +195,6 @@ function MainContentLayout({ children, pageTitle }) {
     }
   }, [location.pathname, isAuthenticated]);
 
-
   return (
     <>
       <div className="flex h-screen ${styles.main-content-container} ">
@@ -239,7 +231,7 @@ function MainContentLayout({ children, pageTitle }) {
           {/* Main Content Area */}
           <div
             className={`flex-1 ${
-              isAuthenticated ? "md:ml-[9rem] lg:ml-[12.5rem]" : "mx-auto  "
+              isAuthenticated ? "md:ml-[9rem] lg:ml-[12.5rem]" : "mx-auto"
             } h-full overflow-x-auto`}
             style={{ height: "calc(100vh - 5px)" }}
             ref={mainContentRef}
@@ -262,9 +254,12 @@ function MainContentLayout({ children, pageTitle }) {
               ></div>
             )}
 
-            {/* Main Content */}
-            <div>
-              {children}
+            {/* Content area (below header) */}
+            <div className="relative">
+              {/* Loader only overlays children */}
+              <Loader />
+
+              <div className="relative">{children}</div>
             </div>
           </div>
         </InstantSearch>
@@ -276,11 +271,7 @@ function MainContentLayout({ children, pageTitle }) {
             helpModalRef={helpModalRef}
           />
         )}
-        {AgentmodalOpen && (
-          <AgentModal
-            closeAgentModal={toggleAgentModal}
-          />
-        )}
+        {AgentmodalOpen && <AgentModal closeAgentModal={toggleAgentModal} />}
 
         <ConfirmationModal
           isOpen={showConfirmationModal}
@@ -302,7 +293,6 @@ function MainContentLayout({ children, pageTitle }) {
             submitLabel="Continue"
           />
         )}
-
       </div>
     </>
   );
