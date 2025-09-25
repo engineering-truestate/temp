@@ -1,6 +1,6 @@
 // contexts/ModalConfigContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const ModalConfigContext = createContext();
@@ -49,8 +49,8 @@ const getDefaultModalConfig = () => ({
 });
 
 export const ModalConfigProvider = ({ children }) => {
-  const [modalConfig, setModalConfig] = useState(getDefaultModalConfig());
-  const [isLoaded, setIsLoaded] = useState(true);
+  const [modalConfig, setModalConfig] = useState(null); // start empty
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -59,17 +59,15 @@ export const ModalConfigProvider = ({ children }) => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const firebaseConfig = docSnap.data();
-          setModalConfig(prevConfig => ({
-            ...prevConfig,
-            ...firebaseConfig
-          }));
+          setModalConfig(docSnap.data());
           console.log('Modal config loaded from Firebase');
         } else {
+          setModalConfig(getDefaultModalConfig());
           console.warn('Modal config not found, using defaults');
         }
       } catch (error) {
         console.error('Error fetching modal config:', error);
+        setModalConfig(getDefaultModalConfig());
       } finally {
         setIsLoaded(true);
       }
@@ -78,8 +76,20 @@ export const ModalConfigProvider = ({ children }) => {
     fetchConfig();
   }, []);
 
+  // Update modal config in Firebase
+  const updateModalConfig = async (newConfig) => {
+    try {
+      const docRef = doc(db, 'truestateAdmin', 'promotionalModal');
+      await setDoc(docRef, newConfig, { merge: true });
+      setModalConfig(newConfig); // update local state immediately
+      console.log('Modal config updated in Firebase');
+    } catch (error) {
+      console.error('Error updating modal config:', error);
+    }
+  };
+
   return (
-    <ModalConfigContext.Provider value={{ modalConfig, isLoaded }}>
+    <ModalConfigContext.Provider value={{ modalConfig, isLoaded, updateModalConfig }}>
       {children}
     </ModalConfigContext.Provider>
   );

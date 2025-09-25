@@ -13,24 +13,23 @@ import { useModalConfig } from "../../../contexts/ModalConfigContext.jsx";
 
 
 const Home = () => {
-  const { modalConfig } = useModalConfig(); 
+  const { modalConfig } = useModalConfig();
 
   return (
     <>
-      {/* Promotional Modal - Config available immediately */}
       <PromotionalModal
-        isEnabled={modalConfig.isEnabled}
-        delay={modalConfig.delay}
-        sessionStorageKey={modalConfig.sessionStorageKey}
-        content={modalConfig.content}
-        styling={modalConfig.styling}
-        images={modalConfig.images}
-        navigationPath={modalConfig.navigationPath}
-        analyticsEvent={modalConfig.analyticsEvent}
-        flag={modalConfig.flag}
+        isEnabled={modalConfig?.isEnabled ?? false} // default false until ready
+        delay={modalConfig?.delay ?? 0}            // 0 delay if not ready
+        sessionStorageKey={modalConfig?.sessionStorageKey ?? ""}
+        content={modalConfig?.content ?? {}}
+        styling={modalConfig?.styling ?? {}}
+        images={modalConfig?.images ?? {}}
+        navigationPath={modalConfig?.navigationPath ?? ""}
+        analyticsEvent={modalConfig?.analyticsEvent ?? {}}
+        flag={modalConfig?.flag ?? ""}
       />
 
-      {/* Main Content - Renders immediately with no delays */}
+      {/* Main Content */}
       <Hero />
       <Banners />
       <Carousel />
@@ -45,5 +44,7 @@ const Home = () => {
     </>
   );
 };
+
+
 
 export default Home;
