@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
-
+import { useModalConfig } from "../../contexts/ModalConfigContext.jsx";
 const PromotionalModal = ({
   // Modal configuration
   isEnabled = true,
@@ -75,7 +75,8 @@ const PromotionalModal = ({
 
   const finalImages = { ...defaultImages, ...images };
   const finalAnalyticsEvent = { ...defaultAnalyticsEvent, ...analyticsEvent };
-
+    const { modalConfig } = useModalConfig(); 
+    console.log("Modal config data is", modalConfig);
   const handleCloseModal = () => {
     setShowModal(false);
     sessionStorage.setItem(sessionStorageKey, "true");

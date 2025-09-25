@@ -48,10 +48,14 @@ function NewLaunches() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isAuthenticated, userData } = useSelector((state) => state.auth);
   const { modalConfig } = useModalConfig(); 
-  console.log(modalConfig)
-  
+  console.log("my fetched data is",modalConfig)
+  console.log("my flag is",modalConfig.flag)
+  let myinterest = "BDA_Sept";
+  if(modalConfig.flag === "launches"){
+    myinterest = "Comparison North Bangalore";
+  }
   // You can also destructure individually if needed
-
+  let flag=modalConfig.flag;
 
   // Initialize UTM tracking
   useTrackUTMParams();
@@ -279,8 +283,6 @@ if (!formData.phoneNumber.trim()) {
       return false;
     }
   };
-
-  // Alternative fallback method (if needed)
   const saveDataFallback = async (userData) => {
     try {
       console.log('Using fallback method to save:', userData);
@@ -368,14 +370,11 @@ const saveToTruestateUsers = async (userData) => {
       
       const existingInterests = existingData.interest || [];
       
-      // Check if 'BDA_Sept' already exists in the interest array
-      const updatedInterests = existingInterests.includes('BDA_Sept') 
+      const updatedInterests = existingInterests.includes(myinterest) 
         ? existingInterests 
-        : [...existingInterests, 'BDA_Sept'];
+        : [...existingInterests, myinterest];
         
       const userDocRef = doc(db, 'truEstateUsers', userDoc.id);
-      
-      // Create update object with explicit field updates
       const updateData = {
         name: name, // Explicitly update name
         isBDATrue: true,
@@ -383,13 +382,11 @@ const saveToTruestateUsers = async (userData) => {
         interest: updatedInterests,
         agentName: "Amit",
         agentId: "TRUES03",
-        source: source, // Use source derived from UTM
+        source: source,
         subSource: "Truestate"
       };
-      
-      // Store UTM details as JSON object if available
       if (utmDetails) {
-        updateData.utmDetails = utmDetails; // Store as JSON object
+        updateData.utmDetails = utmDetails;
       }
       
       await updateDoc(userDocRef, updateData);
@@ -427,7 +424,6 @@ const saveToTruestateUsers = async (userData) => {
           
           console.log('Generated new user ID:', newUserId);
           console.log('Current count:', currentCount, '-> New count:', newCount);
-          
           // Update the counter in truestateAdmin
           transaction.set(adminDocRef, { count: newCount }, { merge: true });
           
@@ -439,7 +435,7 @@ const saveToTruestateUsers = async (userData) => {
             isBDATrue: true,
             lastModified: currentTimestamp,
             utmDetails: utmDetails, // Store as JSON object (or null)
-            interest: ['BDA_Sept'],
+            interest: myinterest,
             agentName: "amit",
             agentId: "TRUES03",
             source: source, // Use source derived from UTM
@@ -504,10 +500,10 @@ const handleSubmit = async (e) => {
       
       // Close the modal
       setShowDownloadModal(false);
-      // if (isAuthenticated) {
-      //   navigate('/auction/bda-auction');
-      //   return;
-      // }
+      if (isAuthenticated && myinterest=="BDA_Sept") {
+        navigate('/auction/bda-auction');
+        return;
+      }
       // Navigate to the desired page
       setShowSuccessModal(true);
       startDownload();
@@ -569,8 +565,12 @@ const handleSubmit = async (e) => {
             </button>
             
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 text-center font-[Montserrat] pr-8">
-               Download this Investment Report
+               {modalConfig.flag === "launches" 
+                 ? "Download this Investment Report" 
+                 : "Explore BDA Auction"
+               }
             </h2>
+            
             
             <form onSubmit={handleSubmit}>
               {/* Name Field */}
@@ -657,7 +657,12 @@ const handleSubmit = async (e) => {
                   </>
                 ) : (
                   
-                  <>Download Report</>
+                  <>
+                    {modalConfig.flag === "launches" 
+                      ? "Download Report" 
+                      : "View BDA Auction"
+                    }
+                  </>
                 )}
               </button>
             </form>
@@ -691,11 +696,17 @@ const handleSubmit = async (e) => {
             </div>
             
             <h2 className="text-xl sm:text-2xl font-bold font-[Montserrat] text-gray-800 mb-2">
-              Your report download has started
+              {modalConfig.flag === "launches" 
+                 ? "Your report download has started" 
+                 : "You haven't signed up yet?"
+               }
             </h2>
             
             <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-              We have over 200 properties for you to explore
+              {modalConfig.flag === "launches" 
+                 ? "We have over 200 properties for you to explore" 
+                 : "Sign up to view BDA"
+               }
             </p>
             
             <button
