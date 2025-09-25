@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-const logo = '/assets/shared/images/trustate-logo-text.svg';
+const logo = "/assets/shared/images/trustate-logo-text.svg";
 import "./Navbar.css";
 
 import { logEvent } from "firebase/analytics";
@@ -116,7 +116,9 @@ const MobileMenu = ({ isMenuOpen, navLinks, bannerHeight, navbarHeight }) => {
     <div
       id="mobile-menu"
       className={`fixed inset-0 bg-white z-40 flex flex-col overflow-hidden transition-all duration-500 ease-in-out 
-        ${isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"} border-t-[1px] border-ShadedWhite`}
+        ${
+          isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+        } border-t-[1px] border-ShadedWhite`}
       style={{ top: `${totalOffset}px` }}
       aria-expanded={isMenuOpen}
     >
@@ -271,10 +273,35 @@ const Navbar = () => {
     <>
       {
         <div className="sticky top-0 z-[50]">
-          {/* ✅ Promotional Banner Component */}
-          <PromotionalBanner 
-            ref={bannerRef}
-            isVisible={true} // You can control visibility from here
+          <PromotionalBanner
+            ref={bannerRef} // if you were using ref
+            isVisible={true}
+            content={{
+              desktop: {
+                title:
+                  "Compare new launches near Bengaluru airport by Tata, Sattva and others",
+                ctaText: "View report",
+                ctaIcon: "→",
+              },
+              mobile: {
+                title:
+                  "Compare new launches near Bengaluru airport by Tata, Sattva and others",
+                ctaText: "View Report",
+                ctaIcon: "→",
+              },
+            }}
+            images={{
+              desktopBackground: "/assets/images/banners/build.svg",
+              mobileBackground: "/assets/images/banners/building1.svg",
+            }}
+            navigationPath="/new-launches"
+            analyticsEvent={{
+              eventName: "click_investment_report",
+              eventParams: {
+                Name: "front_investment_report",
+              },
+            }}
+            modalStateSelector={(state) => state.modal.showSignInModal}
           />
 
           {/* ✅ Original Navbar */}
@@ -289,7 +316,9 @@ const Navbar = () => {
                     Get Your E-khata Transfer Now
                   </span>
                   <a
-                    href={`https://wa.me/${InvManager.phoneNumber}?text=${"Hi, I'm interested in availing your services to transfer my Khata to E-Khata. Could you please guide me through the process and let me know the details?"}`}
+                    href={`https://wa.me/${
+                      InvManager.phoneNumber
+                    }?text=${"Hi, I'm interested in availing your services to transfer my Khata to E-Khata. Could you please guide me through the process and let me know the details?"}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ml-2 md:ml-4 underline text-label-xs md:text-label-sm text-gray-300"
