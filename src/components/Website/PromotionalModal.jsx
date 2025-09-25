@@ -12,9 +12,6 @@ const PromotionalModal = ({
   // Content configuration
   content = {},
   
-  // Styling configuration
-  styling = {},
-  
   // Images configuration
   images = {},
   
@@ -29,7 +26,6 @@ const PromotionalModal = ({
   
   // Additional props
   className = "",
-  customStyles = {}
 }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,25 +49,6 @@ const PromotionalModal = ({
     }
   };
 
-  // Default styling
-  const defaultStyling = {
-    desktop: {
-      maxWidth: "639px",
-      height: "344px",
-      gradient: "from-[#276B32] to-[#1E4E51]",
-      titleSize: "text-[36px]",
-      descriptionSize: "text-[18px]",
-      ctaSize: "text-[13px]"
-    },
-    mobile: {
-      maxWidth: "87%",
-      height: "420px",
-      gradient: "from-[#276B32] to-[#1E4E51]",
-      titleSize: "text-[22px]",
-      descriptionSize: "text-[14px]",
-      ctaSize: "text-[13px]"
-    }
-  };
 
   // Default images
   const defaultImages = {
@@ -95,10 +72,6 @@ const PromotionalModal = ({
     mobile: { ...defaultContent.mobile, ...content.mobile }
   };
 
-  const finalStyling = {
-    desktop: { ...defaultStyling.desktop, ...styling.desktop },
-    mobile: { ...defaultStyling.mobile, ...styling.mobile }
-  };
 
   const finalImages = { ...defaultImages, ...images };
   const finalAnalyticsEvent = { ...defaultAnalyticsEvent, ...analyticsEvent };
@@ -177,15 +150,13 @@ const PromotionalModal = ({
       className={`fixed inset-0 z-[9999] bg-black transition-opacity duration-300 ${
         showModal ? "bg-opacity-50" : "bg-opacity-0"
       } ${className}`}
-      style={customStyles.overlay}
     >
       <div className="flex justify-center items-start pt-60 px-4 sm:px-0 h-full overflow-y-auto">
         {/* Desktop/Tablet View */}
         <div
-          className={`hidden sm:flex w-full max-w-[${finalStyling.desktop.maxWidth}] h-[${finalStyling.desktop.height}] bg-gradient-to-r ${finalStyling.desktop.gradient} rounded-[8px] relative shadow-lg transition-all duration-300 transform ${
+          className={`hidden sm:flex w-full max-w-[639px] h-[344px] bg-gradient-to-r from-[#276B32] to-[#1E4E51] rounded-[8px] relative shadow-lg transition-all duration-300 transform ${
             showModal ? "scale-100 opacity-100" : "scale-95 opacity-0"
           }`}
-          style={customStyles.desktopModal}
         >
           {finalImages.newBadge && (
             <img
@@ -211,22 +182,21 @@ const PromotionalModal = ({
           )}
           
           <div className="absolute top-14 left-6 pr-6">
-            <div className={`text-white font-[Lora] font-semibold ${finalStyling.desktop.titleSize}`}>
+            <div className={`text-white font-[Lora] font-semibold text-[36px]`}>
               {finalContent.desktop.title}
             </div>
             {finalContent.desktop.subtitle && (
-              <div className={`text-white font-[Lora] font-semibold ${finalStyling.desktop.titleSize}`}>
+              <div className={`text-white font-[Lora] font-semibold text-[36px]`}>
                 {finalContent.desktop.subtitle}
               </div>
             )}
-            <div className={`text-white font-[Lato] ${finalStyling.desktop.descriptionSize}`}>
+            <div className={`text-white font-[Lato] text-[18px]`}>
               {finalContent.desktop.description}
             </div>
             
             <button
-              className={`mt-5 flex items-center gap-1 bg-white text-black ${finalStyling.desktop.ctaSize} font-semibold font-[Lato] pl-3 pr-2 py-1 rounded-md hover:shadow`}
+              className={`mt-5 flex items-center gap-1 bg-white text-black text-[13px] font-semibold font-[Lato] pl-3 pr-2 py-1 rounded-md hover:shadow`}
               onClick={handleCtaClick}
-              style={customStyles.ctaButton}
             >
               {finalContent.desktop.ctaText}
               {finalContent.desktop.ctaIcon && (
@@ -243,12 +213,12 @@ const PromotionalModal = ({
           className={`block sm:hidden w-full transition-all duration-300 transform ${
             showModal ? "scale-100 opacity-100" : "scale-95 opacity-0"
           } 
-          max-w-[${finalStyling.mobile.maxWidth}] 
+          max-w-[87%] 
           xs:max-w-[92%] 
-          h-[${finalStyling.mobile.height}] 
+          h-[420px] 
           xs:h-[380px]
           max-[350px]:h-[340px]
-          bg-gradient-to-b ${finalStyling.mobile.gradient}
+          bg-gradient-to-b from-[#276B32] to-[#1E4E51]
           rounded-[8px] 
           relative 
           shadow-lg 
@@ -261,7 +231,6 @@ const PromotionalModal = ({
           pb-16 
           xs:pb-12
           max-[350px]:pb-8`}
-          style={customStyles.mobileModal}
         >
           {finalImages.newBadge && (
             <img
@@ -279,17 +248,16 @@ const PromotionalModal = ({
           />
 
           <div className="mt-8 xs:mt-6 max-[350px]:mt-4">
-            <div className={`text-white font-[Lora] font-semibold ${finalStyling.mobile.titleSize} xs:text-[20px] max-[350px]:text-[18px]`}>
+            <div className={`text-white font-[Lora] font-semibold text-[22px] xs:text-[20px] max-[350px]:text-[18px]`}>
               {finalContent.mobile.title}
             </div>
-            <div className={`text-white font-[Lato] ${finalStyling.mobile.descriptionSize} xs:text-[13px] max-[350px]:text-[12px] pt-2`}>
+            <div className={`text-white font-[Lato] text-[14px] xs:text-[13px] max-[350px]:text-[12px] pt-2`}>
               {finalContent.mobile.description}
             </div>
             
             <button
-              className={`mt-2 xs:mt-1 max-[350px]:mt-0 flex items-center gap-1 bg-white text-black ${finalStyling.mobile.ctaSize} xs:text-[12px] max-[350px]:text-[11px] font-semibold font-[Lato] pl-2.5 pr-1 py-1 rounded-md hover:shadow`}
+              className={`mt-2 xs:mt-1 max-[350px]:mt-0 flex items-center gap-1 bg-white text-black text-[13px] xs:text-[12px] max-[350px]:text-[11px] font-semibold font-[Lato] pl-2.5 pr-1 py-1 rounded-md hover:shadow`}
               onClick={handleCtaClick}
-              style={customStyles.ctaButton}
             >
               {finalContent.mobile.ctaText}
               {finalContent.mobile.ctaIcon && (
