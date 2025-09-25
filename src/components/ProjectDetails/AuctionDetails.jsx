@@ -62,6 +62,7 @@ import whatsapp from "/assets/icons/social/whatsapp-5.svg";
 
 // Styles
 import styles from "./ProjectDetails.module.css";
+import MainContentLayout from "../MainContentLayout.jsx";
 
 // Constants
 const DEFAULTS = {
@@ -967,6 +968,7 @@ const AuctionDetails = ({ data }) => {
 
   return (
     <>
+    <MainContentLayout>
       <div
         className={`relative h-full ${
           !isAuthenticated ? `md:px-20 lg:px-24` : ``
@@ -1246,6 +1248,7 @@ const AuctionDetails = ({ data }) => {
       </div>
 
       {!isAuthenticated && <Footer />}
+      </MainContentLayout>
     </>
   );
 };
