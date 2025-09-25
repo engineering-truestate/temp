@@ -1,6 +1,6 @@
 // contexts/ModalConfigContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const ModalConfigContext = createContext();
@@ -49,46 +49,37 @@ const getDefaultModalConfig = () => ({
 });
 
 export const ModalConfigProvider = ({ children }) => {
-  // Initialize with default config immediately - no loading state needed
   const [modalConfig, setModalConfig] = useState(getDefaultModalConfig());
-  const [isLoaded, setIsLoaded] = useState(true); // Start as true since we have defaults
+  const [isLoaded, setIsLoaded] = useState(true);
 
   useEffect(() => {
-    const docRef = doc(db, 'truestateAdmin', 'promotionalModal');
-    
-    // Set up real-time listener
-    const unsubscribe = onSnapshot(docRef, 
-      (doc) => {
-        if (doc.exists()) {
-          const firebaseConfig = doc.data();
-          // Merge with defaults to ensure all properties exist
+    const fetchConfig = async () => {
+      try {
+        const docRef = doc(db, 'truestateAdmin', 'promotionalModal');
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const firebaseConfig = docSnap.data();
           setModalConfig(prevConfig => ({
             ...prevConfig,
             ...firebaseConfig
           }));
-          console.log('Modal config updated from Firebase');
+          console.log('Modal config loaded from Firebase');
         } else {
-          console.warn('Modal config document not found, using defaults');
+          console.warn('Modal config not found, using defaults');
         }
-        setIsLoaded(true);
-      },
-      (error) => {
+      } catch (error) {
         console.error('Error fetching modal config:', error);
-        // Keep using default config on error
+      } finally {
         setIsLoaded(true);
       }
-    );
+    };
 
-    return () => unsubscribe();
+    fetchConfig();
   }, []);
 
-  const value = {
-    modalConfig,
-    isLoaded
-  };
-
   return (
-    <ModalConfigContext.Provider value={value}>
+    <ModalConfigContext.Provider value={{ modalConfig, isLoaded }}>
       {children}
     </ModalConfigContext.Provider>
   );
