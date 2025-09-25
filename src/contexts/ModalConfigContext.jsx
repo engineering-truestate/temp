@@ -62,7 +62,8 @@ const getDefaultModalConfig = () => ({
     eventParams: {
       Name: "front_investment_report"
     }
-  }
+  },
+  flag: 'launches',
 });
 
 export const ModalConfigProvider = ({ children }) => {

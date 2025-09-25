@@ -11,6 +11,7 @@ import { runTransaction } from 'firebase/firestore';
 import { useSelector } from "react-redux";
 import { COUNTRY_CODES_OPTIONS } from '../constants/countryCodes';
 import { countryCodeDropdownStyle } from '../utils/countryCodeDropdownStyle';
+import { useModalConfig } from '../contexts/ModalConfigContext';
 
 // UTM Tracking Hook
 function useTrackUTMParams() {
@@ -46,6 +47,8 @@ function NewLaunches() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isAuthenticated, userData } = useSelector((state) => state.auth);
+  const { modalConfig } = useModalConfig(); 
+  console.log(modalConfig)
   
   // You can also destructure individually if needed
 

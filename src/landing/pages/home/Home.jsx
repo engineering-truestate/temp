@@ -27,6 +27,7 @@ const Home = () => {
         images={modalConfig.images}
         navigationPath={modalConfig.navigationPath}
         analyticsEvent={modalConfig.analyticsEvent}
+        flag={modalConfig.flag}
       />
 
       {/* Main Content - Renders immediately with no delays */}
