@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Card, CardHeader, CardBody } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -53,6 +53,7 @@ import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { Loader } from "lucide-react";
 import { updateWishlist, removeWishlist } from "../../slices/wishlistSlice";
 import { addProjectForComparison } from "../../slices/compareSlice";
+import { handleStatus, handleStatusColour, handleTruGrowthStatus, handleTruValueStatus, handleGrowthAndValueStatusColour, handleGrowthStatusColour, handleGrowthStatusTextColour } from "../../utils/propertyHelpers.js";
 
 const PropCard = ({ project }) => {
   const navigate = useNavigate();
@@ -69,62 +70,51 @@ const PropCard = ({ project }) => {
   const { addToast } = useToast(); // Access the toast function
 
   // console.log(isAuthenticated);
-  let maxPricePerSqft;
+  const maxPricePerSqft = useMemo(() => {
+    if (project?.assetType === "plot") {
+      if (project?.configuration && Array.isArray(project.configuration)) {
+        return project.configuration.reduce((max, item) => {
+          const pricePerSqft = item.pricePerSqft || 0;
+          return pricePerSqft > max ? pricePerSqft : max;
+        }, 0);
+      }
+      return 0;
+    } 
+    
+    if (project?.assetType === "apartment") {
+      const configKeys = APARTMENT_CONFIGURATION_KEYS;
+      let maxPrice = 0;
 
-  if (project?.assetType === "plot") {
-    // For plots, use ConfigurationPlot array
-    if (project?.configuration && Array.isArray(project.configuration)) {
-      maxPricePerSqft = project.configuration.reduce((max, item) => {
-        const pricePerSqft = item.pricePerSqft || 0;
-        return pricePerSqft > max ? pricePerSqft : max;
-      }, 0);
-    } else {
-      maxPricePerSqft = 0;
+      if (project?.configuration) {
+        configKeys.forEach((configKey) => {
+          const configData = project.configuration[configKey];
+          if (configData && Array.isArray(configData)) {
+            configData.forEach((item) => {
+              if (item.available && item.sbua > 0) {
+                const pricePerSqft = parseInt(item.currentPrice / item.sbua);
+                maxPrice = pricePerSqft > maxPrice ? pricePerSqft : maxPrice;
+              }
+            });
+          }
+        });
+      }
+      return maxPrice;
+    } 
+    
+    if (project?.assetType === "villa") {
+      if (project?.configuration && Array.isArray(project.configuration)) {
+        return project.configuration.reduce((max, item) => {
+          const pricePerSqft = item.pricePerSqft || 0;
+          return pricePerSqft > max ? pricePerSqft : max;
+        }, 0);
+      }
+      return 0;
     }
-  } else if (project?.assetType === "apartment") {
-    // For apartments, iterate through all BHK configurations
-    const configKeys = APARTMENT_CONFIGURATION_KEYS;
-
-    maxPricePerSqft = 0;
-
-    if (project?.configuration) {
-      configKeys.forEach((configKey) => {
-        const configData = project.configuration[configKey];
-        if (configData && Array.isArray(configData)) {
-          configData.forEach((item) => {
-            if (item.available && item.sbua > 0) {
-              const pricePerSqft = parseInt(item.currentPrice / item.sbua);
-              maxPricePerSqft =
-                pricePerSqft > maxPricePerSqft ? pricePerSqft : maxPricePerSqft;
-            }
-          });
-        }
-      });
-    }
-  } else if (project?.assetType === "villa") {
-    // For villas, use ConfigurationVilla array
-    if (project?.configuration && Array.isArray(project.configuration)) {
-      maxPricePerSqft = project.configuration.reduce((max, item) => {
-        const pricePerSqft = item.pricePerSqft || 0;
-        return pricePerSqft > max ? pricePerSqft : max;
-      }, 0);
-    } else {
-      maxPricePerSqft = 0;
-    }
-  } else {
-    maxPricePerSqft = 0;
-  }
+    
+    return 0;
+  }, [project?.assetType, project?.configuration]);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(fetchCompareProjects());
-  }, [dispatch]);
-
-  // const maxCompareItems = 4; // Maximum number of properties to compare
-  // const projectsToShow = compareProjects.slice(0, maxCompareItems);
-  // const remainingSlots = maxCompareItems - projectsToShow.length;
-
-  // Fetch user's wishlist and compare data on mount
   useEffect(() => {
     if (userId) {
       dispatch(fetchWishlistedProjects(userId));

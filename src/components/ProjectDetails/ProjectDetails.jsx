@@ -73,7 +73,7 @@ const ProjectDetails = () => {
 
   // labels for which we want hover text on info icon
   const labelsWithMoreInfoForProject = {
-    TruEstimate: "Our estimate of the current fair value for this project.",
+    TruEstimate: "Our estimate of the current fair value for this project.",
   };
 
   const labelsWithMoreInfoForInvestment = {
@@ -694,7 +694,7 @@ const ProjectDetails = () => {
           setInvestmentOverviewData([
             {
               label: "Total Investment",
-              value: formatCostSuffix(apiData.minInvestment), // Use minInvestment directly from apiData
+              value: formatCostSuffix(apiDatada.minInvestment), // Use minInvestment directly from apiData
             },
             {
               label: "Total Returns",

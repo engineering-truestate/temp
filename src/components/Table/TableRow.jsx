@@ -26,6 +26,7 @@ import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { updateWishlist } from "../../slices/wishlistSlice";
 import { addProjectForComparison } from "../../slices/compareSlice";
 import { getUnixDateTime } from "../helper/dateTimeHelpers";
+import { toggleCompare, toggleWishlist } from "../../utils/projectActions.js";
 
 const TableRow = ({
   project,
@@ -82,129 +83,14 @@ const TableRow = ({
     });
   };
 
-  const toggleWishlist = async () => {
-    const newState = !isWishlisted;
-    setIsWishlisted(newState);
-
-    try {
-      logEvent(analytics, newState ? "added-to-wishlist" : "removed-from-wishlist", {
-        name: project.projectName,
-      });
-
-      if (newState) {
-        await dispatch(updateWishlist({
-          userId,
-          propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId
-        }));
-        addToast(
-          "Dummy",
-          "success",
-          "Property Added to Wishlist",
-          "The property has been added to the Wishlist."
-        );
-        dispatch(fetchWishlistedProjects(userId));
-      } else {
-        handleRemoveProject2(project.projectId);
-        addToast(
-          "Dummy",
-          "success",
-          "Property Removed from Wishlist",
-          "The property has been removed from the Wishlist."
-        );
-      }
-    } catch (error) {
-      console.error("Error in toggleWishlist:", error);
-      addToast(
-        "Dummy",
-        "error",
-        "Wishlist Action Failed",
-        error.message || "An unexpected error occurred. Please try again."
-      );
-      setIsWishlisted(!newState); // Revert UI on error
-    }
-  };
-
-  const toggleCompare = async () => {
-    const propertyType = project.propertyType || type;
-    if (propertyType === "auction") {
-      addToast(
-        "Dummy",
-        "info",
-        "Compare Not Available",
-        "Auction properties cannot be compared."
-      );
-      return;
-    }
-
-    const newState = !isCompared;
-    setIsCompared(newState);
-
-    try {
-      logEvent(analytics, newState ? "added-to-compare" : "removed-from-compare", {
-        name: project.projectName,
-      });
-
-      if (newState) {
-        await dispatch(addProjectForComparison(project.projectId));
-        addToast(
-          "Dummy",
-          "success",
-          "Property Added to Compare",
-          "The property has been added to the compare list."
-        );
-      } else {
-        addToast(
-          "Dummy",
-          "success",
-          "Property Removed from Compare",
-          "The property has been removed from the compare list."
-        );
-      }
-      dispatch(fetchCompareProjects());
-    } catch (error) {
-      console.error("Error in toggleCompare:", error);
-      addToast(
-        "Dummy",
-        "error",
-        "Compare Action Failed",
-        error.message || "An unexpected error occurred. Please try again."
-      );
-      setIsCompared(!newState); // Revert UI
-    }
-  };
-
-  const handleStatus = (status) => {
-    if (status === "Shared") {
-      return "Being Discussed";
-    }
-    if (status === "Back") {
-      return "Not Interested";
-    }
-    return toCapitalizedWords(status);
-  };
-
-  const handleStatusColour = (status) => {
-    if (status === "Not Discussed") {
-      return "#FBDD97";
-    } else if (status === "Being Discussed") {
-      return "#FCE9BA";
-    } else if (status === "Booking Amount") {
-      return "#91F3BF";
-    } else if (status === "Not Interested") {
-      return "#F9ABB9";
-    } else if (status === "Short Listed") {
-      return "#F6BC2F";
-    } else {
-      return "#C2EFE9";
-    }
-  };
-
   const handleClickLock = () => {
     dispatch(
       setShowSignInModal({ showSignInModal: true, redirectUrl: "/properties" })
     );
   };
+
+  const handleWishlist = () => toggleWishlist({isWishlisted, setIsWishlisted, project, userId, analytics, dispatch, updateWishlist, fetchWishlistedProjects, handleRemoveProject2,addToast,});
+  const handleCompare = () =>  toggleCompare({isCompared, setIsCompared, project, type, analytics, dispatch, addProjectForComparison, fetchCompareProjects, addToast,});
 
   return (
     <>
@@ -404,7 +290,7 @@ const TableRow = ({
                 <img
                   src={isCompared ? CompIconA : CompIcon}
                   alt="Compare"
-                  onClick={toggleCompare}
+                  onClick={handleCompare}
                   className={`${(project.propertyType || type) === "auction" ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                   data-tooltip-id="tooltip3"
                   data-tooltip-content={(project.propertyType || type) === "auction" ? "Compare not available for auction properties" : "Compare"}
@@ -412,7 +298,7 @@ const TableRow = ({
                 <img
                   src={isWishlisted ? StarIconA : StarIcon}
                   alt="Wishlist"
-                  onClick={toggleWishlist}
+                  onClick={handleWishlist}
                   className="cursor-pointer"
                   data-tooltip-id="tooltip3"
                   data-tooltip-content="Wishlist"

@@ -41,6 +41,7 @@ import TableRow from "./TableRow.jsx";
 import Footer from "../../landing/pages/home/Footer";
 import { is } from "date-fns/locale";
 import NoPropertiesFound from "../NoPropertiesFound/NoPropertiesFound.jsx";
+import {handlePrices, handleValueGrowthColor, handleValue, handleGrowth, formatHandOverDate  } from "../../utils/propertyHelpers.js";
 
 const Table = ({
   projects,
@@ -57,24 +58,12 @@ const Table = ({
   const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  let { hits, results } = useHits(); // Fetch Algolia hits (property data)
-  // console.log(hits);
+  let { hits, results } = useHits(); 
   projects = hits;
-
-  // useEffect(() => {
-  //     // Fetch new data or perform any action when currentPage changes
-  //     // You might call a function here to fetch new data based on currentPage
-  //   }, [currentPage]);
-  // console.log("here");
-  const [isCompared, setIsCompared] = useState({});
-  const [isWishlisted, setIsWishlisted] = useState({});
   const [currentStatusState, setCurrentStatusState] = useState(0);
   const { searchTerm } = useSelector((state) => state.projectsState);
 
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-
-  // console.log(searchTerm);
-  // console.log(isAuthenticated);
 
   const userPhoneNumber = useSelector(selectUserPhoneNumber);
   const { loading } = useSelector((state) => state.projectsState);
@@ -83,33 +72,7 @@ const Table = ({
   const { indexUiState, setIndexUiState, status } = useInstantSearch();
   const isReduxLoading = useSelector(selectLoader);
 
-  const [agentsData, setAgentsData] = useState();
-
   useEffect(() => {
-    const fetchAgentsData = async () => {
-      const q = query(collection(db, "agents"));
-      const querySnapshot = await getDocs(q);
-
-      let agents = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const agent = {
-          name: data.name,
-          email: data.email,
-          profilePic: data.profilePic,
-        };
-        agents.push(agent);
-      });
-
-      setAgentsData(agents);
-    };
-
-    fetchAgentsData();
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    // console.log(status, "status table");
-    // console.log(currentStatusState, "currentStatusState");
     setCurrentStatusState((prev) => prev + 1);
   }, [status]);
 
@@ -121,60 +84,9 @@ const Table = ({
     dispatch(fetchWishlistedProjects(userPhoneNumber));
   }, [dispatch]);
 
-  const handleRemoveComparison = (id) => {
-    dispatch(removeProjectFromComparison(id));
-    dispatch(fetchCompareProjects());
-  };
-
-  const handleRemoveWishlist = (id) => {
-    dispatch(removeWishlist({ userPhoneNumber, id }));
-    dispatch(fetchWishlistedProjects(userPhoneNumber));
-  };
 
   const { normalprojects, lastVisible, batchCount, loading2, noMoreProjects } =
     useSelector((state) => state.projectsState);
-
-  // Fetch wishlisted and compared status from Firebase
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const q = query(
-          collection(db, "truEstateUsers"),
-          where("phoneNumber", "==", userPhoneNumber)
-        );
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          let allSharedProperties = [];
-          let comparedProjects = [];
-
-          querySnapshot.forEach((doc) => {
-            allSharedProperties = doc.data().sharedProperties || [];
-            comparedProjects = doc.data().compare || [];
-          });
-
-          // console.log(comparedProjects) ;
-
-          setIsCompared(comparedProjects);
-          setIsWishlisted(allSharedProperties);
-          // console.log(isCompared , allSharedProperties ) ;
-        }
-      } catch (error) {}
-    };
-
-    fetchStatus();
-  }, [hits, userPhoneNumber]);
-
-  const simulateNetworkRequest = () => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (navigator.onLine) {
-          resolve("Success");
-        } else {
-          reject("Network error");
-        }
-      }, 1000);
-    });
-  };
 
   const [filteredProjects, setFilteredProjects] = useState(projects);
 
@@ -397,121 +309,6 @@ const Table = ({
   // const handleNextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
   // const handleLastPage = () => setCurrentPage(totalPages);
 
-  const handleStatus = (status) => {
-    if (status) {
-      if (status === "Shared") {
-        return "Being Discussed";
-      }
-      if (status.includes("Back")) {
-        return "Not Interested";
-      }
-      return toCapitalizedWords(status);
-    }
-    return "";
-  };
-
-  const handleStatusColour = (status) => {
-    if (status) {
-      if (status === "Not Discussed") {
-        return "#FBDD97";
-      } else if (status === "Being Discussed") {
-        return "#FCE9BA";
-      } else if (status === "Booking Amount") {
-        return "#91F3BF";
-      } else if (status === "Not Interested") {
-        return "#F9ABB9";
-      } else if (status === "Short Listed") {
-        return "#F6BC2F";
-      } else {
-        return "#C2EFE9";
-      }
-    }
-    return;
-  };
-
-  const handleAddedBy = (recommendedBy) => {
-    if (recommendedBy) {
-      if (
-        recommendedBy === "Customer" ||
-        recommendedBy === "masal" ||
-        recommendedBy === "agent"
-      ) {
-        return toCapitalizedWords(recommendedBy);
-      }
-
-      const agentData = agentsData?.find(
-        (agent) => agent.email === recommendedBy
-      );
-      if (agentData) {
-        return toCapitalizedWords(agentData.name);
-      }
-      return recommendedBy;
-    }
-    return "";
-  };
-
-  const handleValue = (value) => {
-    if (value) {
-      return toCapitalizedWords(value);
-    }
-    return "Undervalued";
-  };
-
-  const handleGrowth = (growth) => {
-    if (growth) {
-      return toCapitalizedWords(growth);
-    }
-    return "Overvalued";
-  };
-
-  // const handleGrowth = (cagr) => {
-  //   if (cagr <= 4) {
-  //     return "Low";
-  //   } else if (cagr <= 8) {
-  //     return "Medium";
-  //   } else if (cagr > 8) {
-  //     return "High";
-  //   }
-  //   return "Overvalued";
-  // };
-
-  const handleValueGrowthColor = (item) => {
-    if (item === "Undervalued" || item === "High") {
-      return "#DAFBEA";
-    } else if (item === "Overvalued" || item === "Low") {
-      return "#F9ABB9";
-    } else if (item === "Fairly Valued" || item === "Medium") {
-      return "#FBDD97";
-    } else return "#FBDAC0";
-  };
-
-  const handlePrices = (price) => {
-    if (price) {
-      return formatCost(parseInt(price));
-    } else return "____";
-  };
-
-  function formatHandOverDate(date) {
-    if (date === "____") return date;
-    const [month, year] = date.split("/");
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    return `${monthNames[parseInt(month) - 1]} ${year}`;
-  }
-
-  // console.log(trueS, hits);
 
   const resetAllFilters = () => {
     // Log event for resetting filters
