@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   useLocation,
@@ -23,10 +23,16 @@ import { useTrackUTMParams } from "./hooks/useTrackUTMParams.js";
 
 import SignIn from "./pages/SignIn";
 
+// Import the Modal Config Context
+import { ModalConfigProvider } from "./contexts/ModalConfigContext";
+
 function AppWrapper() {
   return (
     <Router>
-      <App />
+      {/* Wrap the entire app with ModalConfigProvider */}
+      <ModalConfigProvider>
+        <App />
+      </ModalConfigProvider>
     </Router>
   );
 }
