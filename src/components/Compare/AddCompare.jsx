@@ -16,87 +16,59 @@ import styles1 from "../../components/SearchBar.module.css";
 
 // Assets
 import crossCompare from "/assets/icons/features/compare-remove-2.svg";
-import search from "/assets/icons/ui/search.svg";
 import close from "/assets/icons/navigation/close-compare.svg";
-import {
-  fetchAllProjects,
-  selectAllProjects,
-} from "../../slices/projectSlice.js";
+import algoliaService from "../../services/algoliaService.js";
 
-// Constants
 const MAX_COMPARE_PROJECTS = 4;
-const SEARCH_DEBOUNCE_DELAY = 500;
 
-const ComparePage = () => {
-  // Hooks
+// ---------- Custom Hit Component ----------
+const Hit = ({ hit, onSelect }) => {
+  return (
+    <li
+      key={hit.objectID}
+      className="py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+      onClick={() => onSelect(hit)}
+    >
+      {toCapitalizedWords(hit.projectName)}
+    </li>
+  );
+};
+
+// simple debounce hook
+function useDebouncedValue(value, delay = 500) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
+// ---------- Main Page ----------
+const AddCompare = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { addToast } = useToast();
 
-  // Selectors
   const compareProjects = useSelector(selectCompareProjects) || [];
-  const allProjects = useSelector(selectAllProjects);
 
-  // State
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [filteredProjects, setFilteredProjects] = useState([]);
   const [searchActive, setSearchActive] = useState(false);
+  const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, 300); // 300ms debounce, change if you want
 
-  // Refs
+  const [results, setResults] = useState([]);
+
   const searchContainerRef = useRef(null);
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Computed values
   const canAddMoreProjects = compareProjects.length < MAX_COMPARE_PROJECTS;
-  const hasSearchResults = filteredProjects.length > 0;
-
-  // Debounced search effect
-  useEffect(() => {
-    dispatch(fetchAllProjects());
-  }, []);
-
-  // Debounced search effect
-  useEffect(() => {
-    if (!allProjects || searchTerm.trim().length === 0) {
-      setFilteredProjects([]);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      const filtered = (allProjects || []).filter(
-  (project) =>
-    project.projectName &&
-    project.projectName.toLowerCase().includes(searchTerm.toLowerCase())
-);
-      setFilteredProjects(filtered);
-    }, SEARCH_DEBOUNCE_DELAY);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, allProjects]);
-
-  // Search handlers
-  const handleInputFocus = useCallback(() => {
-    setSearchActive(true);
-    setIsDropdownVisible(true);
-    window.history.pushState({ searchActive: true }, "");
-  }, []);
 
   const closeSearch = useCallback(() => {
     setSearchActive(false);
-    setIsDropdownVisible(false);
-    setSearchTerm("");
-    if (inputRef.current) {
-      inputRef.current.blur();
-    }
+    if (inputRef.current) inputRef.current.blur();
   }, []);
 
-  const handleInputChange = useCallback((event) => {
-    setSearchTerm(event.target.value);
-  }, []);
-
-  // Project management handlers
   const handleProjectSelect = useCallback(
     async (project) => {
       try {
@@ -114,7 +86,7 @@ const ComparePage = () => {
           "The property has been added to the compare list."
         );
 
-        await dispatch(addProjectForComparison(project.id)).unwrap();
+        await dispatch(addProjectForComparison(project.objectID)).unwrap();
         await dispatch(fetchCompareProjects()).unwrap();
       } catch (error) {
         addToast(
@@ -170,20 +142,56 @@ const ComparePage = () => {
     [closeSearch]
   );
 
-  // Event listeners effect
   useEffect(() => {
     if (searchActive) {
       document.addEventListener("mousedown", handleClickOutside);
       window.addEventListener("popstate", closeSearch);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("popstate", closeSearch);
     };
   }, [searchActive, handleClickOutside, closeSearch]);
 
-  // Render helpers
+  // Perform Algolia search when debouncedQuery changes
+  useEffect(() => {
+    let cancelled = false;
+
+    // clear results when query is empty
+    if (!debouncedQuery || debouncedQuery.trim().length === 0) {
+      setResults([]);
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await algoliaService.client.search([
+          {
+            indexName: "truEstatePreLaunch",
+            query: debouncedQuery,
+            params: {
+              filters: "showOnTruEstate:true",
+              hitsPerPage: 6,
+            },
+          },
+        ]);
+
+        if (cancelled) return;
+        const hits =
+          (res && res.results && res.results[0] && res.results[0].hits) || [];
+        setResults(hits);
+      } catch (err) {
+        // keep silent, but you can console.log for debugging
+        console.error("Algolia search error:", err);
+        if (!cancelled) setResults([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery]);
+
   const renderProjectItem = (project) => (
     <div
       key={project?.id}
@@ -205,76 +213,6 @@ const ComparePage = () => {
     </div>
   );
 
-  const renderSearchInput = () => (
-    <div className="add-property flex justify-between items-center py-4 border-b">
-      <div
-        className={`flex items-center justify-center rounded-lg w-full ${styles1.Searchx}`}
-        ref={searchContainerRef}
-      >
-        <form method="GET" className="rounded-lg w-full bg-[#FAFAFA]">
-          <div className="flex">
-            <span className="inset-y-0 relative left-2 flex items-center mr-2">
-              <button
-                className="mx-1 focus:outline-none focus:shadow-outline"
-                onClick={(e) => e.preventDefault()}
-                type="button"
-                aria-label="Search"
-              >
-                <img src={search} alt="Search" />
-              </button>
-            </span>
-            <input
-              ref={inputRef}
-              type="search"
-              name="q"
-              value={searchTerm}
-              onFocus={handleInputFocus}
-              onChange={handleInputChange}
-              className="pl-2 py-2 text-sm rounded-md focus:outline-none focus:text-gray-900 w-full bg-gray-50"
-              placeholder="Search properties..."
-              autoComplete="off"
-            />
-            <button
-              className={styles1.searchbtn}
-              onClick={(e) => e.preventDefault()}
-              type="button"
-            >
-              <p className={styles1.searchbtntxt}>Search</p>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-
-  const renderSearchResults = () => {
-    if (!isDropdownVisible || !searchActive) return null;
-
-    return hasSearchResults ? (
-      <ul
-        className="dropdown absolute bg-[#FAFAFA] border border-gray-200 rounded-lg shadow-lg mr-4 max-h-60 overflow-y-auto z-10 mt-1"
-        ref={dropdownRef}
-      >
-        {filteredProjects.map((project) => (
-          <li
-            key={project.id}
-            className="py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
-            onClick={() => handleProjectSelect(project)}
-          >
-            {toCapitalizedWords(project.projectName)}
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <div
-        className="text-center py-2 border-b-[1px] text-gray-500"
-        ref={dropdownRef}
-      >
-        No Matching Projects Found
-      </div>
-    );
-  };
-
   return (
     <div className="h-[100vh] ml-4 mr-4 md:hidden">
       {/* Header */}
@@ -286,15 +224,51 @@ const ComparePage = () => {
       </header>
 
       {/* Properties List */}
-      <div className="properties-list">
+      <div className="properties-list relative">
         {/* Existing Projects */}
         {!searchActive && compareProjects?.map(renderProjectItem)}
 
-        {/* Search Input */}
-        {canAddMoreProjects && renderSearchInput()}
+        {/* Algolia debounced search (custom input) */}
+        {canAddMoreProjects && (
+          <div
+            className={`flex items-center justify-center rounded-lg w-full ${styles1.Searchx}`}
+            ref={searchContainerRef}
+          >
+            <div className="rounded-lg w-full bg-[#FAFAFA] relative">
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => setSearchActive(true)}
+                placeholder="Search properties..."
+                className="pl-2 py-2 text-sm rounded-md focus:outline-none focus:text-gray-900 w-full bg-gray-50"
+                aria-label="Search properties"
+              />
+            </div>
 
-        {/* Search Results */}
-        {renderSearchResults()}
+            {/* Dropdown results */}
+            {searchActive && (
+              <ul
+                className="absolute left-0 top-full right-0 bg-[#FAFAFA] border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 mt-1"
+                ref={dropdownRef}
+              >
+                {results.length === 0 ? (
+                  <li className="py-2 px-4 text-sm text-gray-500">
+                    No results
+                  </li>
+                ) : (
+                  results.map((hit) => (
+                    <Hit
+                      key={hit.objectID}
+                      hit={hit}
+                      onSelect={handleProjectSelect}
+                    />
+                  ))
+                )}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Compare Button */}
@@ -310,4 +284,4 @@ const ComparePage = () => {
   );
 };
 
-export default ComparePage;
+export default AddCompare;
