@@ -312,24 +312,25 @@ const Navbar = () => {
         <div className="sticky top-0 z-[50]">
           <div
             ref={bannerRef}
-            className="overflow-hidden transition-all duration-500 ease-out"
+            className="overflow-hidden transition-all duration-500 ease-out bg-white"
             style={{
               height:
-                isPromotionalBannerVisible && bannerLoaded ? "auto" : "0px",
+                isPromotionalBannerVisible && bannerLoaded
+                  ? `${bannerRef.current?.scrollHeight || 0}px`
+                  : "0px",
               opacity: bannerLoaded ? 1 : 0,
             }}
           >
             {isPromotionalBannerVisible && (
               <div
                 className={`
-        transition-transform duration-500 ease-out
+        transition-transform duration-500 ease-out bg-white
         ${bannerLoaded ? "translate-y-0" : "-translate-y-full"}
       `}
               >
                 <PromotionalBanner
                   isVisible={bannerConfig.isVisible}
                   content={bannerConfig.content}
-                  styling={bannerConfig.styling}
                   images={bannerConfig.images}
                   navigationPath={bannerConfig.navigationPath}
                   analyticsEvent={bannerConfig.analyticsEvent}
