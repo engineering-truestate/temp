@@ -9,26 +9,23 @@ import Carousel from "../home/Carousel.jsx";
 import Banners from "./Banners.jsx";
 import JoinOurWhatsappCommunity from "./JoinOurWhatsappCommunity.jsx";
 import PromotionalModal from "../../../components/Website/PromotionalModal.jsx";
-import { useModalConfig } from "../../../contexts/ModalConfigContext.jsx";
 
+// ✅ import modalConfig from the combined context
+import { useModalConfig } from "../../../contexts/SiteConfigContext.jsx";
 
 const Home = () => {
-  const { modalConfig } = useModalConfig(); 
+  const { modalConfig } = useModalConfig(); // ✅ modal config from context
+
 
   return (
     <>
       {/* Promotional Modal - Config available immediately */}
-      <PromotionalModal
-        isEnabled={modalConfig.isEnabled}
-        delay={modalConfig.delay}
-        sessionStorageKey={modalConfig.sessionStorageKey}
-        content={modalConfig.content}
-        styling={modalConfig.styling}
-        images={modalConfig.images}
-        navigationPath={modalConfig.navigationPath}
-        analyticsEvent={modalConfig.analyticsEvent}
-        flag={modalConfig.flag}
-      />
+      {modalConfig && modalConfig.isEnabled && (
+        <PromotionalModal
+          // spread all modalConfig props instead of typing them one by one
+          {...modalConfig}
+        />
+      )}
 
       {/* Main Content - Renders immediately with no delays */}
       <Hero />

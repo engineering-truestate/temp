@@ -23,16 +23,15 @@ import { useTrackUTMParams } from "./hooks/useTrackUTMParams.js";
 
 import SignIn from "./pages/SignIn";
 
-// Import the Modal Config Context
-import { ModalConfigProvider } from "./contexts/ModalConfigContext";
+// ⬇️ import the new combined context provider instead of ModalConfigProvider
+import { SiteConfigProvider } from "./contexts/SiteConfigContext";
 
 function AppWrapper() {
   return (
     <Router>
-      {/* Wrap the entire app with ModalConfigProvider */}
-      <ModalConfigProvider>
+      <SiteConfigProvider>
         <App />
-      </ModalConfigProvider>
+      </SiteConfigProvider>
     </Router>
   );
 }
@@ -41,10 +40,9 @@ function App() {
   const location = useLocation();
   const { toasts, removeToast } = useToast();
   const userPhoneNumber = useSelector(selectUserPhoneNumber);
-  const isAuthenticated = useSelector((state)=>state.auth.isAuthenticated);
-  const {showSignInModal} = useSelector((state)=>state.modal);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const { showSignInModal } = useSelector((state) => state.modal);
 
-  
   useTrackUTMParams();
 
   useEffect(() => {
@@ -55,16 +53,14 @@ function App() {
   useEffect(() => {
     try {
       const cleanPhoneNumber = String(userPhoneNumber).trim();
-
       setUserId(analytics, cleanPhoneNumber);
-
       setUserProperties(analytics, {
         authenticated: isAuthenticated,
       });
     } catch (error) {
       console.error("Error setting analytics user ID:", error);
     }
-}, [isAuthenticated, userPhoneNumber]);
+  }, [isAuthenticated, userPhoneNumber]);
 
   const staticLandingRoutes = [
     "/",
@@ -93,27 +89,26 @@ function App() {
     return false;
   };
 
-  const isPropertiesPath = () => location.pathname.startsWith('/properties');
-  
+  const isPropertiesPath = () => location.pathname.startsWith("/properties");
+
   return (
     <div>
-      {/* tracker for tracking the current page location and previous page location  */}
-      {/* <PageTracker /> */}
-
-      {(isLandingPage() || !isAuthenticated) &&  (
+      {(isLandingPage() || !isAuthenticated) && (
         <>
-          {/* <Cursor /> */}
           <Navbar />
           <ScrollToTop />
         </>
       )}
 
-        <ToastsContainer toasts={toasts} removeToast={removeToast} />
+      <ToastsContainer toasts={toasts} removeToast={removeToast} />
 
       <AppRoutes />
-      {((isLandingPage() || !isAuthenticated ) && location.pathname !== "/products/vault") && !isPropertiesPath() && <Footer />}
-      
-      {showSignInModal && <SignIn/>}
+
+      {((isLandingPage() || !isAuthenticated) &&
+        location.pathname !== "/products/vault") &&
+        !isPropertiesPath() && <Footer />}
+
+      {showSignInModal && <SignIn />}
     </div>
   );
 }

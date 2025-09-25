@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import { setShowSignInModal } from "../../../slices/modalSlice.js";
 import SignInButton from "../button/SignInButton.jsx";
 import PromotionalBanner from "../../../components/Website/PromotionalBanner.jsx";
+import { useBannerConfig } from "../../../contexts/SiteConfigContext.jsx";
 
 // Logo Section Component
 const LogoSection = () => (
@@ -204,6 +205,42 @@ const Navbar = () => {
   const bannerRef = useRef(null);
   const navbarRef = useRef(null);
 
+  const [bannerLoaded, setBannerLoaded] = useState(false);
+  const { bannerConfig } = useBannerConfig();
+
+  // Watch for config arrival
+  useEffect(() => {
+    if (bannerConfig) {
+      // Store current scroll position before banner appears
+      const currentScrollY = window.scrollY;
+
+      // Use a ResizeObserver to detect when the navbar height changes
+      const resizeObserver = new ResizeObserver(() => {
+        // Maintain scroll position when navbar height changes
+        if (window.scrollY !== currentScrollY) {
+          window.scrollTo({
+            top: currentScrollY,
+            behavior: "auto", // Instant, no smooth scrolling
+          });
+        }
+      });
+
+      // Observe the navbar container for size changes
+      if (navbarRef.current?.parentElement) {
+        resizeObserver.observe(navbarRef.current.parentElement);
+      }
+
+      // Small timeout to allow animation
+      const timer = setTimeout(() => setBannerLoaded(true), 50);
+
+      return () => {
+        clearTimeout(timer);
+        resizeObserver.disconnect();
+      };
+    }
+  }, [bannerConfig]);
+  const isPromotionalBannerVisible = bannerConfig?.isVisible;
+
   // const [isBannerVisible, setIsBannerVisible] = useState(true);
   const isBannerVisible = false; // Set to true for testing
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -273,58 +310,34 @@ const Navbar = () => {
     <>
       {
         <div className="sticky top-0 z-[50]">
-          <PromotionalBanner
-            ref={bannerRef} // if you were using ref
-            isVisible={true}
-            content={{
-              desktop: {
-                title:
-                  "Compare new launches near Bengaluru airport by Tata, Sattva and others",
-                ctaText: "View report",
-                ctaIcon: "→",
-              },
-              mobile: {
-                title:
-                  "Compare new launches near Bengaluru airport by Tata, Sattva and others",
-                ctaText: "View Report",
-                ctaIcon: "→",
-              },
+          <div
+            ref={bannerRef}
+            className="overflow-hidden transition-all duration-500 ease-out"
+            style={{
+              height:
+                isPromotionalBannerVisible && bannerLoaded ? "auto" : "0px",
+              opacity: bannerLoaded ? 1 : 0,
             }}
-            styling={{
-              desktop: {
-                height: "53px",
-                gradient: "from-[#276B32] to-[#1E4E51]",
-                titleSize: "text-[16px]",
-                titleFont: "font-[Montserrat]",
-                ctaSize: "text-[13px]",
-                ctaFont: "font-[Lato]",
-                borderRadius: "rounded-b-[12px]",
-              },
-              mobile: {
-                height: "81px",
-                gradient: "from-[#276B32] to-[#1E4E51]",
-                titleSize: "text-[13px]",
-                titleFont: "font-[Montserrat]",
-                ctaSize: "text-[12px]",
-                ctaFont: "font-[Lato]",
-                borderRadius: "",
-              },
-              background: "bg-[#FAFAFA]",
-              padding: "px-0 sm:px-[7.5%]",
-            }}
-            images={{
-              desktopBackground: "/assets/images/banners/build.svg",
-              mobileBackground: "/assets/images/banners/building1.svg",
-            }}
-            navigationPath="/new-launches"
-            analyticsEvent={{
-              eventName: "click_investment_report",
-              eventParams: {
-                Name: "front_investment_report",
-              },
-            }}
-            modalStateSelector={(state) => state.modal.showSignInModal}
-          />
+          >
+            {isPromotionalBannerVisible && (
+              <div
+                className={`
+        transition-transform duration-500 ease-out
+        ${bannerLoaded ? "translate-y-0" : "-translate-y-full"}
+      `}
+              >
+                <PromotionalBanner
+                  isVisible={bannerConfig.isVisible}
+                  content={bannerConfig.content}
+                  styling={bannerConfig.styling}
+                  images={bannerConfig.images}
+                  navigationPath={bannerConfig.navigationPath}
+                  analyticsEvent={bannerConfig.analyticsEvent}
+                  modalStateSelector={(state) => state.modal.showSignInModal}
+                />
+              </div>
+            )}
+          </div>
 
           {/* ✅ Original Navbar */}
           <div
