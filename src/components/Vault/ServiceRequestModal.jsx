@@ -8,12 +8,7 @@ import { fetchUserProfile } from "../../slices/userSlice";
 import { toCapitalizedWords } from "../../utils/common";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
-import { 
-  collection, 
-  getDocs, 
-  query, 
-  where 
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const ServiceRequestModal = ({
@@ -27,7 +22,8 @@ const ServiceRequestModal = ({
   const [loading, setLoading] = useState(false);
   const userPhoneNumber = useSelector(selectUserPhoneNumber);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [isConfirmationModalOpen2, setIsConfirmationModalOpen2] = useState(true);
+  const [isConfirmationModalOpen2, setIsConfirmationModalOpen2] =
+    useState(true);
   const [filteredProperties, setFilteredProperties] = useState([]);
 
   const { profile } = useSelector((state) => state.user);
@@ -40,7 +36,6 @@ const ServiceRequestModal = ({
       dispatch(fetchUserProfile(userPhoneNumber));
     }
   }, [dispatch, userPhoneNumber]);
-
 
   // useEffect(() => {
   //   if (profile && profile.tasks && service && properties) {
@@ -64,58 +59,57 @@ const ServiceRequestModal = ({
   //   } else {
   //     setFilteredProperties(properties || []);
   //   }
-  // }, [profile, properties, service]); 
+  // }, [profile, properties, service]);
 
-//   useEffect(() => {
-//   const filterPropertiesByTasks = async () => {
-//     if (service && properties && userPhoneNumber) {
-//       setLoading(true);
-//       try {
-//         // Map service titles to task names
-//         const serviceToTaskMapping = {
-//           "Khata Transfer": "khata-transfer",
-//           "Sell Property": "sell-property", 
-//           "Title Clearance": "title-clearance",
-//           "Electricity Bill Transfer": "electricity-bill",
-//           "Find Tenant": "find-tenant", // Note: "Find Tenants" maps to "find-tenant"
-//           "Collect Rent": "rent-collection"
-//         };
-//         console.log("service",service)
-//         const taskName = serviceToTaskMapping[service];
+  //   useEffect(() => {
+  //   const filterPropertiesByTasks = async () => {
+  //     if (service && properties && userPhoneNumber) {
+  //       setLoading(true);
+  //       try {
+  //         // Map service titles to task names
+  //         const serviceToTaskMapping = {
+  //           "Khata Transfer": "khata-transfer",
+  //           "Sell Property": "sell-property",
+  //           "Title Clearance": "title-clearance",
+  //           "Electricity Bill Transfer": "electricity-bill",
+  //           "Find Tenant": "find-tenant", // Note: "Find Tenants" maps to "find-tenant"
+  //           "Collect Rent": "rent-collection"
+  //         };
+  //         console.log("service",service)
+  //         const taskName = serviceToTaskMapping[service];
 
-//         console.log("taskName", taskName);
-//         // Query truEstateTasks collection for this service
-//         const tasksCollectionRef = collection(db, "truEstateTasks");
-//         const q = query(
-//           tasksCollectionRef,
-//           where("taskType", "==", "vault-service"),
-//           where("taskName", "==", taskName),
-//         );
+  //         console.log("taskName", taskName);
+  //         // Query truEstateTasks collection for this service
+  //         const tasksCollectionRef = collection(db, "truEstateTasks");
+  //         const q = query(
+  //           tasksCollectionRef,
+  //           where("taskType", "==", "vault-service"),
+  //           where("taskName", "==", taskName),
+  //         );
 
-//         const tasksSnapshot = await getDocs(q);
-//         console.log("tasksSnapshot", tasksSnapshot);
-        
-//         // Get property IDs that already have this service requested
-//         const servicePropertyIds = tasksSnapshot.docs.map(doc => doc.data().projectId);
+  //         const tasksSnapshot = await getDocs(q);
+  //         console.log("tasksSnapshot", tasksSnapshot);
 
-//         // Filter out properties that already have this service requested
-//         const updatedFilteredProperties = properties.filter(
-//           (property) => !servicePropertyIds.includes(property.projectId)
-//         );
+  //         // Get property IDs that already have this service requested
+  //         const servicePropertyIds = tasksSnapshot.docs.map(doc => doc.data().projectId);
 
-//         setFilteredProperties(updatedFilteredProperties);
-//       } catch (error) {
-//         console.error("Error filtering properties by tasks:", error);
-//         setFilteredProperties(properties || []);
-//       }
-//     } else {
-//       setFilteredProperties(properties || []);
-//     }
-//   };
+  //         // Filter out properties that already have this service requested
+  //         const updatedFilteredProperties = properties.filter(
+  //           (property) => !servicePropertyIds.includes(property.projectId)
+  //         );
 
-//   filterPropertiesByTasks();
-// }, [service, properties, userPhoneNumber]);
+  //         setFilteredProperties(updatedFilteredProperties);
+  //       } catch (error) {
+  //         console.error("Error filtering properties by tasks:", error);
+  //         setFilteredProperties(properties || []);
+  //       }
+  //     } else {
+  //       setFilteredProperties(properties || []);
+  //     }
+  //   };
 
+  //   filterPropertiesByTasks();
+  // }, [service, properties, userPhoneNumber]);
 
   useEffect(() => {
     const filterPropertiesByTasks = async () => {
@@ -125,43 +119,68 @@ const ServiceRequestModal = ({
           // Map service titles to task names
           const serviceToTaskMapping = {
             "Khata Transfer": "khata-transfer",
-            "Sell Property": "sell-property", 
+            "Sell Property": "sell-property",
             "Title Clearance": "title-clearance",
             "Electricity Bill Transfer": "electricity-bill",
             "Find Tenants": "find-tenant",
             "Find Tenant": "find-tenant", // Handle both variations
-            "Collect Rent": "rent-collection"
+            "Collect Rent": "rent-collection",
           };
 
           const taskName = serviceToTaskMapping[service];
+          console.log(service, 'service')
 
           if (taskName) {
             // Query truEstateTasks collection for this service
             if (taskName === "find-tenant" || taskName === "rent-collection") {
-              setFilteredProperties(properties || []);
-            } 
+              // Initially include all properties
+              const updatedFilteredProperties = (properties || []).filter(
+                (prop) =>
+                  prop.truestimatedFullPrice != null &&
+                  prop.purchaseAmount != null
+              );
+              setFilteredProperties(updatedFilteredProperties);
+            } else {
+              const tasksCollectionRef = collection(db, "truEstateTasks");
+              const q = query(
+                tasksCollectionRef,
+                where("taskType", "==", "vault-service"),
+                where("taskName", "==", taskName)
+                //where("userPhoneNumber", "==", userPhoneNumber)
+              );
 
-            else {
+              const tasksSnapshot = await getDocs(q);
 
-            const tasksCollectionRef = collection(db, "truEstateTasks");
-            const q = query(
-              tasksCollectionRef,
-              where("taskType", "==", "vault-service"),
-              where("taskName", "==", taskName),
-              //where("userPhoneNumber", "==", userPhoneNumber)
-            );
+              // Get property IDs that already have this service requested
+              const servicePropertyIds = tasksSnapshot.docs.map(
+                (doc) => doc.data().projectId
+              );
 
-            const tasksSnapshot = await getDocs(q);
-            
-            // Get property IDs that already have this service requested
-            const servicePropertyIds = tasksSnapshot.docs.map(doc => doc.data().projectId);
+              // Filter out properties that already have this service requested
+              const updatedFilteredProperties = properties.filter(
+                (property) => !servicePropertyIds.includes(property.projectId)
+              );
 
-            // Filter out properties that already have this service requested
-            const updatedFilteredProperties = properties.filter(
-              (property) => !servicePropertyIds.includes(property.projectId)
-            );
+              const updatedFilteredPropertiesWithPriceCheck =
+                updatedFilteredProperties.filter((filteredProp) => {
+                  // Find corresponding property in original properties array
+                  const originalProp = properties.find(
+                    (p) => p.id === filteredProp.id
+                  );
 
-            setFilteredProperties(updatedFilteredProperties);
+                  // Keep only if both truestimatedFullPrice and purchaseAmount exist
+                  return (
+                    originalProp &&
+                    originalProp.truestimatedFullPrice != null &&
+                    originalProp.purchaseAmount != null
+                  );
+                });
+
+              setFilteredProperties(updatedFilteredPropertiesWithPriceCheck);
+              console.log(
+                "After price filtering:",
+                updatedFilteredPropertiesWithPriceCheck
+              );
             }
           } else {
             setFilteredProperties(properties || []);
@@ -182,7 +201,10 @@ const ServiceRequestModal = ({
 
   // Log changes to filtered properties for debugging
   const handleClickOutside = (e) => {
-    if (raiseRequestRef.current && !raiseRequestRef.current.contains(e.target)) {
+    if (
+      raiseRequestRef.current &&
+      !raiseRequestRef.current.contains(e.target)
+    ) {
       onClose();
     }
   };
@@ -252,17 +274,21 @@ const ServiceRequestModal = ({
     <>
       {isConfirmationModalOpen2 && (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-          <div 
-            className="bg-[#FAFAFA] w-full max-w-[448px] md:w-[448px] h-fit py-5 px-6 rounded-lg border ml-4 mr-4 border-gray-300" 
+          <div
+            className="bg-[#FAFAFA] w-full max-w-[448px] md:w-[448px] h-fit py-5 px-6 rounded-lg border ml-4 mr-4 border-gray-300"
             ref={raiseRequestRef}
           >
             <div className="flex justify-between items-center mb-5">
               <h2 className="font-montserrat font-bold text-[18px] text-[#0A0B0A]">
                 {service}
               </h2>
-              <img src={close} onClick={handleCloseModal} className="cursor-pointer" />
+              <img
+                src={close}
+                onClick={handleCloseModal}
+                className="cursor-pointer"
+              />
             </div>
-            
+
             {loading ? (
               <div className="flex justify-center items-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#153E3B]"></div>
@@ -274,7 +300,7 @@ const ServiceRequestModal = ({
                     ? "Please select a property"
                     : "No Property Available"}
                 </p>
-                
+
                 <div className="grid grid-cols-1 mb-5">
                   {filteredProperties.map((property, index) => (
                     <label
@@ -285,7 +311,10 @@ const ServiceRequestModal = ({
                         type="radio"
                         name="property"
                         value={property.projectName}
-                        checked={selectedProperty?.projectName === property?.projectName}
+                        checked={
+                          selectedProperty?.projectName ===
+                          property?.projectName
+                        }
                         onChange={() => setSelectedProperty(property)}
                         className="w-5 h-5 border border-gray-400 checked:bg-[#153E3B] checked:border-none"
                       />
@@ -295,18 +324,26 @@ const ServiceRequestModal = ({
                     </label>
                   ))}
                 </div>
-                
+
                 <button
                   className={`w-full md:w-[400px] px-[32px] py-[8px] ${
-                    filteredProperties.length > 0 && selectedProperty && !loading
-                      ? "bg-[#153E3B] text-[#FAFBFC]" 
+                    filteredProperties.length > 0 &&
+                    selectedProperty &&
+                    !loading
+                      ? "bg-[#153E3B] text-[#FAFBFC]"
                       : "bg-[#CCCBCB] text-[#5A5555]"
                   } rounded-[4px] text-center font-lato text-[14px] font-medium leading-[21px]`}
                   onClick={() => {
                     handleContinue();
-                    logEvent(analytics, "click_inside_vault_raise_request", { Name: "raise_request" });
+                    logEvent(analytics, "click_inside_vault_raise_request", {
+                      Name: "raise_request",
+                    });
                   }}
-                  disabled={!selectedProperty || loading || filteredProperties.length === 0}
+                  disabled={
+                    !selectedProperty ||
+                    loading ||
+                    filteredProperties.length === 0
+                  }
                 >
                   {loading ? "Raising Request..." : "Raise Request"}
                 </button>

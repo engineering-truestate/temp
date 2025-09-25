@@ -6,10 +6,10 @@ import infoIcon from "/assets/icons/ui/info.svg";
 // import whiteLock from "/icons-1/lock-white.svg"; // File no longer exists
 import { useDispatch, useSelector } from "react-redux";
 import { setShowSignInModal } from "../../slices/modalSlice";
-// import calender from "/assets/icons/calender.svg"; // File not found
+import calender from "/assets/icons/ui/info.svg"; // File not found
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
-// import truEstimateSymbol from "/assets/icons/truEstimateSymbol.svg"; // File not found
+import truEstimateSymbol from "/assets/icons/brands/truestate-logo-alt.svg"; // File not found
 import FractionalInvestment from "./FractionalInvestmentGant";
 import { red } from "@mui/material/colors";
 //import { useLocation } from "react-router-dom";
