@@ -49,6 +49,7 @@ const getDefaultBannerConfig = () => ({
   navigationPath: "/new-launches",
   analyticsEvent: { eventName: "click_investment_report", eventParams: { Name: "front_investment_report" } },
   modalStateSelector: (state) => state.modal.showSignInModal,
+  flag:'launches'
 });
 
 /* ---------- Context + Hooks ---------- */
