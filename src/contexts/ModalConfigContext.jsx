@@ -32,24 +32,6 @@ const getDefaultModalConfig = () => ({
       ctaIcon: "→"
     }
   },
-  styling: {
-    desktop: {
-      maxWidth: "639px",
-      height: "344px",
-      gradient: "from-[#276B32] to-[#1E4E51]",
-      titleSize: "text-[36px]",
-      descriptionSize: "text-[18px]",
-      ctaSize: "text-[13px]"
-    },
-    mobile: {
-      maxWidth: "87%",
-      height: "420px",
-      gradient: "from-[#276B32] to-[#1E4E51]",
-      titleSize: "text-[22px]",
-      descriptionSize: "text-[14px]",
-      ctaSize: "text-[13px]"
-    }
-  },
   images: {
     newBadge: "/assets/icons/ui/new-badge.svg",
     closeIcon: "/assets/icons/navigation/btn-close-modal.svg",

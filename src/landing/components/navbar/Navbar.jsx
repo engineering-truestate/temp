@@ -290,28 +290,6 @@ const Navbar = () => {
                 ctaIcon: "→",
               },
             }}
-            styling={{
-              desktop: {
-                height: "53px",
-                gradient: "from-[#276B32] to-[#1E4E51]",
-                titleSize: "text-[16px]",
-                titleFont: "font-[Montserrat]",
-                ctaSize: "text-[13px]",
-                ctaFont: "font-[Lato]",
-                borderRadius: "rounded-b-[12px]",
-              },
-              mobile: {
-                height: "81px",
-                gradient: "from-[#276B32] to-[#1E4E51]",
-                titleSize: "text-[13px]",
-                titleFont: "font-[Montserrat]",
-                ctaSize: "text-[12px]",
-                ctaFont: "font-[Lato]",
-                borderRadius: "",
-              },
-              background: "bg-[#FAFAFA]",
-              padding: "px-0 sm:px-[7.5%]",
-            }}
             images={{
               desktopBackground: "/assets/images/banners/build.svg",
               mobileBackground: "/assets/images/banners/building1.svg",
