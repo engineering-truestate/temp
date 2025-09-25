@@ -5,21 +5,14 @@ import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 // Firebase
-import {
-  arrayUnion,
-  collection,
-  doc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { logEvent } from "firebase/analytics";
 import { analytics, db } from "../../firebase";
 
 // Redux Slices
 import {
   fetchWishlistedProjects,
+  updateWishlist,
   removeWishlist,
 } from "../../slices/wishlistSlice";
 import { selectUserPhoneNumber } from "../../slices/userAuthSlice";
@@ -119,9 +112,7 @@ const AuctionDetails = ({ data }) => {
   // Investment Parameters
   const [holdingPeriod] = useState(DEFAULTS.HOLDING_PERIOD);
   const [sellingCost, setSellingCost] = useState(DEFAULTS.SELLING_COST);
-  const [loanPercentage] = useState(
-    DEFAULTS.LOAN_PERCENTAGE_DEFAULT
-  );
+  const [loanPercentage] = useState(DEFAULTS.LOAN_PERCENTAGE_DEFAULT);
 
   // Investment Data
   const [investmentOverviewData, setInvestmentOverviewData] = useState([]);
@@ -133,189 +124,106 @@ const AuctionDetails = ({ data }) => {
     useState(null);
   const [activeTruReportAreaTab, setActiveTruReportAreaTab] = useState(null);
 
-  // 🛰️ Simulate a Network Call
-  const simulateNetworkRequest = () => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        navigator.onLine ? resolve("Success") : reject("Network error");
-      }, 1000);
-    });
-  };
-
   // ❤️ Toggle Wishlist
-    const toggleWishlist = async () => {
+  const toggleWishlist = async () => {
     const newState = !isWishlisted;
+
+    // Optimistically update the UI
     setIsWishlisted(newState);
-  
+
     try {
-      await simulateNetworkRequest();
+      // Get userId from user document
       const q = query(
         collection(db, "truEstateUsers"),
         where("phoneNumber", "==", userPhoneNumber)
       );
       const querySnapshot = await getDocs(q);
-  
-      if (!querySnapshot.empty) {
-        let userDocId = null;
-        let allProperties = {};
-  
-        querySnapshot.forEach((doc) => {
-          userDocId = doc.id; // Use doc.id instead of doc.data().userId
-          allProperties = doc.data().properties || {};
-          console.log(userDocId, allProperties, "this is what i want");
-        });
-  
-        // Dynamically find which property type and the project
-        let foundPropertyType = null;
-        let thisProject = null;
-  
-        // Search across all property types
-        for (const [propertyType, propertyArray] of Object.entries(allProperties)) {
-          if (Array.isArray(propertyArray)) {
-            const found = propertyArray.find(
-              (item) => item.projectId === project.projectId
-            );
-            if (found) {
-              foundPropertyType = propertyType;
-              thisProject = found;
-              break;
-            }
-          }
-        }
-  
-        // Determine property type if not found (for new additions)
-        if (!foundPropertyType) {
-          // You need to determine the property type based on your project data
-          // This could be project.propertyType, project.category, etc.
-          foundPropertyType = project.propertyType || 'auction'; // Default to 'auction' or determine dynamically
-        }
-  
-        if (userDocId) {
-          const userDocRef = doc(db, "truEstateUsers", userDocId);
-  
-          if (newState) {
-            // Adding to wishlist
-            logEvent(analytics, "added-to-wishlist", {
-              name: project.projectName,
-            });
-  
-            if (thisProject) {
-              // Update existing project in the found property type array
-              const updatedProperties = {
-                ...allProperties,
-                [foundPropertyType]: allProperties[foundPropertyType].map((p) => {
-                  if (p.projectId === project.projectId) {
-                    return {
-                      ...p,
-                      wishlisted: true,
-                      timestamp: getUnixDateTime(),
-                    };
-                  }
-                  return p;
-                }),
-              };
-  
-              await updateDoc(userDocRef, {
-                properties: updatedProperties,
-              });
-            } else {
-              // Add new project to the appropriate property type array
-              // Ensure the property type array exists
-              if (!allProperties[foundPropertyType]) {
-                allProperties[foundPropertyType] = [];
-              }
-  
-              const updatedProperties = {
-                ...allProperties,
-                [foundPropertyType]: [
-                  ...allProperties[foundPropertyType],
-                  {
-                    projectId: project.projectId,
-                    stage: "discussion initiated",
-                    wishlisted: true,
-                    modeOfEoi: null,
-                    added: getUnixDateTime(),
-                  },
-                ],
-              };
-  
-              await updateDoc(userDocRef, {
-                properties: updatedProperties,
-              });
-            }
-  
-            // Show success toast
-            addToast(
-              "Dummy",
-              "success",
-              "Property Added to Wishlist",
-              "The property has been added to the Wishlist."
-            );
-  
-            // Re-fetch the updated wishlist immediately
-            dispatch(fetchWishlistedProjects(userPhoneNumber));
-          } else {
-            // Removing from wishlist - just update wishlisted flag to false
-            logEvent(analytics, "removed-from-wishlist", {
-              name: project.projectName,
-            });
-  
-            if (thisProject && foundPropertyType) {
-              // Update the wishlisted flag to false in the found property type array
-              const updatedProperties = {
-                ...allProperties,
-                [foundPropertyType]: allProperties[foundPropertyType].map((p) => {
-                  if (p.projectId === project.projectId) {
-                    return {
-                      ...p,
-                      wishlisted: false,
-                      timestamp: getUnixDateTime(),
-                    };
-                  }
-                  return p;
-                }),
-              };
-  
-              await updateDoc(userDocRef, {
-                properties: updatedProperties,
-              });
-  
-              // Show removal toast
-              addToast(
-                "Dummy",
-                "success", // Changed from "error" to "success" since it's a successful operation
-                "Property Removed from Wishlist",
-                "The property has been removed from the Wishlist."
-              );
-  
-              // Re-fetch the updated wishlist immediately
-              dispatch(fetchWishlistedProjects(userPhoneNumber));
-            }
-          }
-        }
+
+      if (querySnapshot.empty) {
+        throw new Error("User not found");
       }
+
+      const userDoc = querySnapshot.docs[0];
+      const userId = userDoc.id;
+
+      // Determine property type
+      const propertyType = project?.propertyType || "auction";
+
+      if (newState) {
+        // Adding to wishlist
+        logEvent(analytics, "added-to-wishlist", {
+          name: project.projectName,
+        });
+
+        await dispatch(
+          updateWishlist({
+            userId,
+            propertyType,
+            projectId: project.projectId,
+            defaults: {
+              stage: "discussion initiated",
+              agentId: null,
+              agentName: null,
+              modeOfEoi: null,
+              requirementIds: [],
+            },
+          })
+        ).unwrap();
+
+        // Show success toast
+        addToast(
+          "Dummy",
+          "success",
+          "Property Added to Wishlist",
+          "The property has been added to the Wishlist."
+        );
+      } else {
+        // Removing from wishlist
+        logEvent(analytics, "removed-from-wishlist", {
+          name: project.projectName,
+        });
+
+        await dispatch(
+          removeWishlist({
+            userId,
+            propertyType,
+            projectId: project.projectId,
+          })
+        ).unwrap();
+
+        // Show negative/error toast
+        addToast(
+          "Dummy",
+          "error", // Negative toast for removal
+          "Property Removed from Wishlist",
+          "The property has been removed from the Wishlist."
+        );
+      }
+
+      // Re-fetch the updated wishlist
+      dispatch(fetchWishlistedProjects(userId));
     } catch (error) {
       console.error("Error updating wishlist:", error);
-  
-      // Show error toast for network issues or failures
+
+      // Show error toast
       addToast(
         "Dummy",
         "error",
         "Wishlist Action Failed",
-        "You are offline or there's an issue updating the wishlist. Please try again."
+        error.message ||
+          "There was an issue updating the wishlist. Please try again."
       );
-  
-      // Reset the wishlist state to revert to the previous state
+
+      // Revert the optimistic UI update
       setIsWishlisted(!newState);
     }
   };
-
 
   // 🧭 TruReport Tab Handlers
 
   const handleChangeActiveTruReportAreaTab = (tab) => {
     setActiveTruReportAreaTab(tab);
-    console.log("data is",activeTruReportAreaTab)
+    console.log("data is", activeTruReportAreaTab);
   };
 
   const handleChangeActiveTruReportConfigTab = (tab) => {
@@ -368,7 +276,6 @@ const AuctionDetails = ({ data }) => {
   // Set project overview data
   useEffect(() => {
     if (project) {
-
       let InitialActiveTruReportAreaTab = null;
       let InitialActiveTruReportConfigTab = null;
       let TruReportConfigWiseData = {};
@@ -432,8 +339,8 @@ const AuctionDetails = ({ data }) => {
       }
     }
   }, [project]);
-  console.log("Data is",project)
-  console.log("cagr is", project?.auctionOverview?.auctionCAGR)
+  console.log("Data is", project);
+  console.log("cagr is", project?.auctionOverview?.auctionCAGR);
   // Set investment data
   useEffect(() => {
     let SellingCost = null;
@@ -696,30 +603,30 @@ const AuctionDetails = ({ data }) => {
             },
           ]
         : project?.assetType === "plot"
-          ? temp3
-          : project?.assetType === "villa"
-            ? temp3.concat([
-                {
-                  label: "Furnished",
-                  value: project?.unitDetails[0].furnished || "NA",
-                },
-                {
-                  label: "Total Floor",
-                  value: project?.unitDetails[0].totalFloors
-                    ? project?.unitDetails[0].totalFloors
-                    : "NA",
-                },
-              ])
-            : temp3.concat([
-                {
-                  label: "Furnished",
-                  value: project?.unitDetails[0].furnished || "NA",
-                },
-                {
-                  label: "Floor No.",
-                  value: project?.unitDetails[0].floor || "NA",
-                },
-              ]);
+        ? temp3
+        : project?.assetType === "villa"
+        ? temp3.concat([
+            {
+              label: "Furnished",
+              value: project?.unitDetails[0].furnished || "NA",
+            },
+            {
+              label: "Total Floor",
+              value: project?.unitDetails[0].totalFloors
+                ? project?.unitDetails[0].totalFloors
+                : "NA",
+            },
+          ])
+        : temp3.concat([
+            {
+              label: "Furnished",
+              value: project?.unitDetails[0].furnished || "NA",
+            },
+            {
+              label: "Floor No.",
+              value: project?.unitDetails[0].floor || "NA",
+            },
+          ]);
 
     setTempProject2(temp2);
   }, [
@@ -731,54 +638,40 @@ const AuctionDetails = ({ data }) => {
   ]);
 
   useEffect(() => {
-  const fetchStatus = async () => {
-    try {
-      // Use the same collection as in toggleWishlist
-      const q = query(
-        collection(db, "truEstateUsers"), // Changed from "new_users"
-        where("phoneNumber", "==", userPhoneNumber) // Changed from "phonenumber"
-      );
-      const querySnapshot = await getDocs(q);
+    const fetchUserWishlist = async () => {
+      try {
+        const q = query(
+          collection(db, "truEstateUsers"),
+          where("phoneNumber", "==", userPhoneNumber)
+        );
+        const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        let allProperties = {}; // Changed from allSharedProperties
+        if (!querySnapshot.empty) {
+          const userId = querySnapshot.docs[0].id;
+          // Fetch wishlist using Redux action
+          const resultAction = await dispatch(fetchWishlistedProjects(userId));
 
-        querySnapshot.forEach((doc) => {
-          allProperties = doc.data().properties || {}; // Changed to properties
-        });
-
-        // Search across all property types for this project
-        let thisProject = null;
-        for (const [propertyType, propertyArray] of Object.entries(allProperties)) {
-          if (Array.isArray(propertyArray)) {
-            const found = propertyArray.find(
-              (item) => item.projectId === project.projectId // Changed to projectId
-            );
-            if (found) {
-              thisProject = found;
-              break;
+          if (fetchWishlistedProjects.fulfilled.match(resultAction)) {
+            const wishlistItems = resultAction.payload;
+            // Check if current project is in wishlist
+            if (project) {
+              const isProjectWishlisted = wishlistItems.some(
+                (item) => item.projectId === project.projectId
+              );
+              setIsWishlisted(isProjectWishlisted);
             }
           }
         }
-
-        // Check wishlisted status
-        if (thisProject && thisProject.wishlisted === true) { // Changed to wishlisted
-          setIsWishlisted(true);
-        } else {
-          setIsWishlisted(false);
-        }
-
+      } catch (error) {
+        console.error("Error fetching user for wishlist:", error);
+        setIsWishlisted(false);
       }
-    } catch (error) {
-      console.error("Error fetching status:", error);
-    }
-  };
+    };
 
-  // Only fetch status if both project and userPhoneNumber are available
-  if (project && userPhoneNumber) {
-    fetchStatus();
-  }
-}, [project, userPhoneNumber]);
+    if (userPhoneNumber && isAuthenticated && project) {
+      fetchUserWishlist();
+    }
+  }, [userPhoneNumber, isAuthenticated, project, dispatch]);
 
   function calculateFinalPrice(reservePrice, cagr, holdingPeriodYears = 1) {
     // cagr should be in decimal form, e.g., 10% as 0.10
@@ -798,17 +691,19 @@ const AuctionDetails = ({ data }) => {
     return str.replace(/\b\w/g, (c) => c.toUpperCase());
   };
   function formatCostSuffix(value) {
-  if (value < 100) {
-    return `${value} Lacs`;
-  } else {
-    const croreValue = (value / 100).toFixed(2).replace(/\.00$/, "");
-    return `${croreValue} Cr`;
+    if (value < 100) {
+      return `${value} Lacs`;
+    } else {
+      const croreValue = (value / 100).toFixed(2).replace(/\.00$/, "");
+      return `${croreValue} Cr`;
+    }
   }
-}
   const handleTalkToManager = () => {
     const phonenumber = InvManager.phoneNumber;
     const message = encodeURIComponent(
-      `Hi, Can you please share auction notice of ${id}: ${projectName ? toCapitalCase(projectName) : "a project"}`
+      `Hi, Can you please share auction notice of ${id}: ${
+        projectName ? toCapitalCase(projectName) : "a project"
+      }`
     );
     const whatsappUrl = `https://wa.me/${phonenumber}?text=${message}`;
     window.open(whatsappUrl, "_blank");
@@ -823,7 +718,8 @@ const AuctionDetails = ({ data }) => {
             activeTruReportAreaTab?.minInvestment != null &&
             activeTruReportAreaTab?.totalSeats
               ? `₹${formatCostSuffix(
-                  (activeTruReportAreaTab.minInvestment).toFixed(2))}`
+                  activeTruReportAreaTab.minInvestment.toFixed(2)
+                )}`
               : "NA",
         },
         {
@@ -968,120 +864,122 @@ const AuctionDetails = ({ data }) => {
 
   return (
     <>
-    <MainContentLayout>
-      <div
-        className={`relative h-full ${
-          !isAuthenticated ? `md:px-20 lg:px-24` : ``
-        }`}
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-0">
-          <div className="md:col-span-2">
-            <div
-              className={`px-4 mt-3 mb-3 ${
-                isAuthenticated ? `md:px-8` : `md:px-0`
-              }`}
-            >
-              <MyBreadcrumb />
-            </div>
-
-            <div
-              className={`h-full w-full px-4 pb-[30px] ${
-                isAuthenticated ? `md:px-8` : `md:px-0`
-              }`}
-            >
-              {/* Project Header */}
-
-              <div className="flex gap-1 flex-wrap md:flex-nowrap mr-4 ">
-                <div className={styles.bigheading}>
-                  {project.projectId}
-                  {" : "}
-                  {project?.projectName
-                    ? Object.keys(upperCaseProperties).includes(
-                        project?.projectName
-                      )
-                      ? upperCaseProperties[project?.projectName]
-                      : toCapitalizedWords(project?.projectName)
-                    : "___"}
-                </div>
+      <MainContentLayout>
+        <div
+          className={`relative h-full ${
+            !isAuthenticated ? `md:px-20 lg:px-24` : ``
+          }`}
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-0">
+            <div className="md:col-span-2">
+              <div
+                className={`px-4 mt-3 mb-3 ${
+                  isAuthenticated ? `md:px-8` : `md:px-0`
+                }`}
+              >
+                <MyBreadcrumb />
               </div>
 
-              {/* Updated on section */}
-              <div className="flex md:flex-row mb-4 sm:mb-3 lg:mb-6 mt-[2px]">
-                <div className={`${styles.upd} mr-1`}>Updated on</div>
-                <div className={styles.updt}>
-                  {formatTimestampDate(project?.lastModified)}
-                </div>
-              </div>
+              <div
+                className={`h-full w-full px-4 pb-[30px] ${
+                  isAuthenticated ? `md:px-8` : `md:px-0`
+                }`}
+              >
+                {/* Project Header */}
 
-              {/* Badges for both mobile and desktop - now appear after property information */}
-              {(activeTruReportAreaTab?.recommended ||
-                (project?.reraId && project?.reraId != "NA") ||
-                (project && activeTruReportAreaTab?.truVerified)) && (
-                <div className="flex gap-2.5 flex-wrap md:flex-nowrap mb-6 md:mb-8">
-                  {activeTruReportAreaTab?.recommended && (
-                    <img
-                      src="/assets/properties/icons/recommended-badge.svg"
-                      alt="Recommended"
-                      className="w-auto"
-                    />
-                  )}{" "}
-                  {project?.reraId && project?.reraId != "NA" && (
-                    <img src={Rera} alt="Rera" className="w-auto" />
-                  )}
-                  {project && activeTruReportAreaTab?.verified && (
-                    <img
-                      src={verified}
-                      alt="verified"
-                      className="h-[26px] w-[81px]"
-                    />
-                  )}
+                <div className="flex gap-1 flex-wrap md:flex-nowrap mr-4 ">
+                  <div className={styles.bigheading}>
+                    {project.projectId}
+                    {" : "}
+                    {project?.projectName
+                      ? Object.keys(upperCaseProperties).includes(
+                          project?.projectName
+                        )
+                        ? upperCaseProperties[project?.projectName]
+                        : toCapitalizedWords(project?.projectName)
+                      : "___"}
+                  </div>
                 </div>
-              )}
 
-              {/* Image Carousel */}
-              <div className="relative">
-                {project?.images?.length > 0 ? (
-                  <ImageCarousel
-                    images={project?.images || []}
-                    projectId={project.id}
-                    projectName={project.projectName}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center bg-gray-100">
-                    <img
-                      src="/assets/properties/images/placeholder.webp"
-                      className="object-cover h-[200px] md:h-[360px] w-full rounded-lg"
-                      alt="Project placeholder"
-                    />
+                {/* Updated on section */}
+                <div className="flex md:flex-row mb-4 sm:mb-3 lg:mb-6 mt-[2px]">
+                  <div className={`${styles.upd} mr-1`}>Updated on</div>
+                  <div className={styles.updt}>
+                    {formatTimestampDate(project?.lastModified)}
+                  </div>
+                </div>
+
+                {/* Badges for both mobile and desktop - now appear after property information */}
+                {(activeTruReportAreaTab?.recommended ||
+                  (project?.reraId && project?.reraId != "NA") ||
+                  (project && activeTruReportAreaTab?.truVerified)) && (
+                  <div className="flex gap-2.5 flex-wrap md:flex-nowrap mb-6 md:mb-8">
+                    {activeTruReportAreaTab?.recommended && (
+                      <img
+                        src="/assets/properties/icons/recommended-badge.svg"
+                        alt="Recommended"
+                        className="w-auto"
+                      />
+                    )}{" "}
+                    {project?.reraId && project?.reraId != "NA" && (
+                      <img src={Rera} alt="Rera" className="w-auto" />
+                    )}
+                    {project && activeTruReportAreaTab?.verified && (
+                      <img
+                        src={verified}
+                        alt="verified"
+                        className="h-[26px] w-[81px]"
+                      />
+                    )}
                   </div>
                 )}
-                {isAuthenticated && (
-                  <div className="absolute top-0 right-2 flex justify-end space-x-4 mt-2">
-                    <img
-                      className="w-8 md:w-10 cursor-pointer"
-                      src={isWishlisted ? selon : seloff}
-                      onClick={() => {
-                        toggleWishlist();
-                        logEvent(analytics, "click_wishlist_auction", {
-                          Name: "click_wishlist_auction",
-                        });
-                      }}
-                      alt="Wishlist"
+
+                {/* Image Carousel */}
+                <div className="relative">
+                  {project?.images?.length > 0 ? (
+                    <ImageCarousel
+                      images={project?.images || []}
+                      projectId={project.id}
+                      projectName={project.projectName}
                     />
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="flex items-center justify-center bg-gray-100">
+                      <img
+                        src="/assets/properties/images/placeholder.webp"
+                        className="object-cover h-[200px] md:h-[360px] w-full rounded-lg"
+                        alt="Project placeholder"
+                      />
+                    </div>
+                  )}
+                  {isAuthenticated && (
+                    <div className="absolute top-0 right-2 flex justify-end space-x-4 mt-2">
+                      <img
+                        className="w-8 md:w-10 cursor-pointer"
+                        src={isWishlisted ? selon : seloff}
+                        onClick={() => {
+                          toggleWishlist();
+                          logEvent(analytics, "click_wishlist_auction", {
+                            Name: "click_wishlist_auction",
+                          });
+                        }}
+                        alt="Wishlist"
+                      />
+                    </div>
+                  )}
+                </div>
 
-              <hr
-                className="block lg:hidden mt-9"
-                style={{ borderTop: "solid 1px #E3E3E3" }}
-              />
+                <hr
+                  className="block lg:hidden mt-9"
+                  style={{ borderTop: "solid 1px #E3E3E3" }}
+                />
 
-              {/* Auction Details Section */}
-              <div className="flex-col space-y-2 mb-[36px] mt-[36px] sm:mt-9 sm:mb-[14px]">
-                <div className="flex justify-between mb-[26px] flex-wrap">
-                  <h1 className={`${styles.heading} mt-0}`}>Auction Details</h1>
-                  
+                {/* Auction Details Section */}
+                <div className="flex-col space-y-2 mb-[36px] mt-[36px] sm:mt-9 sm:mb-[14px]">
+                  <div className="flex justify-between mb-[26px] flex-wrap">
+                    <h1 className={`${styles.heading} mt-0}`}>
+                      Auction Details
+                    </h1>
+
                     <button
                       type="button"
                       onClick={() => {
@@ -1099,126 +997,147 @@ const AuctionDetails = ({ data }) => {
                         Request Auction Notice
                       </span>
                     </button>
-                  
+                  </div>
+
+                  <h1 className={`${styles.pttruhead} font-[18px]`}>
+                    Verification Status
+                  </h1>
+                  <div className="pt-2 pb-7 mt-[16px]  flex flex-wrap gap-2">
+                    <StatusTag
+                      label="Legal Verification"
+                      status={activeTruReportAreaTab?.legalVerificationStatus}
+                    />
+                    <StatusTag
+                      label="Construction Quality"
+                      status={activeTruReportAreaTab?.constructionQualityStatus}
+                    />
+                    <StatusTag
+                      label="Locality Check"
+                      status={activeTruReportAreaTab?.localityCheckStatus}
+                    />
+                  </div>
+                  <h1 className={`${styles.pttruhead} mt-6`}>
+                    Select Configuration
+                  </h1>
+
+                  {/* Configuration tabs */}
+
+                  {/* Area tabs */}
+                  {truReportConfigWiseData &&
+                    Object.keys(truReportConfigWiseData) &&
+                    Object.keys(truReportConfigWiseData).length > 0 &&
+                    Object.keys(truReportConfigWiseData).some(
+                      (key) => key != null
+                    ) && (
+                      <TruReportHeading
+                        isRounded={false}
+                        type={"config"}
+                        truReportData={Object.keys(truReportConfigWiseData)}
+                        activeTruReportTab={activeTruReportConfigTab}
+                        handleChange={handleChangeActiveTruReportConfigTab}
+                      />
+                    )}
+                  {truReportAreaWiseData &&
+                    truReportAreaWiseData.length > 0 && (
+                      <TruReportHeading
+                        assetType={project?.assetType}
+                        isRounded={
+                          project?.projectType === "commercial" ? false : true
+                        }
+                        type={
+                          project?.unitDetails[0]?.carpetArea
+                            ? "carpetArea"
+                            : project?.unitDetails[0]?.plotArea
+                            ? "plotArea"
+                            : "sbua"
+                        }
+                        truReportData={truReportAreaWiseData}
+                        activeTruReportTab={activeTruReportAreaTab}
+                        handleChange={handleChangeActiveTruReportAreaTab}
+                      />
+                    )}
                 </div>
 
-                <h1 className={`${styles.pttruhead} font-[18px]`}>
-                  Verification Status
-                </h1>
-                <div className="pt-2 pb-7 mt-[16px]  flex flex-wrap gap-2">
-                  <StatusTag
-                    label="Legal Verification"
-                    status={activeTruReportAreaTab?.legalVerificationStatus}
+                {/* Investment Details */}
+
+                <div className="mb-6 lg:mb-6">
+                  <FractionalInvestmentCom
+                    data={investmentOverviewData}
+                    isReport={false}
                   />
-                  <StatusTag
-                    label="Construction Quality"
-                    status={activeTruReportAreaTab?.constructionQualityStatus}
-                  />
-                  <StatusTag
-                    label="Locality Check"
-                    status={activeTruReportAreaTab?.localityCheckStatus}
-                  />
+                  <div className="lg:mt-[-30px]">
+                    <Overview
+                      details={tempproject2}
+                      project={project}
+                      isReport={false}
+                      labelsWithMoreInfo={LABELS_WITH_MORE_INFO.investment}
+                    />
+                  </div>
                 </div>
-                <h1 className={`${styles.pttruhead} mt-6`}>
-                  Select Configuration
-                </h1>
+                {activeTruReportAreaTab?.additionalInfo && (
+                  <div className="rounded-lg w-full mb-4 sm:mb-6">
+                    <h2
+                      className={`mb-2 font-montserrat font-bold text-[1.125rem] leading-[150%] text-[#0A0B0A]`}
+                    >
+                      Other Details
+                    </h2>
+                    {activeTruReportAreaTab?.additionalInfo}
+                  </div>
+                )}
+                {activeTruReportAreaTab?.riskInfo && (
+                  <div className="rounded-lg w-full mb-4 sm:mb-12">
+                    <h2
+                      className={`mb-2 font-montserrat font-bold text-[1.125rem] leading-[150%] text-[#0A0B0A]`}
+                    >
+                      Risks
+                    </h2>
+                    {activeTruReportAreaTab?.riskInfo}
+                  </div>
+                )}
 
-                {/* Configuration tabs */}
+                <hr
+                  className="mt-6"
+                  style={{ borderTop: "solid 1px #E3E3E3" }}
+                />
 
-                {/* Area tabs */}
-                {truReportConfigWiseData &&
-                  Object.keys(truReportConfigWiseData) &&
-                  Object.keys(truReportConfigWiseData).length > 0 &&
-                  Object.keys(truReportConfigWiseData).some(
-                    (key) => key != null
-                  ) && (
-                    <TruReportHeading
-                      isRounded={false}
-                      type={"config"}
-                      truReportData={Object.keys(truReportConfigWiseData)}
-                      activeTruReportTab={activeTruReportConfigTab}
-                      handleChange={handleChangeActiveTruReportConfigTab}
+                {/* Location Analysis */}
+                {project?.locationAnalysis?.lat &&
+                  project?.locationAnalysis?.long && (
+                    <LocationAnalysis
+                      project={project}
+                      filters={data?.locationAnalysis?.filters}
+                      defaultMarker={data?.locationAnalysis?.defaultMarker}
+                      markers={data?.locationAnalysis?.markers}
+                      isAuction={true}
                     />
                   )}
-                {truReportAreaWiseData && truReportAreaWiseData.length > 0 && (
-                  <TruReportHeading
-                    assetType={project?.assetType}
-                    isRounded={
-                      project?.projectType === "commercial" ? false : true
-                    }
-                    type={
-                      project?.unitDetails[0]?.carpetArea
-                        ? "carpetArea"
-                        :  project?.unitDetails[0]?.plotArea
-                          ? "plotArea"
-                          : "sbua"
-                    }
-                    truReportData={truReportAreaWiseData}
-                    activeTruReportTab={activeTruReportAreaTab}
-                    handleChange={handleChangeActiveTruReportAreaTab}
-                  />
-                )}
-              </div>
 
-              {/* Investment Details */}
-
-              <div className="mb-6 lg:mb-6">
-                <FractionalInvestmentCom
-                  data={investmentOverviewData}
-                  isReport={false}
-                />
-                <div className="lg:mt-[-30px]">
-                  <Overview
-                    details={tempproject2}
-                    project={project}
-                    isReport={false}
-                    labelsWithMoreInfo={LABELS_WITH_MORE_INFO.investment}
+                {/* Mobile Contact Bar */}
+                <div
+                  className={`z-[9] fixed bottom-0 right-0 bg-[#FAFAFA] lg:hidden border-t ${
+                    isAuthenticated
+                      ? `md:left-[119px] md:right-[40px] px-4 md:pr-[134px] w-full`
+                      : `w-full px-4`
+                  }`}
+                >
+                  <ContactInvestmentManager
+                    projectName={project?.projectName}
+                    propertyId={project?.projectId}
+                    type="auction"
                   />
                 </div>
               </div>
-              {activeTruReportAreaTab?.additionalInfo && (
-                <div className="rounded-lg w-full mb-4 sm:mb-6">
-                  <h2
-                    className={`mb-2 font-montserrat font-bold text-[1.125rem] leading-[150%] text-[#0A0B0A]`}
-                  >
-                    Other Details
-                  </h2>
-                  {activeTruReportAreaTab?.additionalInfo}
-                </div>
-              )}
-              {activeTruReportAreaTab?.riskInfo && (
-                <div className="rounded-lg w-full mb-4 sm:mb-12">
-                  <h2
-                    className={`mb-2 font-montserrat font-bold text-[1.125rem] leading-[150%] text-[#0A0B0A]`}
-                  >
-                    Risks
-                  </h2>
-                  {activeTruReportAreaTab?.riskInfo}
-                </div>
-              )}
+            </div>
 
-              <hr className="mt-6" style={{ borderTop: "solid 1px #E3E3E3" }} />
-
-              {/* Location Analysis */}
-              {project?.locationAnalysis?.lat &&
-                project?.locationAnalysis?.long && (
-                  <LocationAnalysis
-                    project={project}
-                    filters={data?.locationAnalysis?.filters}
-                    defaultMarker={data?.locationAnalysis?.defaultMarker}
-                    markers={data?.locationAnalysis?.markers}
-                    isAuction={true}
-                  />
-                )}
-
-              {/* Mobile Contact Bar */}
-              <div
-                className={`z-[9] fixed bottom-0 right-0 bg-[#FAFAFA] lg:hidden border-t ${
-                  isAuthenticated
-                    ? `md:left-[119px] md:right-[40px] px-4 md:pr-[134px] w-full`
-                    : `w-full px-4`
-                }`}
-              >
+            {/* Sidebar */}
+            <div
+              className={`md:col-span-1 ${
+                isAuthenticated ? "md:fixed" : "absolute"
+              } right-0 md:w-1/4 mt-11 hidden md:block ${
+                isAuthenticated ? `mr-8` : `mr-24`
+              }`}
+            >
+              <div className="sticky top-0 pl-6 hidden lg:block">
                 <ContactInvestmentManager
                   projectName={project?.projectName}
                   propertyId={project?.projectId}
@@ -1227,27 +1146,9 @@ const AuctionDetails = ({ data }) => {
               </div>
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div
-            className={`md:col-span-1 ${
-              isAuthenticated ? "md:fixed" : "absolute"
-            } right-0 md:w-1/4 mt-11 hidden md:block ${
-              isAuthenticated ? `mr-8` : `mr-24`
-            }`}
-          >
-            <div className="sticky top-0 pl-6 hidden lg:block">
-              <ContactInvestmentManager
-                projectName={project?.projectName}
-                propertyId={project?.projectId}
-                type="auction"
-              />
-            </div>
-          </div>
         </div>
-      </div>
 
-      {!isAuthenticated && <Footer />}
+        {!isAuthenticated && <Footer />}
       </MainContentLayout>
     </>
   );

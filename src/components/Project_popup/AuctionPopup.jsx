@@ -9,14 +9,14 @@ import { analytics } from "../../firebase";
 
 // Import your icons here
 
-const truSelected = '/assets/properties/icons/recommended-badge.svg';
+const truSelected = "/assets/properties/icons/recommended-badge.svg";
 import LitigationIcon from "/assets/icons/status/litigation.svg";
 import verified from "/assets/icons/status/verified.svg";
 import seloff from "/assets/icons/features/wishlist-inactive.svg";
 import selon from "/assets/icons/features/wishlist-active.svg";
 import styles from "./ProjectPopup.module.css";
 import locicon from "../../../public/assets/icons/navigation/location.svg";
-const cardpic = '/assets/properties/images/placeholder.webp';
+const cardpic = "/assets/properties/images/placeholder.webp";
 import growth from "/assets/icons/features/home.svg";
 import value from "../../../public/assets/icons/features/Value.svg";
 import asset from "/assets/icons/features/properties.svg";
@@ -30,16 +30,13 @@ import {
   selectWishlistItems,
 } from "../../slices/wishlistSlice";
 import { useToast } from "../../hooks/useToast.jsx";
-import { getUnixDateTime } from "../helper/dateTimeHelpers";
 import { toCapitalizedWords, upperCaseProperties } from "../../utils/common.js";
-import { all } from "axios";
 
 const AuctionCard = ({ project }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const userId = useSelector(selectUserDocId);
   const wishlistItems = useSelector(selectWishlistItems);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLitigation, setIsLitigation] = useState(false);
   const { addToast } = useToast(); // Access the toast function
 
@@ -53,9 +50,13 @@ const AuctionCard = ({ project }) => {
     }
   }, [dispatch, userId]);
 
-  // Update local state based on Redux store
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Sync local state with redux wishlist once when data changes
   useEffect(() => {
-    const isProjectWishlisted = wishlistItems.some(item => item.projectId === project.projectId);
+    const isProjectWishlisted = wishlistItems.some(
+      (item) => item.projectId === project.projectId
+    );
     setIsWishlisted(isProjectWishlisted);
   }, [wishlistItems, project.projectId]);
 
@@ -72,7 +73,9 @@ const AuctionCard = ({ project }) => {
   }
   const handleViewMore = () => {
     navigate(
-      `/auction/${project.projectName.replace(/[\s/]+/g, "-")}/${project.projectId}`,
+      `/auction/${project.projectName.replace(/[\s/]+/g, "-")}/${
+        project.projectId
+      }`,
       {
         state: { name: project.projectName },
       }
@@ -87,64 +90,65 @@ const AuctionCard = ({ project }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const toggleWishlist = async () => {
-    console.log("AuctionCard toggleWishlist called:", {
-      projectId: project.projectId,
-      projectName: project.projectName,
-      isAuthenticated,
-      userId,
-      currentWishlistState: isWishlisted,
-      wishlistItems: wishlistItems.length
-    });
+  const toggleWishlist = async (e) => {
+    e.stopPropagation();
 
     const newState = !isWishlisted;
-    setIsWishlisted(newState);
+    setIsWishlisted(newState); // 🔥 Optimistic UI update
 
     try {
-      logEvent(analytics, newState ? "added-to-wishlist" : "removed-from-wishlist", {
-        name: project.projectName,
-      });
+      logEvent(
+        analytics,
+        newState ? "added-to-wishlist" : "removed-from-wishlist",
+        { name: project.projectName }
+      );
 
       if (newState) {
-        await dispatch(updateWishlist({
-          userId,
-          propertyType: project.propertyType || "auction",
-          projectId: project.projectId
-        }));
-        addToast(
-          "Dummy",
-          "success",
-          "Property Added to Wishlist",
-          "The property has been added to the Wishlist."
+        await dispatch(
+          updateWishlist({
+            userId,
+            propertyType: project.propertyType || "auction",
+            projectId: project.projectId,
+          })
         );
-        dispatch(fetchWishlistedProjects(userId));
+        addToast(
+          "Wishlist",
+          "success",
+          "Property Added",
+          "The property has been added to your wishlist."
+        );
       } else {
-        await dispatch(removeWishlist({
-          userId,
-          propertyType: project.propertyType || "auction",
-          projectId: project.projectId
-        }));
-        addToast(
-          "Dummy",
-          "success",
-          "Property Removed from Wishlist",
-          "The property has been removed from the Wishlist."
+        await dispatch(
+          removeWishlist({
+            userId,
+            propertyType: project.propertyType || "auction",
+            projectId: project.projectId,
+          })
         );
-        dispatch(fetchWishlistedProjects(userId));
+        addToast(
+          "Wishlist",
+          "error", // 👈 changed from warning → error for negative effect
+          "Property Removed",
+          "The property has been removed from your wishlist."
+        );
       }
+
+      // optionally refresh in background, but not required for UI
+      dispatch(fetchWishlistedProjects(userId));
     } catch (error) {
       console.error("Error in toggleWishlist:", error);
+
+      // revert optimistic update on error
+      setIsWishlisted(!newState);
+
       addToast(
-        "Dummy",
+        "Wishlist",
         "error",
         "Wishlist Action Failed",
         error.message || "An unexpected error occurred. Please try again."
       );
-      setIsWishlisted(!newState); // Revert UI on error
     }
   };
-
-
 
   const imageUrl = project?.images?.length > 0 ? project?.images[0] : null;
 
@@ -157,7 +161,7 @@ const AuctionCard = ({ project }) => {
       return "High Return";
     }
   };
-  console.log("check this",project?.unitDetails?.[0]?.strategy)
+  console.log("check this", project?.unitDetails?.[0]?.strategy);
 
   const handleTruValueStatus = (status) => {
     return toCapitalizedWords(status);
@@ -311,10 +315,12 @@ const AuctionCard = ({ project }) => {
 
               <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
                 {project?.minInvestmentOfAuction != null
-                  ? `${formatCostSuffix1(project.minInvestmentOfAuction.toFixed(0))} `
+                  ? `${formatCostSuffix1(
+                      project.minInvestmentOfAuction.toFixed(0)
+                    )} `
                   : project?.auctionReservePrice != null
-                    ? `${project.auctionReservePrice.toFixed(2)} Lacs`
-                    : "NA"}
+                  ? `${project.auctionReservePrice.toFixed(2)} Lacs`
+                  : "NA"}
               </p>
             </div>
 
@@ -410,7 +416,6 @@ const AuctionCard = ({ project }) => {
               project?.unitDetails?.[0]?.strategy &&
               Array.isArray(project?.unitDetails?.[0]?.strategy) &&
               project?.unitDetails?.[0]?.strategy.map((strat, idx) => (
-              
                 <div key={idx} className={`${styles.tooltip2} sm`}>
                   <div
                     className="w-auto rounded-[4px] px-[10px] py-[4px] flex items-center justify-center gap-[4px]"
