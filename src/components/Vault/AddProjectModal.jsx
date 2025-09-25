@@ -12,9 +12,10 @@ import TDSpayment from "/assets/icons/features/tds-payment.svg";
 import ValuationReport from "/assets/icons/features/valuation-report.svg";
 import sellproperty1 from "/assets/icons/features/sell-property-1.svg";
 import localcompliance1 from "/assets/icons/features/local-compliance-1.svg";
+import { showLoader, hideLoader, selectLoader } from "../../slices/loaderSlice";
 
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import InvManager from "../../utils/InvManager";
 
 // Card data for rendering
@@ -62,11 +63,14 @@ const cardData = [
 const VaultEmptyPage = () => {
   const navigate = useNavigate();
   const { userDoc } = useSelector((state) => state.userAuth);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    
-    if (userDoc?.vaultForms && userDoc?.vaultForms?.length > 0)
-      return navigate("/vault/investment");
+    dispatch(hideLoader());
+    if (userDoc?.vaultForms && userDoc?.vaultForms?.length > 0){
+      navigate("/vault/investment");
+    }
+    dispatch(showLoader());
   }, [userDoc]);
 
   const handleclick = () => {
@@ -81,7 +85,6 @@ const VaultEmptyPage = () => {
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappUrl, "_blank");
   };
-
   return (
     <div className="h-[100%] px-4 md:px-8 flex flex-col justify-center items-center pt-16 ">
       <div className="w-full max-w-[608px] h-fit ">

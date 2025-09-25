@@ -118,22 +118,20 @@
 
 /* New styles for react-step-progress-bar */
 .indexedStep {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: #ccc;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
-    font-size: 14px;
-    border: 2px solid #ccc;
-    transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: white; /* white circle */
+  border: 2px solid #153e3b; /* border in your color */
+  color: #153e3b; /* index text color */
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .indexedStep.accomplished {
-    background-color: #28a745;
-    border-color: #28a745;
-    color: white;
+  background-color: #153e3b; /* fill when completed */
+  color: white; /* white text inside */
 }
