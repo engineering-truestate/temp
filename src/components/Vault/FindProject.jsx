@@ -171,6 +171,7 @@ const FindProjectPage = () => {
     }
   };
 
+  
   const handleNextClick = async () => {
     if (currentStep === 0) {
       if (!isSelected || searchTerm === "") {
@@ -223,7 +224,7 @@ const FindProjectPage = () => {
 
   const handleConfirmNavigation = () => {
     dispatch(setVaultFormActive(false)); // Reset vault form active state
-    navigate(pendingRoute || "/vault"); // Navigate to the pending route or default route
+    navigate("/vault"); // Navigate to the pending route or default route
     setShowConfirmationModal(false); // Close modal after confirmation
     setPendingRoute(null); // Clear pending route
   };

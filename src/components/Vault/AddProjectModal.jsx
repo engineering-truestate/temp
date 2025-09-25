@@ -64,6 +64,7 @@ const VaultEmptyPage = () => {
   const { userDoc } = useSelector((state) => state.userAuth);
 
   useEffect(() => {
+    
     if (userDoc?.vaultForms && userDoc?.vaultForms?.length > 0)
       return navigate("/vault/investment");
   }, [userDoc]);

@@ -1,7 +1,7 @@
 // components/HoldingsRenderer.jsx - Exact extraction from original rendering function
 import React from 'react';
 import logo from "/assets/icons/brands/truestate-logo-alt.svg";
-import ArrowRight from '/assets/icons/navigation/arrow-right.svg';
+import ArrowRight from '/assets/icons/navigation/arrow-right-1.svg';
 import { formatCostSuffix, toCapitalizedWords } from "../../../../utils/common.js";
 
 const HoldingsRenderer = ({ 

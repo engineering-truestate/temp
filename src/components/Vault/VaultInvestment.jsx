@@ -51,7 +51,6 @@ import {
   raiseRequest,
 } from "../../slices/apis/vault.js";
 import { formatCostSuffix, toCapitalizedWords } from "../../utils/common.js";
-import Loader from "../Loader";
 import { showLoader, hideLoader, selectLoader } from "../../slices/loaderSlice";
 import InvestmentOverviewVault from "./InvestmentOverviewVault.jsx";
 import { storage } from "../../firebase.js";
@@ -189,9 +188,11 @@ const VaultInvestment = ({ data }) => {
 
   useEffect(() => {
     const GetVaultDataByFormId = async () => {
+      dispatch(hideLoader());
       const response = await getVaultDataByFormId(formId);
+
       if (response.success) {
-        dispatch(hideLoader());
+
         const vaultData = response.finalCombinedData;
         //console.log('vault data', vaultData)
         setProject1(vaultData);
@@ -235,11 +236,12 @@ const VaultInvestment = ({ data }) => {
           },
         ]);
       } else {
-        dispatch(hideLoader());
         addToast("Dummy", "error", "Something went wrong");
         navigate("/vault/investment");
+        dispatch(hideLoader());
       }
     };
+   
     dispatch(showLoader());
     GetVaultDataByFormId();
   }, [formId]);
@@ -526,7 +528,7 @@ const VaultInvestment = ({ data }) => {
 
 //     // Create task object
 //     const task = {
-//       taskId: nextTaskId,
+//       taskId: nextTaskId, 
 //       projectName: project1.projectName,
 //       actionType: "Call",
 //       agentId: "TRUES03", 
@@ -739,11 +741,7 @@ const VaultInvestment = ({ data }) => {
           </div>
         </>
       )}
-      {loading ? (
-        <div className="flex h-[80vh]">
-          <Loader />
-        </div>
-      ) : (
+      
         <>
           <div className="flex    px-4 md:px-8 ">
             <div className="  w-full lg:w-[60%] ">
@@ -1192,7 +1190,7 @@ const VaultInvestment = ({ data }) => {
             }
           />
         </>
-      )}
+      
     </>
   );
 };
