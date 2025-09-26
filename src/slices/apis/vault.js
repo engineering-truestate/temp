@@ -9,6 +9,7 @@ import {
   updateDoc,
   runTransaction,
   where,
+  limit,
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -388,6 +389,37 @@ export const getAllProjects = async () => {
     return data;
   } catch (error) {
     console.error("Error fetching from restackVault:", error);
+    return [];
+  }
+};
+
+export const searchProjects = async (searchTerm, limitCount = 20) => {
+  try {
+    const vaultRef = collection(db, "restackVault");
+    // Get more documents and filter client-side for better search
+    const q = query(vaultRef, limit(limitCount));
+    
+    const snap = await getDocs(q);
+
+    const data = snap.docs
+      .map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }))
+      .filter(
+        (doc) =>
+          !(
+            doc.source === "restackStock" &&
+            doc.stockType === "postRera"
+          ) &&
+          // Case-insensitive partial matching
+          doc.projectName?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .slice(0, limitCount); // Limit after filtering
+      console.log("Search Data:", data);
+    return data;
+  } catch (error) {
+    console.error("Error searching projects:", error);
     return [];
   }
 };

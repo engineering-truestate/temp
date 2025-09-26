@@ -90,10 +90,12 @@ const FindProjectPage = () => {
   }, [isAuthenticated, pendingFormSubmit]);
 
   useEffect(() => {
+    dispatch(hideLoader());
     const fetchProjects = async () => {
       dispatch(hideLoader)
       const fetchedData = await getAllProjects();
       setProjects(fetchedData);
+      console.log("Fetched Projects:", fetchedData);
     };
     fetchProjects();
   }, []);
@@ -108,7 +110,7 @@ const FindProjectPage = () => {
       setTimeout(() => {
         setFilteredProjects(filtered);
         setSearchLoading(false);
-      }, [500]);
+      }, [10]);
     } else {
       setFilteredProjects([]); 
       setSearchLoading(false);
