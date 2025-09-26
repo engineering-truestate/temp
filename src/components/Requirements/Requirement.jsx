@@ -46,7 +46,7 @@ const Requirement = () => {
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [continuing, setContinuing] = useState(false);
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
 
   // Create default requirement object
   const createDefaultRequirement = (id) => {
@@ -93,7 +93,10 @@ const Requirement = () => {
   };
 
   // Memoized default requirement to prevent re-creation on every render
-  const defaultRequirement = useMemo(() => createDefaultRequirement("req001"), []);
+  const defaultRequirement = useMemo(
+    () => createDefaultRequirement("req001"),
+    []
+  );
 
   // Fetch user requirements
   useEffect(() => {
@@ -137,7 +140,7 @@ const Requirement = () => {
         requirementsLength: requirements.length,
         userId,
         activeTab,
-        localRequirement: !!localRequirement
+        localRequirement: !!localRequirement,
       });
 
       if (requirements.length === 0 && userId) {
@@ -149,7 +152,11 @@ const Requirement = () => {
           setActiveTab("req001");
           dispatch(setActiveRequirement("req001"));
         }
-      } else if (requirements.length > 0 && activeTab !== "req001" && activeTab !== "req new") {
+      } else if (
+        requirements.length > 0 &&
+        activeTab !== "req001" &&
+        activeTab !== "req new"
+      ) {
         // Clear local requirement when we have saved requirements and not creating a new one
         console.log("Clearing local requirement");
         setLocalRequirement(null);
@@ -213,6 +220,13 @@ const Requirement = () => {
         return;
       }
 
+      // Show loading toast for saved requirement deletion
+      const loadingToastId = addToast(
+        "Processing",
+        "loading",
+        "Deleting Requirement"
+      );
+
       // Handle deletion of saved requirement
       await dispatch(
         deleteRequirement({
@@ -224,7 +238,8 @@ const Requirement = () => {
       // After successful deletion, set active tab to the last remaining requirement
       const remainingRequirements = requirements.filter((req) => req.id !== id);
       if (remainingRequirements.length > 0) {
-        const lastRequirement = remainingRequirements[remainingRequirements.length - 1];
+        const lastRequirement =
+          remainingRequirements[remainingRequirements.length - 1];
         setActiveTab(lastRequirement.id);
         dispatch(setActiveRequirement(lastRequirement.id));
       } else {
@@ -235,20 +250,31 @@ const Requirement = () => {
         dispatch(setActiveRequirement("req001"));
       }
 
-      addToast(
-        "Requirement Deleted",
-        "success",
-        "Delete Successful",
-        "The requirement has been successfully deleted."
-      );
+      // Update to success toast
+      updateToast(loadingToastId, {
+        type: "success",
+        heading: "Requirement Deleted",
+        description: "The requirement has been successfully deleted.",
+      });
     } catch (error) {
       console.error("Error deleting requirement:", error);
-      addToast(
-        "Delete Failed",
-        "error",
-        "Requirement Delete Failed",
-        "There was an error deleting the requirement."
-      );
+      // Update loading toast to error
+      if (loadingToastId) {
+        updateToast(loadingToastId, {
+          type: "error",
+          heading: "Delete Failed",
+          description:
+            error.message || "There was an error deleting the requirement.",
+        });
+      } else {
+        // Fallback
+        addToast(
+          "Delete Failed",
+          "error",
+          "Requirement Delete Failed",
+          "There was an error deleting the requirement."
+        );
+      }
     } finally {
       setDeleting(false);
     }
@@ -256,17 +282,21 @@ const Requirement = () => {
 
   // Save requirements
   const saveRequirements = async (e, requirementData) => {
+    let loadingToastId;
     try {
       e.preventDefault();
 
       // Use the passed requirement data or find the active requirement
       let currentRequirement = requirementData;
       if (!currentRequirement) {
-        if ((activeTab === "req001" || activeTab === "req new") && localRequirement) {
+        if (
+          (activeTab === "req001" || activeTab === "req new") &&
+          localRequirement
+        ) {
           // This is a new requirement from local state
           currentRequirement = localRequirement;
         } else {
-          currentRequirement = requirements.find(req => req.id === activeTab);
+          currentRequirement = requirements.find((req) => req.id === activeTab);
         }
       }
 
@@ -278,8 +308,11 @@ const Requirement = () => {
       console.log("Saving requirement:", {
         activeTab,
         currentRequirement,
-        userId
+        userId,
       });
+
+      // Show loading toast
+      // loadingToastId = addToast("Processing", "loading", "Saving Requirement");
 
       await dispatch(
         saveRequirement({
@@ -306,57 +339,121 @@ const Requirement = () => {
         projectName: "",
       };
 
-      await dispatch(
-        addTask({ userId: userId, taskDetails })
-      ).unwrap();
+      await dispatch(addTask({ userId: userId, taskDetails })).unwrap();
+
+      // Update to success toast
+      // updateToast(loadingToastId, {
+      //   type: "success",
+      //   heading: "Requirement Saved",
+      //   description: "Your requirement has been successfully saved.",
+      // });
 
       // The Redux slice will automatically update the state
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error saving requirement:", error);
-      addToast(
-        "Save Failed",
-        "error",
-        "Failed to Save Requirement",
-        "There was an error saving your requirement."
-      );
+      // If we have a loading toast, update it to error
+      if (loadingToastId) {
+        // updateToast(loadingToastId, {
+        //   type: "error",
+        //   heading: "Save Failed",
+        //   description:
+        //     error.message || "There was an error saving your requirement.",
+        // });
+      } else {
+        // Fallback to regular toast
+        addToast(
+          "Save Failed",
+          "error",
+          "Failed to Save Requirement",
+          "There was an error saving your requirement."
+        );
+      }
     }
   };
 
   // Update requirement
   const updateRequirement = async (id, field, value, obj) => {
+    let loadingToastId;
     try {
       // Check if this is a local requirement (not saved to Firestore yet)
       if ((id === "req001" || id === "req new") && localRequirement) {
-        // Update local requirement state
-        setLocalRequirement(prev => ({
+        // Update local requirement state (no loading needed for local updates)
+        setLocalRequirement((prev) => ({
           ...prev,
-          [field]: value
+          [field]: value,
         }));
         return;
       }
 
-      // For saved requirements, use Redux
-      if (requirements.find(req => req.id === id)) {
+      // For saved requirements, use Redux with optimistic updates
+      if (requirements.find((req) => req.id === id)) {
         // Use optimistic update for immediate UI feedback
         dispatch(updateRequirementLocal({ id, changes: { [field]: value } }));
 
+        // For significant updates, show loading toast
+        const isSignificantUpdate = [
+          "maxBudget",
+          "minBudget",
+          "areas",
+          "productType",
+        ].includes(field);
+
+        if (isSignificantUpdate) {
+          loadingToastId = addToast(
+            "Processing",
+            "loading",
+            "Updating Requirement"
+          );
+        }
+
         // Update in Firestore
-        await dispatch(updateRequirementField({
-          userId,
-          requirementId: id,
-          field,
-          value
-        })).unwrap();
+        await dispatch(
+          updateRequirementField({
+            userId,
+            requirementId: id,
+            field,
+            value,
+          })
+        ).unwrap();
+
+        // Show success toast for significant updates
+        if (isSignificantUpdate && loadingToastId) {
+          updateToast(loadingToastId, {
+            type: "success",
+            heading: "Requirement Updated",
+            description: "Your requirement has been successfully updated.",
+          });
+        }
       }
     } catch (error) {
       console.error("Error updating requirement:", error);
-      addToast(
-        "Update Failed",
-        "error",
-        "Failed to Update Requirement",
-        "There was an error updating the requirement."
+
+      // Revert optimistic update
+      dispatch(
+        updateRequirementLocal({
+          id,
+          changes: {
+            [field]: requirements.find((req) => req.id === id)?.[field],
+          },
+        })
       );
+
+      if (loadingToastId) {
+        updateToast(loadingToastId, {
+          type: "error",
+          heading: "Update Failed",
+          description:
+            error.message || "There was an error updating the requirement.",
+        });
+      } else {
+        addToast(
+          "Update Failed",
+          "error",
+          "Failed to Update Requirement",
+          "There was an error updating the requirement."
+        );
+      }
     }
   };
 
@@ -379,26 +476,46 @@ const Requirement = () => {
   };
 
   const handleModalContinue = async (e) => {
+    let loadingToastId;
     try {
       setContinuing(true);
+
+      // Show loading toast
+      loadingToastId = addToast(
+        "Processing",
+        "loading",
+        "Submitting Requirement"
+      );
+
       await saveRequirements(e);
 
-      addToast(
-        "Success",
-        "success",
-        "Requirement Submitted",
-        "Your requirement has been successfully submitted."
-      );
+      // Update to success toast
+      updateToast(loadingToastId, {
+        type: "success",
+        heading: "Success",
+        description: "Your requirement has been successfully submitted.",
+      });
 
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error in modal continue:", error);
-      addToast(
-        "Save Failed",
-        "error",
-        "Save Failed",
-        "There was an error while trying to save your changes. Please check your internet connection and try again."
-      );
+
+      if (loadingToastId) {
+        updateToast(loadingToastId, {
+          type: "error",
+          heading: "Submit Failed",
+          description:
+            error.message ||
+            "There was an error while trying to submit your requirement. Please check your internet connection and try again.",
+        });
+      } else {
+        addToast(
+          "Save Failed",
+          "error",
+          "Save Failed",
+          "There was an error while trying to save your changes. Please check your internet connection and try again."
+        );
+      }
     } finally {
       setContinuing(false);
     }
@@ -443,97 +560,80 @@ const Requirement = () => {
   return (
     <div className={`${styles.bkg} flex flex-col h-screen `}>
       <div>
-          <div
-            className={`${styles.tabs}  px-4 md:px-8 border-b-2 fixed bg-[#FAFAFA] w-[100vw] z-[9] overflow-x-auto `}
-          >
-            {requirements && requirements.length > 0 &&
-              requirements.map((req, index) => (
-                <button
-                  key={req.id}
-                  className={`${activeTab === req.id ? styles.tabButton : styles.tabButton2} pt-3 md:pt-4`}
-                  onClick={() => handleTabClick(req.id)}
+        <div
+          className={`${styles.tabs}  px-4 md:px-8 border-b-2 fixed bg-[#FAFAFA] w-[100vw] z-[9] overflow-x-auto `}
+        >
+          {requirements &&
+            requirements.length > 0 &&
+            requirements.map((req, index) => (
+              <button
+                key={req.id}
+                className={`${
+                  activeTab === req.id ? styles.tabButton : styles.tabButton2
+                } pt-3 md:pt-4`}
+                onClick={() => handleTabClick(req.id)}
+              >
+                <div
+                  className={`pb-3 md:pb-4 text-nowrap ${
+                    activeTab === req.id ? styles.activeTab : ""
+                  } `}
                 >
-                  <div
-                    className={`pb-3 md:pb-4 text-nowrap ${
-                      activeTab === req.id ? styles.activeTab : ""
-                    } `}
-                  >
-                    {`Requirement ${index + 1}`}
-                  </div>
-                </button>
-              ))
-            }
+                  {`Requirement ${index + 1}`}
+                </div>
+              </button>
+            ))}
 
-            {/* Show tab for new requirement */}
-            {localRequirement && (activeTab === "req001" || activeTab === "req new") && (
+          {/* Show tab for new requirement */}
+          {localRequirement &&
+            (activeTab === "req001" || activeTab === "req new") && (
               <button
                 key={localRequirement.id}
                 className={`${styles.tabButton} pt-3 md:pt-4`}
               >
                 <div className={`pb-3 md:pb-4 text-nowrap ${styles.activeTab}`}>
-                  {requirements.length === 0 ? "Requirement 1" : `Requirement ${requirements.length + 1}`}
+                  {requirements.length === 0
+                    ? "Requirement 1"
+                    : `Requirement ${requirements.length + 1}`}
                 </div>
               </button>
             )}
-            {(() => {
-              const shouldShow = !requirements || requirements.length === 0 ||
-                !requirements.some((req) => req.id === "req001" || req.id === "req new");
-              console.log("Add button condition:", {
-                requirements: requirements?.length,
-                shouldShow,
-                hasReq001: requirements?.some((req) => req.id === "req001"),
-                hasReqNew: requirements?.some((req) => req.id === "req new")
-              });
-              return shouldShow;
-            })() && (
-                <button
-                  className={`px-1 ${styles.tabButton2}`}
-                  onClick={addRequirement}
-                >
-                  <div className={`flex px-3 py-1 ${styles.addButton}`}>
-                    <span>+</span>
-                    <span className="ml-2">Add</span>
-                    <span className="ml-1">Requirement</span>
-                  </div>
-                </button>
-              )}
-          </div>
-          <div className=" p-4 md:pt-6 md:pb-12 md:px-8 mt-8">
-            {/* Render saved requirements */}
-            {requirements && requirements.length > 0 &&
-              requirements.map((req) => (
-                <RequirementForm
-                  key={req.id}
-                  isActive={activeTab === req.id}
-                  requirementId={req.id}
-                  requirement={req}
-                  updateRequirement={updateRequirement}
-                  onDelete={deleteRequirementHandler}
-                  setReqIdToDelete={setReqIdToDelete}
-                  saveRequirements={saveRequirements}
-                  setIsModalOpen={setIsModalOpen}
-                  setDeleteModalOpen={setDeleteModalOpen}
-                  isSubmitDisabled={isSubmitDisabled}
-                  setIsSubmitDisabled={setIsSubmitDisabled}
-                />
-              ))
-            }
-
-            {/* Render new requirement form when active */}
-            {(() => {
-              const shouldRenderForm = localRequirement && (activeTab === "req001" || activeTab === "req new");
-              console.log("Form render condition:", {
-                localRequirement: !!localRequirement,
-                activeTab,
-                shouldRenderForm
-              });
-              return shouldRenderForm;
-            })() && (
+          {(() => {
+            const shouldShow =
+              !requirements ||
+              requirements.length === 0 ||
+              !requirements.some(
+                (req) => req.id === "req001" || req.id === "req new"
+              );
+            console.log("Add button condition:", {
+              requirements: requirements?.length,
+              shouldShow,
+              hasReq001: requirements?.some((req) => req.id === "req001"),
+              hasReqNew: requirements?.some((req) => req.id === "req new"),
+            });
+            return shouldShow;
+          })() && (
+            <button
+              className={`px-1 ${styles.tabButton2}`}
+              onClick={addRequirement}
+            >
+              <div className={`flex px-3 py-1 ${styles.addButton}`}>
+                <span>+</span>
+                <span className="ml-2">Add</span>
+                <span className="ml-1">Requirement</span>
+              </div>
+            </button>
+          )}
+        </div>
+        <div className=" p-4 md:pt-6 md:pb-12 md:px-8 mt-8">
+          {/* Render saved requirements */}
+          {requirements &&
+            requirements.length > 0 &&
+            requirements.map((req) => (
               <RequirementForm
-                key={localRequirement.id}
-                isActive={true}
-                requirementId={localRequirement.id}
-                requirement={localRequirement}
+                key={req.id}
+                isActive={activeTab === req.id}
+                requirementId={req.id}
+                requirement={req}
                 updateRequirement={updateRequirement}
                 onDelete={deleteRequirementHandler}
                 setReqIdToDelete={setReqIdToDelete}
@@ -543,9 +643,37 @@ const Requirement = () => {
                 isSubmitDisabled={isSubmitDisabled}
                 setIsSubmitDisabled={setIsSubmitDisabled}
               />
-            )}
-          </div>
+            ))}
+
+          {/* Render new requirement form when active */}
+          {(() => {
+            const shouldRenderForm =
+              localRequirement &&
+              (activeTab === "req001" || activeTab === "req new");
+            console.log("Form render condition:", {
+              localRequirement: !!localRequirement,
+              activeTab,
+              shouldRenderForm,
+            });
+            return shouldRenderForm;
+          })() && (
+            <RequirementForm
+              key={localRequirement.id}
+              isActive={true}
+              requirementId={localRequirement.id}
+              requirement={localRequirement}
+              updateRequirement={updateRequirement}
+              onDelete={deleteRequirementHandler}
+              setReqIdToDelete={setReqIdToDelete}
+              saveRequirements={saveRequirements}
+              setIsModalOpen={setIsModalOpen}
+              setDeleteModalOpen={setDeleteModalOpen}
+              isSubmitDisabled={isSubmitDisabled}
+              setIsSubmitDisabled={setIsSubmitDisabled}
+            />
+          )}
         </div>
+      </div>
 
       <div>
         <RequirementSubmitAlert
