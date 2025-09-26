@@ -25,7 +25,6 @@ import {
   selectCompareProjects,
 } from "../../slices/compareSlice";
 import { getInvestmentReport } from "../../slices/reportSlice";
-import { getInvestmentReport } from "../../slices/reportSlice";
 import {
   fetchProjectByName,
   selectCurrentProject,
@@ -38,14 +37,9 @@ import {
   selectUserDocId,
 } from "../../slices/userAuthSlice";
 import {
-  selectUserPhoneNumber,
-  selectUserDocId,
-} from "../../slices/userAuthSlice";
-import {
   fetchWishlistedProjects,
   updateWishlist,
   selectWishlistItems,
-  removeWishlist,
 } from "../../slices/wishlistSlice";
 import {
   customRound,
@@ -56,7 +50,6 @@ import {
   formatToOneDecimal,
   getTruGrowthStatus,
   toCapitalizedWords,
-  upperCaseProperties,
   upperCaseProperties,
 } from "../../utils/common.js";
 import MyBreadcrumb from "../BreadCrumbs/Breadcrumb.jsx";
@@ -168,9 +161,6 @@ const ProjectDetails = () => {
             ? `${formatCost(
                 parseInt(project?.projectOverview?.pricePerSqft)
               )} / sqft`
-            ? `${formatCost(
-                parseInt(project?.projectOverview?.pricePerSqft)
-              )} / sqft`
             : "NA",
         },
         {
@@ -180,8 +170,6 @@ const ProjectDetails = () => {
             : project?.truEstimate
             ? `${formatCost(project?.truEstimate)} / sqft`
             : "NA",
-            ? `${formatCost(project?.truEstimate)} / sqft`
-            : "NA",
         },
         {
           label: "Est. Price in 4 Yrs",
@@ -189,13 +177,6 @@ const ProjectDetails = () => {
             ? null
             : project?.investmentOverview.cagr &&
               project?.projectOverview?.pricePerSqft
-            ? `${formatCost(
-                parseInt(
-                  project?.projectOverview?.pricePerSqft *
-                    Math.pow(1 + project?.investmentOverview?.cagr / 100, 4)
-                )
-              )} / sqft`
-            : "NA",
             ? `${formatCost(
                 parseInt(
                   project?.projectOverview?.pricePerSqft *
@@ -237,13 +218,6 @@ const ProjectDetails = () => {
                 )
               : "NA"
           } `,
-          value: `${
-            project?.projectOverview?.launchDate
-              ? formatTimestampDateWithoutDate(
-                  project?.projectOverview?.launchDate
-                )
-              : "NA"
-          } `,
         },
         {
           label:
@@ -252,8 +226,6 @@ const ProjectDetails = () => {
               : "Est. Handover Date",
           value: project?.projectOverview?.handOverDate
             ? formatTimestampDateWithoutDate(
-                project?.projectOverview?.handOverDate
-              )
                 project?.projectOverview?.handOverDate
               )
             : "NA",
@@ -268,12 +240,6 @@ const ProjectDetails = () => {
           label: "Project Density",
           value:
             project?.projectOverview.totalUnits != "NA" &&
-            project?.projectOverview.totalUnits &&
-            project?.projectOverview.projectSize
-              ? `${parseFloat(
-                  project?.projectOverview.totalUnits /
-                    project?.projectOverview.projectSize
-                ).toFixed(2)} / acre`
             project?.projectOverview.totalUnits &&
             project?.projectOverview.projectSize
               ? `${parseFloat(
@@ -336,20 +302,11 @@ const ProjectDetails = () => {
 
                   TruReportConfigWiseData[configName] &&
                   TruReportConfigWiseData[configName].length > 0
-                  TruReportConfigWiseData[configName].length > 0
                     ? TruReportConfigWiseData[configName].push({
                         area: eachData?.sbua,
                         price: eachData?.currentPrice,
                       })
-                        area: eachData?.sbua,
-                        price: eachData?.currentPrice,
-                      })
                     : (TruReportConfigWiseData[configName] = [
-                        {
-                          area: eachData?.sbua,
-                          price: eachData?.currentPrice,
-                        },
-                      ]);
                         {
                           area: eachData?.sbua,
                           price: eachData?.currentPrice,
@@ -366,7 +323,6 @@ const ProjectDetails = () => {
 
             TruReportConfigWiseData[configName] &&
             TruReportConfigWiseData[configName].length > 0
-            TruReportConfigWiseData[configName].length > 0
               ? TruReportConfigWiseData[configName].push({
                   area:
                     eachData?.landDetails?.sbua ||
@@ -375,23 +331,7 @@ const ProjectDetails = () => {
                     eachData?.pricePerSqft *
                     (eachData?.landDetails?.sbua || eachData?.plotArea),
                 })
-                  area:
-                    eachData?.landDetails?.sbua ||
-                    eachData?.landDetails?.landArea,
-                  price:
-                    eachData?.pricePerSqft *
-                    (eachData?.landDetails?.sbua || eachData?.plotArea),
-                })
               : (TruReportConfigWiseData[configName] = [
-                  {
-                    area:
-                      eachData?.landDetails?.sbua ||
-                      eachData?.landDetails?.landArea,
-                    price:
-                      eachData?.pricePerSqft *
-                      (eachData?.landDetails?.sbua || eachData?.plotArea),
-                  },
-                ]);
                   {
                     area:
                       eachData?.landDetails?.sbua ||
@@ -442,7 +382,6 @@ const ProjectDetails = () => {
 
       setActiveTruReportConfigTab(InitialActiveTruReportConfigTab);
       console.log("report is", InitialActiveTruReportConfigTab);
-      console.log("report is", InitialActiveTruReportConfigTab);
       setActiveTruReportAreaTab(InitialActiveTruReportAreaTab);
     }
   }, [project]);
@@ -456,7 +395,6 @@ const ProjectDetails = () => {
       const cagrToConsider = project?.investmentOverview?.cagr / 100;
       SellingCost = parseInt(
         activeTruReportAreaTab?.price *
-          Math.pow(1 + cagrToConsider, HOLDING_PERIOD)
           Math.pow(1 + cagrToConsider, HOLDING_PERIOD)
       );
 
@@ -478,8 +416,6 @@ const ProjectDetails = () => {
           : sellingCost
           ? formatCostSuffix(SellingCost)
           : "NA",
-          ? formatCostSuffix(SellingCost)
-          : "NA",
       },
       {
         label: "Current Price",
@@ -487,7 +423,6 @@ const ProjectDetails = () => {
           formatCostSuffix(
             parseInt(
               activeTruReportAreaTab?.area *
-                project?.projectOverview?.pricePerSqft
                 project?.projectOverview?.pricePerSqft
             )
           ) || "NA",
@@ -769,25 +704,15 @@ const ProjectDetails = () => {
       return;
     }
 
-    // Show loading toast right away
-    const loadingToastId = addToast(
-      "Compare",
-      "loading",
-      isCompared ? "Removing Property" : "Adding Property",
-      isCompared
-        ? "Removing property from compare list..."
-        : "Adding property to compare list..."
-    );
-
     try {
       if (isCompared) {
-        await dispatch(removeProjectFromComparison(project.projectId));
-
-        updateToast(loadingToastId, {
-          type: "success",
-          heading: "Property Removed",
-          description: "The property has been removed from the compare list.",
-        });
+        dispatch(removeProjectFromComparison(project.projectId));
+        addToast(
+          "Success",
+          "success",
+          "Property Removed from Compare",
+          "The property has been removed from the compare list."
+        );
       } else {
         if (compareProjects.length < 4) {
           dispatch(
@@ -804,23 +729,22 @@ const ProjectDetails = () => {
             "The property has been added to the compare list."
           );
         } else {
-          // update existing loading toast → error
-          updateToast(loadingToastId, {
-            type: "error",
-            heading: "Maximum Limit Reached",
-            description: "You can only compare up to 4 properties.",
-          });
+          addToast(
+            "Error",
+            "error",
+            "Maximum Limit Reached",
+            "Maximum 4 properties can be compared"
+          );
         }
       }
     } catch (error) {
       console.error("Error updating compare:", error);
-
-      updateToast(loadingToastId, {
-        type: "error",
-        heading: "Compare Action Failed",
-        description:
-          error.message || "Failed to update compare list. Please try again.",
-      });
+      addToast(
+        "Error",
+        "error",
+        "Compare Action Failed",
+        "Failed to update compare list. Please try again."
+      );
     }
   };
 
@@ -834,18 +758,6 @@ const ProjectDetails = () => {
       );
       return;
     }
-
-    const newState = !isWishlisted;
-
-    // Optimistically update the UI
-    setIsWishlisted(newState);
-
-    // Show loading toast right away
-    const loadingToastId = addToast(
-      "Wishlist",
-      "loading",
-      newState ? "Adding Property" : "Removing Property"
-    );
 
     try {
       const propertyType = "auction"; // Default to auction, update this based on your project structure
@@ -864,59 +776,41 @@ const ProjectDetails = () => {
         investmentOverview: project.investmentOverview || null,
       };
 
-      if (newState) {
-        // Adding to wishlist
-        logEvent(analytics, "added-to-wishlist", {
-          name: project.projectName,
-        });
+      const resultAction = await dispatch(
+        updateWishlist({
+          userId: userDocId,
+          propertyType,
+          projectId: project.projectId,
+          defaults: projectDefaults,
+        })
+      );
 
-        await dispatch(
-          updateWishlist({
-            userId: userDocId,
-            propertyType,
-            projectId: project.projectId,
-            defaults: projectDefaults,
-          })
-        ).unwrap();
-
-        updateToast(loadingToastId, {
-          type: "success",
-          heading: "Property Added",
-          description: "The property has been added to your wishlist.",
-        });
+      if (updateWishlist.fulfilled.match(resultAction)) {
+        const isAdded = !isWishlisted;
+        addToast(
+          "Success",
+          "success",
+          "Wishlist Updated",
+          isAdded
+            ? `${project.projectName} added to wishlist!`
+            : `${project.projectName} removed from wishlist!`
+        );
       } else {
-        // Removing from wishlist
-        logEvent(analytics, "removed-from-wishlist", {
-          name: project.projectName,
-        });
-
-        await dispatch(
-          removeWishlist({
-            userId: userDocId,
-            propertyType,
-            projectId: project.projectId,
-          })
-        ).unwrap();
-
-        updateToast(loadingToastId, {
-          type: "error", // 👈 negative effect for removal
-          heading: "Property Removed",
-          description: "The property has been removed from your wishlist.",
-        });
+        addToast(
+          "Error",
+          "error",
+          "Wishlist Action Failed",
+          resultAction.payload || "Failed to update wishlist. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error updating wishlist:", error);
-
-      updateToast(loadingToastId, {
-        type: "error",
-        heading: "Wishlist Action Failed",
-        description:
-          error.message ||
-          "There was an issue updating the wishlist. Please try again.",
-      });
-
-      // Revert optimistic UI update
-      setIsWishlisted(!newState);
+      addToast(
+        "Error",
+        "error",
+        "Wishlist Action Failed",
+        "An unexpected error occurred. Please try again."
+      );
     }
   };
 
@@ -956,12 +850,8 @@ const ProjectDetails = () => {
           <Loader />
         </div>
       ) : (
-      ) : (
         <>
           <div
-            className={`relative h-full  ${
-              !isAuthenticated ? `md:px-20 lg:px-24` : ``
-            } `}
             className={`relative h-full  ${
               !isAuthenticated ? `md:px-20 lg:px-24` : ``
             } `}
@@ -969,9 +859,6 @@ const ProjectDetails = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4  mt-0 ">
               <div className="md:col-span-2 ">
                 <div
-                  className={`  px-4 mt-3 mb-3 ${
-                    isAuthenticated ? `md:px-8 ` : `md:px-0`
-                  } `}
                   className={`  px-4 mt-3 mb-3 ${
                     isAuthenticated ? `md:px-8 ` : `md:px-0`
                   } `}
@@ -983,16 +870,11 @@ const ProjectDetails = () => {
                   className={`h-full w-full px-4  pb-[30px] ${
                     isAuthenticated ? `md:px-8` : `md:px-0`
                   } `}
-                  className={`h-full w-full px-4  pb-[30px] ${
-                    isAuthenticated ? `md:px-8` : `md:px-0`
-                  } `}
                 >
                   <div className="flex gap-2.5 flex-wrap md:flex-nowrap ">
                     <div className={styles.bigheading}>
                       {project?.projectName
                         ? Object.keys(upperCaseProperties).includes(
-                            project?.projectName
-                          )
                             project?.projectName
                           )
                           ? upperCaseProperties[project?.projectName]
@@ -1006,24 +888,6 @@ const ProjectDetails = () => {
                         className="lg:ml-2 w-auto hidden lg:block"
                       />
                     )}
-                    {project &&
-                      project?.projectOverview &&
-                      project?.projectOverview?.litigation && (
-                        <img
-                          src={LitigationIcon}
-                          alt="Litigation"
-                          className="lg:ml-2 w-auto hidden lg:block"
-                        />
-                      )}
-                    {project &&
-                      project?.otherData.isReraApproved &&
-                      project?.otherData.isReraApproved != "NA" && (
-                        <img
-                          src={Rera}
-                          alt="Rera"
-                          className="lg:ml-2 w-auto hidden lg:block"
-                        />
-                      )}
                     {project &&
                       project?.projectOverview &&
                       project?.projectOverview?.litigation && (
@@ -1071,23 +935,9 @@ const ProjectDetails = () => {
                         <img src={Rera} alt="Rera" className=" w-auto" />
                       )}
                     {project &&
-                      project?.otherData.isReraApproved &&
-                      project?.otherData.isReraApproved != "NA" && (
-                        <img src={Rera} alt="Rera" className=" w-auto" />
-                      )}
-                    {project &&
                       project?.projectOverview &&
                       project?.projectOverview?.availability === "sold out" && (
                         <img src={soldOut} alt="Sold Out" className="w-auto" />
-                      )}
-                    {project &&
-                      project?.projectOverview &&
-                      project?.projectOverview?.litigation && (
-                        <img
-                          src={LitigationIcon}
-                          alt="Litigation"
-                          className="lg:ml-2 w-auto lg:hidden "
-                        />
                       )}
                     {project &&
                       project?.projectOverview &&
@@ -1190,8 +1040,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don&apos;t have the project&apos;s configuration,
-                          so we&apos;re considering it only for analysis
+                          * We don't have the project's configuration, so we're
+                          considering it only for analysis
                         </div>
                       )}
 
@@ -1207,8 +1057,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don&apos;t have the project&apos;s configurations
-                          yet. We&apos;ll be updating soon!
+                          * We don't have the project's configurations yet.
+                          We'll be updating soon!
                         </div>
                       )}
 
@@ -1219,8 +1069,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don&apos;t have the project&apos;s configurations
-                          yet. We&apos;ll be updating soon!
+                          * We don't have the project's configurations yet.
+                          We'll be updating soon!
                         </div>
                       )}
 
@@ -1249,16 +1099,11 @@ const ProjectDetails = () => {
 
                   {project?.assetType === "plot" &&
                   project?.configurations?.length === 0 ? (
-                  project?.configurations?.length === 0 ? (
                     <></>
                   ) : (
                     <>
                       {
                         <div className="mb-9  lg:mb-12 ">
-                          {console.log(
-                            "About to render InvestmentOverview with data:",
-                            investmentOverviewData
-                          )}
                           {console.log(
                             "About to render InvestmentOverview with data:",
                             investmentOverviewData
@@ -1279,9 +1124,6 @@ const ProjectDetails = () => {
                           </div>
                           <InvestmentBreakdownChart
                             data2={financialCalculationData}
-                            totalInvestment={
-                              project?.investmentOverview?.minInvestment
-                            }
                             totalInvestment={
                               project?.investmentOverview?.minInvestment
                             }
@@ -1336,7 +1178,6 @@ const ProjectDetails = () => {
                   )}
 
                   {project && <LocationAnalysis project={project} />}
-                  {project && <LocationAnalysis project={project} />}
                   {/* <hr style={{ borderTop: 'solid 1px #E3E3E3' }} /> */}
                   <div className="hidden">
                     {/* <Documents documents={data.documents} /> */}
@@ -1344,11 +1185,6 @@ const ProjectDetails = () => {
                   </div>
 
                   <div
-                    className={`z-[9] fixed bottom-0 right-0  bg-[#FAFAFA] lg:hidden border-t  ${
-                      isAuthenticated
-                        ? `md:left-[119px] md:right-[40px] px-4 md:pr-[134px] w-full`
-                        : `w-full px-4`
-                    } `}
                     className={`z-[9] fixed bottom-0 right-0  bg-[#FAFAFA] lg:hidden border-t  ${
                       isAuthenticated
                         ? `md:left-[119px] md:right-[40px] px-4 md:pr-[134px] w-full`
@@ -1364,11 +1200,6 @@ const ProjectDetails = () => {
               </div>
               {
                 <div
-                  className={`md:col-span-1  ${
-                    isAuthenticated ? "md:fixed" : "absolute"
-                  } right-0 md:w-1/4  mt-11 hidden md:block ${
-                    isAuthenticated ? `mr-8` : `mr-24`
-                  } `}
                   className={`md:col-span-1  ${
                     isAuthenticated ? "md:fixed" : "absolute"
                   } right-0 md:w-1/4  mt-11 hidden md:block ${
