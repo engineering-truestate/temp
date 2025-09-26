@@ -10,20 +10,17 @@ import { APARTMENT_CONFIGURATION_KEYS } from "../../constants/apartmentTypes";
 const truSelected = "/assets/properties/icons/recommended-badge.svg";
 import LitigationIcon from "/assets/icons/status/litigation.svg";
 import rerasel from "/assets/icons/brands/rera.svg";
-// import limited from "/icons-1/LimitedAvb.svg"; // File no longer exists
 import soldOut from "/assets/icons/status/sold-out.svg";
-// import imshared from "/icons-1/IMshared.svg"; // File no longer exists
 import compoff from "/assets/icons/features/compare-inactive.svg";
 import compon from "/assets/icons/features/compare-active.svg";
 import seloff from "/assets/icons/features/wishlist-inactive.svg";
 import selon from "/assets/icons/features/wishlist-active.svg";
 import styles from "./ProjectPopup.module.css";
 import locicon from "/assets/icons/navigation/location.svg";
-// import status from "/icons-1/Status.svg"; // File no longer exists
 const cardpic = "/assets/properties/images/placeholder.webp";
 import statu from "/assets/icons/navigation/Status.svg";
 import growth from "/assets/icons/features/home.svg";
-import value from "../../../public/assets/icons/features/Value.svg";
+import value from "/assets/icons/features/Value.svg";
 import asset from "/assets/icons/features/properties.svg";
 import xirrLock from "/assets/icons/features/vault.svg";
 import infoIcon from "/assets/icons/ui/info.svg";
@@ -48,12 +45,11 @@ import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { Loader } from "lucide-react";
 import { updateWishlist, removeWishlist } from "../../slices/wishlistSlice";
 import { addProjectForComparison } from "../../slices/compareSlice";
-import truEstimateSymbol from "../../../public/assets/icons/brands/truestate-logo-alt.svg";
+import truEstimateSymbol from "/assets/icons/brands/truestate-logo-alt.svg";
 
 const PropCard = ({ project }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
-  // const userPhoneNumber = useSelector(selectUserPhoneNumber);
   const userId = useSelector(selectUserDocId);
   const wishlistItems = useSelector(selectWishlistItems);
   const compareProjects = useSelector(selectCompareProjects);
@@ -62,9 +58,8 @@ const PropCard = ({ project }) => {
   const [isShared] = useState(false);
   const [projectStatus] = useState("");
   const [isLitigation, setIsLitigation] = useState(false);
-  const { addToast, updateToast } = useToast(); // Access the toast function
+  const { addToast, updateToast } = useToast();
 
-  // console.log(isAuthenticated);
   const maxPricePerSqft = useMemo(() => {
     if (project?.assetType === "plot") {
       if (project?.configuration && Array.isArray(project.configuration)) {
@@ -74,8 +69,6 @@ const PropCard = ({ project }) => {
         }, 0);
       }
       return 0;
-    }
-
     }
 
     if (project?.assetType === "apartment") {
@@ -98,8 +91,6 @@ const PropCard = ({ project }) => {
       return maxPrice;
     }
 
-    }
-
     if (project?.assetType === "villa") {
       if (project?.configuration && Array.isArray(project.configuration)) {
         return project.configuration.reduce((max, item) => {
@@ -110,9 +101,9 @@ const PropCard = ({ project }) => {
       return 0;
     }
 
-
     return 0;
   }, [project?.assetType, project?.configuration]);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -135,7 +126,7 @@ const PropCard = ({ project }) => {
       previousState: isWishlisted,
     });
     setIsWishlisted(isProjectWishlisted);
-  }, [wishlistItems, project.projectId]);
+  }, [wishlistItems, project.projectId ]);
 
   useEffect(() => {
     const isProjectCompared = compareProjects.some(
@@ -149,28 +140,12 @@ const PropCard = ({ project }) => {
   }, [project]);
 
   const handleViewMore = () => {
-    // setting the current scroll position of the properties page while navigating to the project detail page
-    //  so that when user return from there page can start from that position
-    // if(currentPage==='/properties')
-    // dispatch(setProjectsScrollPosition(mainContentRef?.current?.scrollTop));
-
     navigate(`/properties/${project.projectName}`, {
       state: { name: project.projectName },
     });
   };
 
   const toggleWishlist = async () => {
-    console.log("PropCard toggleWishlist called:", {
-      projectId: project.projectId,
-      projectName: project.projectName,
-      propertyType: project.propertyType,
-      defaultPropertyType: project.propertyType || "preLaunch",
-      showOnTruEstate: project.showOnTruEstate,
-      isAuthenticated,
-      userId,
-      currentWishlistState: isWishlisted,
-      wishlistItems: wishlistItems.length,
-    });
     console.log("PropCard toggleWishlist called:", {
       projectId: project.projectId,
       projectName: project.projectName,
@@ -199,30 +174,7 @@ const PropCard = ({ project }) => {
         newState ? "added-to-wishlist" : "removed-from-wishlist",
         { name: project.projectName }
       );
-    try {
-      logEvent(
-        analytics,
-        newState ? "added-to-wishlist" : "removed-from-wishlist",
-        { name: project.projectName }
-      );
 
-      if (newState) {
-        await dispatch(
-          updateWishlist({
-            userId,
-            propertyType: project.propertyType || "preLaunch",
-            projectId: project.projectId,
-          })
-        );
-      } else {
-        await dispatch(
-          removeWishlist({
-            userId,
-            propertyType: project.propertyType || "preLaunch",
-            projectId: project.projectId,
-          })
-        );
-      }
       if (newState) {
         await dispatch(
           updateWishlist({
@@ -268,10 +220,8 @@ const PropCard = ({ project }) => {
 
   const toggleCompare = async () => {
     const newState = !isCompared;
-  const toggleCompare = async () => {
-    const newState = !isCompared;
 
-    // 🔒 Check max 4 projects before adding
+    // Check max 4 projects before adding
     if (!isCompared && compareProjects.length >= 4) {
       addToast(
         "Compare Limit Reached",
@@ -289,14 +239,7 @@ const PropCard = ({ project }) => {
     );
 
     setIsCompared(newState); // Optimistic UI update
-    setIsCompared(newState); // Optimistic UI update
 
-    try {
-      logEvent(
-        analytics,
-        newState ? "added-to-compare" : "removed-from-compare",
-        { name: project.projectName }
-      );
     try {
       logEvent(
         analytics,
@@ -309,13 +252,8 @@ const PropCard = ({ project }) => {
       } else {
         await dispatch(removeProjectFromComparison(project.projectId));
       }
-      if (newState) {
-        await dispatch(addProjectForComparison(project.projectId));
-      } else {
-        await dispatch(removeProjectFromComparison(project.projectId));
-      }
 
-      // ✅ Success toast for add, negative/error toast for remove
+      // Success toast for add, negative/error toast for remove
       updateToast(loadingToastId, {
         type: newState ? "success" : "error",
         heading: newState
@@ -365,10 +303,6 @@ const PropCard = ({ project }) => {
     }
   };
 
-  // const handleTruGrowthStatus = (status) => {
-  //   return toCapitalizedWords(status) + " growth";
-  // };
-
   const handleTruGrowthStatus = (cagr) => {
     if (cagr <= 4) {
       return "Low CAGR";
@@ -403,29 +337,20 @@ const PropCard = ({ project }) => {
     }
   };
 
-  // const handleGrowthStatusTextColour = (status) => {
-  //   if (status === "High CAGR") {
-  //     // return "#0E8345";
-  //     return "#151413";
-  //   } else if (status === "Low CAGR") {
-  //     return "#BD0E2D";
-  //   } else if (status === "Medium CAGR") {
-  //     return "#866106";
-  //   }
-  // };
-
   const handleClickLock = (e) => {
     e.stopPropagation();
-    // console.log(e);
     dispatch(
       setShowSignInModal({ showSignInModal: true, redirectUrl: "/properties" })
     );
   };
-  console.log("my project data is",project);
+
+  console.log("my project data is", project);
+
   return (
     <Card
-      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
-        }  `}
+      className={`rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB] ${
+        isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
+      }`}
     >
       <CardHeader
         floated={false}
@@ -447,16 +372,16 @@ const PropCard = ({ project }) => {
               className={`${styles.tooltip}`}
               onClick={(event) => event.stopPropagation()}
             >
-              <img src={truSelected} />
+              <img src={truSelected} alt="Recommended" />
               <span className={`${styles.tooltiptext}`}>
                 This project is recommended by TruEstate for investment.
               </span>
             </div>
           )}
           {project?.otherData?.isReraApproved &&
-            project?.otherData?.isReraApproved != "Pending" && (
+            project?.otherData?.isReraApproved !== "Pending" && (
               <div className={`${styles.tooltip}`}>
-                <img src={rerasel} />
+                <img src={rerasel} alt="RERA Approved" />
                 <span className={`${styles.tooltiptext}`}>
                   This project is RERA approved
                 </span>
@@ -464,28 +389,11 @@ const PropCard = ({ project }) => {
             )}
         </div>
         <div className="absolute bottom-4 left-3 md:left-4 flex space-x-2">
-          {isShared && (
+          {project.combineAvailability === "sold out" && (
             <div className={`${styles.tooltip1}`}>
-              <img src={imshared} />
-              <span className={`${styles.tooltiptext1}`}>
-                Project is shared by Investment Manager.
-              </span>
-            </div>
-          )}
-          {project.combineAvailability === "limited available" ? (
-            <div className={`${styles.tooltip1}`}>
-              <img src={limited} />
-              <span className={`${styles.tooltiptext1}`}>
-                Less than 20% availability
-              </span>
-            </div>
-          ) : project.combineAvailability === "sold out" ? (
-            <div className={`${styles.tooltip1}`}>
-              <img src={soldOut} />
+              <img src={soldOut} alt="Sold Out" />
               <span className={`${styles.tooltiptext1}`}>Project sold out</span>
             </div>
-          ) : (
-            ""
           )}
           {projectStatus && (
             <div className={`${styles.tooltip1}`}>
@@ -509,7 +417,7 @@ const PropCard = ({ project }) => {
         {isLitigation && (
           <div className="absolute bottom-4 right-3 md:right-4 flex space-x-2">
             <div className={`${styles.tooltip1}`}>
-              <img src={LitigationIcon} />
+              <img src={LitigationIcon} alt="Litigation" />
             </div>
           </div>
         )}
@@ -522,7 +430,7 @@ const PropCard = ({ project }) => {
                 src={isCompared ? compon : compoff}
                 alt="Compare"
                 onClick={toggleCompare}
-                className={`md:w-7 lg:w-7 `}
+                className={`md:w-7 lg:w-7`}
               />
               <span className={`${styles.tooltiptext3}`}>Compare</span>
             </div>
@@ -540,27 +448,27 @@ const PropCard = ({ project }) => {
         )}
       </CardHeader>
       <CardBody
-        className=" px-3 pt-3 pb-4  gap-4 bg-[#FAFAFA] rounded-b-xl"
+        className="px-3 pt-3 pb-4 gap-4 bg-[#FAFAFA] rounded-b-xl"
         onClick={handleViewMore}
       >
-        <div className=" h-full">
+        <div className="h-full">
           <div className="mb-[8px] inline-block">
             <span className="font-montserrat font-bold text-[#252626] text-[16px] leading-[1.5] line-clamp-1">
               {project?.projectName
                 ? Object.keys(upperCaseProperties).includes(
-                  project?.projectName
-                )
+                    project?.projectName
+                  )
                   ? upperCaseProperties[project?.projectName]
                   : toCapitalizedWords(project?.projectName)
                 : "___"}
             </span>
           </div>
 
-          <div className="flex flex-wrap justify-items-start  w-full  gap-2  mb-4 ">
+          <div className="flex flex-wrap justify-items-start w-full gap-2 mb-4">
             <div className="flex items-center gap-1 w-fit pr-2 border-r-[1px]">
               {project?.micromarket && (
                 <>
-                  <img src={locicon} className="w-[14px] h-[14px]" />
+                  <img src={locicon} className="w-[14px] h-[14px]" alt="Location" />
                   <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
                     {toCapitalizedWords(project.micromarket)}
                   </p>
@@ -571,7 +479,7 @@ const PropCard = ({ project }) => {
             <div className="flex items-center gap-1 pr-2 w-fit border-r-[1px]">
               {project.projectOverview?.stage && (
                 <>
-                  <img src={statu} className="w-[14px] h-[14px]" />
+                  <img src={statu} className="w-[14px] h-[14px]" alt="Status" />
                   <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
                     {toCapitalizedWords(project.projectOverview?.stage)}
                   </p>
@@ -579,10 +487,10 @@ const PropCard = ({ project }) => {
               )}
             </div>
 
-            <div className="flex items-center gap-1 pr-2 w-fit ">
+            <div className="flex items-center gap-1 pr-2 w-fit">
               {project.assetType && (
                 <>
-                  <img src={asset} className="w-[14px] h-[14px]" />
+                  <img src={asset} className="w-[14px] h-[14px]" alt="Asset Type" />
                   <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
                     {toCapitalizedWords(project.assetType)}
                   </p>
@@ -591,7 +499,7 @@ const PropCard = ({ project }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 w-full ">
+          <div className="grid grid-cols-2 w-full">
             <div className="py-1">
               {(project?.projectOverview?.pricePerSqft || maxPricePerSqft) ? (
                 <>
@@ -609,23 +517,24 @@ const PropCard = ({ project }) => {
                   <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
                     Price / Sq ft
                   </p>
-                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">NA</p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    NA
+                  </p>
                 </>
               )}
             </div>
 
-
-            <div className="py-1 ">
-              {project.investmentOverview.minInvestment && (
+            <div className="py-1">
+              {project?.investmentOverview?.minInvestment && (
                 <>
                   <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
                     Min. Investment
                   </p>
-
-                  <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">
-                    {" "}
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
                     {project?.investmentOverview?.minInvestment
-                      ? formatCostSuffix(project.investmentOverview.minInvestment)
+                      ? formatCostSuffix(
+                          project.investmentOverview.minInvestment
+                        )
                       : "NA"}
                   </p>
                 </>
@@ -633,20 +542,24 @@ const PropCard = ({ project }) => {
             </div>
 
             <div className="py-1">
-              {project.truEstimate && (
+              {project?.truEstimate && (
                 <>
-              <div className="flex items-center">
-              <img src={truEstimateSymbol} alt="TruEstimate" className="inline h-4 w-4 mr-1" />
-              <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
-                TruEstimate
-              </p>
-              </div>
-              {/* <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">{project?.handOverDate ? `${parseInt(project?.handOverDate.split("/")[1]) - date.getFullYear() + 1} Years`: "NA"} </p> */}
-              <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">
-                {project?.truEstimate ? project.truEstimate : "NA"}
-                {" / Sqft"}
-              </p>
-              </>)}
+                  <div className="flex items-center">
+                    <img
+                      src={truEstimateSymbol}
+                      alt="TruEstimate"
+                      className="inline h-4 w-4 mr-1"
+                    />
+                    <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
+                      TruEstimate
+                    </p>
+                  </div>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    {project?.truEstimate ? project.truEstimate : "NA"}
+                    {" / Sqft"}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="py-1">
@@ -654,7 +567,6 @@ const PropCard = ({ project }) => {
                 <>
                   <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
                     <span>XIRR</span>
-
                     {/* more info icon with tooltip */}
                     <div
                       className={`${styles.tooltip} cursor-pointer`}
@@ -666,16 +578,20 @@ const PropCard = ({ project }) => {
                         alt="info"
                       />
                       <span className={`${styles.tooltiptext} min-w-[120px]`}>
-                        Calculates an investment’s annualized return over irregular
-                        cash flow dates, offering a more precise measure than
-                        standard IRR.
+                        Calculates an investment's annualized return over
+                        irregular cash flow dates, offering a more precise
+                        measure than standard IRR.
                       </span>
                     </div>
                   </p>
 
                   <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
                     {!isAuthenticated ? (
-                      <img onClick={handleClickLock} src={xirrLock} alt="locked" />
+                      <img
+                        onClick={handleClickLock}
+                        src={xirrLock}
+                        alt="locked"
+                      />
                     ) : project?.investmentOverview?.xirr !== "#NUM!" ? (
                       `${project.investmentOverview.xirr} %`
                     ) : (
@@ -685,12 +601,11 @@ const PropCard = ({ project }) => {
                 </>
               )}
             </div>
-
           </div>
 
-          <hr className="mt-3" style={{ borderTop: " 1px solid #E3E3E3" }} />
+          <hr className="mt-3" style={{ borderTop: "1px solid #E3E3E3" }} />
           <div className="flex gap-2 mt-3 justify-start">
-            {project.investmentOverview?.cagr && (
+            {project?.investmentOverview?.cagr && (
               <div className={`${styles.tooltip2}`}>
                 <div
                   className="rounded-[4px] px-[6px] py-[4px] flex items-center justify-center gap-[4px]"
@@ -704,9 +619,6 @@ const PropCard = ({ project }) => {
                   <span
                     className={`font-lato text-[12px] leading-[18px] text-center font-bold`}
                     style={{
-                      // color: handleGrowthStatusTextColour(
-                      //   handleTruGrowthStatus(project?.investmentOverview?.cagr)
-                      // ),
                       color: "#151413",
                     }}
                   >
@@ -715,7 +627,7 @@ const PropCard = ({ project }) => {
                 </div>
               </div>
             )}
-            {project.truEstimate && (
+            {project?.truEstimate && (
               <div className={`${styles.tooltip2}`}>
                 <div
                   className="rounded-[4px] px-[6px] py-[4px] flex items-center justify-center gap-[4px]"
@@ -726,7 +638,7 @@ const PropCard = ({ project }) => {
                   }}
                 >
                   <img src={value} alt="value" />
-                  <span className="font-lato text-[12px] leading-[18px] text-center text-[#151413] font-bold ">
+                  <span className="font-lato text-[12px] leading-[18px] text-center text-[#151413] font-bold">
                     {handleTruValueStatus(project.investmentOverview.value)}
                   </span>
                 </div>

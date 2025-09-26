@@ -60,7 +60,7 @@ function AuctionPopupMap({ project, onClose }) {
   const [isShared, setIsShared] = useState(false);
   const [wishlistStatus, setWishlistStatus] = useState("");
   const [isLitigation, setIsLitigation] = useState(false);
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
 
   const date = new Date();
 
@@ -99,59 +99,66 @@ function AuctionPopupMap({ project, onClose }) {
 
 
 
-  const handleRemoveProject2 = (id) => {
-    dispatch(removeWishlist({
-      userId,
-      propertyType: project.propertyType || "auction",
-      projectId: id
-    }));
-    dispatch(fetchWishlistedProjects(userId));
-  };
 
 
   const toggleWishlist = async () => {
-    const newState = !isWishlisted;
-    setIsWishlisted(newState); // Optimistic update
+  const newState = !isWishlisted;
+  setIsWishlisted(newState); // Optimistic update
 
-    try {
-      if (newState) {
-        await dispatch(updateWishlist({
+  // 1️⃣ show a loading toast
+  const loadingToastId = addToast(
+    "Wishlist",
+    "loading",
+    newState ? "Adding Property" : "Removing Property"
+  );
+
+
+  try {
+    if (newState) {
+      await dispatch(
+        updateWishlist({
           userId,
           propertyType: project.propertyType || "auction",
-          projectId: project.projectId
-        }));
-        dispatch(fetchWishlistedProjects(userId));
-        addToast(
-          "Dummy",
-          "success",
-          "Property Added to Wishlist",
-          "The property has been added to the Wishlist."
-        );
-      } else {
-        await dispatch(removeWishlist({
-          userId,
-          propertyType: project.propertyType || "auction",
-          projectId: project.projectId
-        }));
-        dispatch(fetchWishlistedProjects(userId));
-        addToast(
-          "Dummy",
-          "success",
-          "Property Removed from Wishlist",
-          "The property has been removed from the Wishlist."
-        );
-      }
-    } catch (error) {
-      console.error("Error in toggleWishlist:", error);
-      addToast(
-        "Dummy",
-        "error",
-        "Wishlist Action Failed",
-        error.message || "An unexpected error occurred. Please try again."
+          projectId: project.projectId,
+        })
       );
-      setIsWishlisted(!newState); // Revert UI on error
+
+      // 2️⃣ update the same toast to success
+      updateToast(loadingToastId, {
+        type: "success",
+        heading: "Property Added to Wishlist",
+        description: "The property has been added to the Wishlist.",
+      });
+    } else {
+      await dispatch(
+        removeWishlist({
+          userId,
+          propertyType: project.propertyType || "auction",
+          projectId: project.projectId,
+        })
+      );
+
+      // 2️⃣ update the same toast to success
+      updateToast(loadingToastId, {
+        type: "success",
+        heading: "Property Removed from Wishlist",
+        description: "The property has been removed from the Wishlist.",
+      });
     }
-  };
+  } catch (error) {
+    console.error("Error in toggleWishlist:", error);
+
+    // 3️⃣ update the same toast to error
+    updateToast(
+      loadingToastId,
+      "error",
+      "Wishlist Action Failed",
+      error.message || "An unexpected error occurred. Please try again."
+    );
+
+    setIsWishlisted(!newState); // Revert UI on error
+  }
+};
 
 
   const simulateNetworkRequest = () => {
