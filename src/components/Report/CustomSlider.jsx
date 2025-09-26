@@ -80,6 +80,7 @@ const CustomSlider = ({ min, max, value, setValue, label, unit = "", markerValue
   }, [markerValue])
 
   const handleMarkerClick = () => {
+    console.log('clicked', markerValue, value)
     if (markerValue !== null) {
       setInternalValue(markerValue);
     }

@@ -4,11 +4,9 @@ import ProtectedRoute from "../components/ProtectedRoute";
 
 const ProjectDetailsPage = () => {
   return (
-    <ProtectedRoute>
-      <MainContentLayout>
-        <ProjectDetails />
-      </MainContentLayout>
-    </ProtectedRoute>
+    <MainContentLayout>
+      <ProjectDetails />
+    </MainContentLayout>
   );
 };
 
