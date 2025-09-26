@@ -10,6 +10,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
+import trueStateIcon from "/assets/icons/ui/truestateIcon.svg";
 
 const ServiceRequestModal = ({
   isOpen,
@@ -128,7 +129,7 @@ const ServiceRequestModal = ({
           };
 
           const taskName = serviceToTaskMapping[service];
-          console.log(service, 'service')
+          console.log(service, "service");
 
           if (taskName) {
             // Query truEstateTasks collection for this service
@@ -290,10 +291,21 @@ const ServiceRequestModal = ({
             </div>
 
             {loading ? (
-              <div className="flex justify-center items-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#153E3B]"></div>
+              <div className="text-center">
+                <div className="relative mx-auto mb-4 h-16 w-16">
+                  <div className="animate-spin rounded-full h-full w-full border-4 border-green-900 border-t-transparent border-l-transparent"></div>
+                  <img
+                    src={trueStateIcon}
+                    alt="Logo"
+                    className="absolute inset-0 m-auto h-8 w-8"
+                  />
+                </div>
+                <p className="text-gray-600">Loading...</p>
               </div>
             ) : (
+              // <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
+
+              //     </div>
               <>
                 <p className="font-montserrat font-semibold text-[14px] leading-[21px] tracking-[0.25px] mb-3">
                   {filteredProperties.length > 0
