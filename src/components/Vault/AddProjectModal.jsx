@@ -14,8 +14,9 @@ import sellproperty1 from "/assets/icons/features/sell-property-1.svg";
 import localcompliance1 from "/assets/icons/features/local-compliance-1.svg";
 
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import InvManager from "../../utils/InvManager";
+import { hideLoader } from "../../slices/loaderSlice";
 
 // Card data for rendering
 const cardData = [
@@ -61,11 +62,13 @@ const cardData = [
 
 const VaultEmptyPage = () => {
   const navigate = useNavigate();
+  const dispatch=useDispatch();
   const { userDoc } = useSelector((state) => state.userAuth);
 
   useEffect(() => {
     if (userDoc?.vaultForms && userDoc?.vaultForms?.length > 0)
       return navigate("/vault/investment");
+    dispatch(hideLoader)
   }, [userDoc]);
 
   const handleclick = () => {

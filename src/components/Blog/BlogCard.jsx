@@ -17,7 +17,7 @@ const BlogCard = ({ blog }) => {
             <p className={` ${styles.text0}`}>{blog.date}</p>
           </div>
           <h2 className={`  ${styles.text11}  md:mt-0 md:mb-1  line-clamp-1`}>{blog.title}</h2>
-          <p className={`  ${styles.text3} mt-2  md:mt-0  md:mb-4 line-clamp-1 `}>{blog.content}</p>
+          <p className={`  ${styles.text3} mt-2  md:mt-0  md:mb-4 line-clamp-1 `}>{blog.excerpt}</p>
         </div>
         <div className=' flex items-center mt-5  sm:my-auto  sm:mb-0'>
           <img

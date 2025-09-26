@@ -24,7 +24,6 @@ import { logEvent } from "firebase/analytics";
 // import lock from "/icons-1/lock.svg"; // File no longer exists
 import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { updateWishlist } from "../../slices/wishlistSlice";
-import { addProjectForComparison } from "../../slices/compareSlice";
 import { getUnixDateTime } from "../helper/dateTimeHelpers";
 import { toggleCompare, toggleWishlist } from "../../utils/projectActions.js";
 
@@ -39,13 +38,12 @@ const TableRow = ({
 }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const userPhoneNumber = useSelector(selectUserPhoneNumber);
   const userId = useSelector(selectUserDocId);
   const wishlistItems = useSelector(selectWishlistItems);
   const compareProjects = useSelector(selectCompareProjects);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isCompared, setIsCompared] = useState(false);
-  const { addToast } = useToast(); // Access the toast function
+  const { addToast, updateToast } = useToast(); // Access the toast function
 
   const dispatch = useDispatch();
 
@@ -56,14 +54,6 @@ const TableRow = ({
     }
   }, [dispatch, userId]);
 
-  const handleRemoveProject2 = (projectId) => {
-    dispatch(removeWishlist({
-      userId,
-      propertyType: project.propertyType || "preLaunch",
-      projectId: projectId
-    }));
-    dispatch(fetchWishlistedProjects(userId));
-  };
 
   // Update local state based on Redux store
   useEffect(() => {
@@ -89,8 +79,8 @@ const TableRow = ({
     );
   };
 
-  const handleWishlist = () => toggleWishlist({isWishlisted, setIsWishlisted, project, userId, analytics, dispatch, updateWishlist, fetchWishlistedProjects, handleRemoveProject2,addToast,});
-  const handleCompare = () =>  toggleCompare({isCompared, setIsCompared, project, type, analytics, dispatch, addProjectForComparison, fetchCompareProjects, addToast,});
+  const handleWishlist = () => toggleWishlist({isWishlisted, setIsWishlisted, project, userId, analytics, dispatch, updateWishlist, fetchWishlistedProjects,addToast,updateToast});
+  const handleCompare = () =>  toggleCompare({isCompared, setIsCompared, project, type, analytics, dispatch, fetchCompareProjects, addToast,updateToast, compareProjects});
 
   return (
     <>

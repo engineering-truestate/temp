@@ -30,7 +30,7 @@ function findIndexByProjectId(arr, projectId) {
 
 export const updateWishlist = createAsyncThunk(
   "wishlist/updateWishlist",
-  async ({ userId, propertyType, projectId, defaults = {} }, { rejectWithValue }) => {
+  async ({ userId, propertyType, projectId, defaults = {} }, { rejectWithValue, dispatch }) => {
     try {
       if (!PROPERTY_TYPES[propertyType]) {
         throw new Error("Invalid propertyType");
@@ -97,6 +97,7 @@ export const updateWishlist = createAsyncThunk(
 
       // 5) Persist
       await updateDoc(userDocRef, { properties: nextProperties });
+      await dispatch(fetchWishlistedProjects(userId));
 
       return { userId, propertyType, projectId };
     } catch (err) {
@@ -107,7 +108,7 @@ export const updateWishlist = createAsyncThunk(
 
 export const removeWishlist = createAsyncThunk(
   "wishlist/removeWishlist",
-  async ({ userId, propertyType, projectId }, { rejectWithValue }) => {
+  async ({ userId, propertyType, projectId }, { rejectWithValue, dispatch }) => {
     try {
       if (!PROPERTY_TYPES[propertyType]) {
         throw new Error("Invalid propertyType");
@@ -156,6 +157,7 @@ export const removeWishlist = createAsyncThunk(
       const nextProperties = { ...properties, [propertyType]: nextList };
 
       await updateDoc(userDocRef, { properties: nextProperties });
+      await dispatch(fetchWishlistedProjects(userId));
 
       return { userId, propertyType, projectId };
     } catch (err) {

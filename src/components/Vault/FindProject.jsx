@@ -91,6 +91,7 @@ const FindProjectPage = () => {
 
   useEffect(() => {
     const fetchProjects = async () => {
+      dispatch(hideLoader)
       const fetchedData = await getAllProjects();
       setProjects(fetchedData);
     };
@@ -109,10 +110,10 @@ const FindProjectPage = () => {
         setSearchLoading(false);
       }, [500]);
     } else {
-      setFilteredProjects([]); // Reset filtered projects if search term is empty
+      setFilteredProjects([]); 
       setSearchLoading(false);
     }
-  }, [searchTerm, projects]); // Run this effect when searchTerm or projects change
+  }, [searchTerm, projects]); 
 
   const handleProjectSelect = async (project, event) => {
     try {
@@ -121,9 +122,8 @@ const FindProjectPage = () => {
       setIsDropdownVisible(false);
       setisSelected(true);
       setiserror(false);
-      // selectedproperty = project;
-      const assetType = project.assetType; // Default to "apartment" if assetType is not defined
-      project.assetType = assetType; // Ensure assetType is set on the project object
+      const assetType = project.assetType; 
+      project.assetType = assetType; 
       setSelectedProperty(project);
     } catch (error) { }
   };
@@ -170,7 +170,6 @@ const FindProjectPage = () => {
       dispatch(hideLoader());
     }
   };
-
   const handleNextClick = async () => {
     if (currentStep === 0) {
       if (!isSelected || searchTerm === "") {
@@ -182,7 +181,6 @@ const FindProjectPage = () => {
       dispatch(setVaultFormActive(true));
     } else if (currentStep === 1) {
       if (!isAuthenticated) {
-        // Set pending form submit flag and show sign-in modal
         setPendingFormSubmit(true);
         dispatch(
           setShowSignInModal({
@@ -206,51 +204,37 @@ const FindProjectPage = () => {
       }
     }
   };
-
-  // When the input is focused, show the dropdown
+  
   const handleInputFocus = () => {
     setIsDropdownVisible(true);
   };
 
-  const handleNavigate = (destination) => {
-    if (hasUnsavedChanges) {
-      setPendingRoute(destination);
-      dispatch(setVaultFormActive(true));
-    } else {
-      navigate(destination);
-    }
-  };
-
   const handleConfirmNavigation = () => {
-    dispatch(setVaultFormActive(false)); // Reset vault form active state
-    navigate(pendingRoute || "/vault"); // Navigate to the pending route or default route
-    setShowConfirmationModal(false); // Close modal after confirmation
-    setPendingRoute(null); // Clear pending route
+    dispatch(setVaultFormActive(false)); 
+    dispatch(showLoader())
+    navigate("/vault"); 
+    setShowConfirmationModal(false); 
+    setPendingRoute(null);
   };
 
   const handleCancelNavigation = () => {
-    setShowConfirmationModal(false); // Close modal without navigating
-    setPendingRoute(null); // Clear pending route
+    setShowConfirmationModal(false);
+    setPendingRoute(null); 
   };
-
-  // Handle input changes to filter projects based on search term
   const handleInputChange = (event) => {
     const searchValue = event.target.value.toLowerCase();
     setSearchTerm(searchValue);
     // dispatch(setSearchTerm(searchValue)); // Update the search term
   };
 
-  const handleFormSubmit = (data) => {
-    // Save the form data and move to the summary step
-    setFormData(data);
-    setCurrentStep((prevStep) => prevStep + 1);
-  };
-
   const handlebackclick = () => {
     if (currentStep === 1 && (hasUnsavedChanges || isVaultFormActive))
       setShowConfirmationModal(true);
     else if (currentStep == 2) setCurrentStep(1);
-    else navigate("/vault");
+    else{
+      dispatch(showLoader())
+      navigate("/vault");
+    }
   };
 
   const openWhatsapp = () => {
@@ -350,7 +334,7 @@ const FindProjectPage = () => {
                     <ul className="dropdown  bg-[#FAFAFA]  border border-gray-200 rounded-md shadow-lg w-full  max-h-60 overflow-y-auto z-10">
                       {searchLoading ? (
                         <div className="flex justify-center items-center py-3">
-                          <Loader /> {/* or any small spinner */}
+                          Loading...{/* or any small spinner */}
                         </div>
                       ) : filteredProjects.length == 0 && searchTerm != "" ? (
                         <div className="flex py-3 px-5 ">

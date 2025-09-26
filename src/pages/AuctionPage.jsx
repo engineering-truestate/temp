@@ -7,11 +7,12 @@ import MainContentLayout from "../components/MainContentLayout";
 import PageInstantSearch from "../components/InstantSearch/PageInstantSearch";
 import AuctionPageHeader from "../components/Headers/AuctionPageHeader";
 import ProtectedRoute from "../components/ProtectedRoute";
+import { useSelector } from "react-redux";
+import { selectLoader } from "../slices/loaderSlice";
 
 const AuctionPage = () => {
   const location = useLocation();
   const [auctionView, setAuctionView] = useState("grid");
-
   const handleViewToggle = (newView, viewType) => {
     if (viewType === "auction") {
       setAuctionView(newView);
@@ -21,7 +22,7 @@ const AuctionPage = () => {
     const eventLabel = `view_changed_to_${newView}_in_${route}`;
     logEvent(analytics, "switch_view", { name: eventLabel });
   };
-
+  
 
   return (
     <ProtectedRoute>

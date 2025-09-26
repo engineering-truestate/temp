@@ -1,4 +1,3 @@
-import React from 'react';
 import BlogCard from './BlogCard';
 import { Link } from 'react-router-dom';
 import PopularTopics from './PopularTopics';
@@ -42,7 +41,7 @@ const BlogPage = () => {
         {popularTopics
           .sort((a, b) => new Date(b.date) - new Date(a.date))
           .map((popularTopic) => (
-            <Link to={`/blog/${popularTopic.title}`}>
+            <Link to={`/blog/${popularTopic.title}`} key={popularTopic}>
               <PopularTopics topic={popularTopic} />
             </Link>
           ))}

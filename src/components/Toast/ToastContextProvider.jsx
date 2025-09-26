@@ -1,28 +1,46 @@
 import { createContext, useReducer } from "react";
-import { toastReducer } from "./toastReducer.jsx"; // Assuming you have this reducer
+import { toastReducer } from "./toastReducer.jsx";
 
-export const ToastContext = createContext(); // Create the context
+export const ToastContext = createContext();
 
 const initialState = {
-  toasts: [], // Initialize with an empty toasts array
+  toasts: [],
 };
 
-// Context provider component
 export const ToastContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(toastReducer, initialState);
 
   // Function to add a toast
-  const addToast = (message, type = "success" , heading , description) => {
-    const id = Math.random().toString(36).substring(2, 9); // Generate a unique ID for each toast
+  const addToast = (message, type = "success", heading, description) => {
+    const id = Math.random().toString(36).substring(2, 9);
     dispatch({
       type: "ADD_TOAST",
-      payload: { id, message, type , heading , description },
+      payload: { id, message, type, heading, description },
     });
 
-    // Automatically remove the toast after 3 seconds
-    setTimeout(() => {
-      removeToast(id);
-    }, 3000);
+    // Don't auto-remove loading toasts
+    if (type !== "loading") {
+      setTimeout(() => {
+        removeToast(id);
+      }, 3000);
+    }
+
+    return id; // Return the ID so it can be updated later
+  };
+
+  // Function to update an existing toast
+  const updateToast = (id, updates) => {
+    dispatch({
+      type: "UPDATE_TOAST",
+      payload: { id, updates }
+    });
+
+    // If updating to non-loading type, set auto-remove timer
+    if (updates.type && updates.type !== "loading") {
+      setTimeout(() => {
+        removeToast(id);
+      }, 3000);
+    }
   };
 
   // Function to remove a toast
@@ -30,15 +48,12 @@ export const ToastContextProvider = ({ children }) => {
     dispatch({ type: "REMOVE_TOAST", payload: id });
   };
 
-  // Initialize the value **before using it**
   const value = {
     addToast,
+    updateToast,
     removeToast,
-    toasts: state.toasts, // Pass down the current toasts
+    toasts: state.toasts,
   };
-
-  // Log the value for debugging purposes
-  
 
   return (
     <ToastContext.Provider value={value}>
