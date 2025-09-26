@@ -52,6 +52,9 @@ export const ModalConfigProvider = ({ children }) => {
   const [modalConfig, setModalConfig] = useState(null); // start empty
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // you can expose this default flag immediately
+  const defaultFlag = 'launches';
+
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -89,7 +92,14 @@ export const ModalConfigProvider = ({ children }) => {
   };
 
   return (
-    <ModalConfigContext.Provider value={{ modalConfig, isLoaded, updateModalConfig }}>
+    <ModalConfigContext.Provider
+      value={{
+        modalConfig,
+        isLoaded,
+        updateModalConfig,
+        defaultFlag // <-- always available even if modalConfig is null
+      }}
+    >
       {children}
     </ModalConfigContext.Provider>
   );

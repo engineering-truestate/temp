@@ -47,15 +47,16 @@ function NewLaunches() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isAuthenticated, userData } = useSelector((state) => state.auth);
-  const { modalConfig } = useModalConfig(); 
+  const { modalConfig, defaultFlag } = useModalConfig();
+  const flag = modalConfig?.flag ?? defaultFlag;
   console.log("my fetched data is",modalConfig)
-  console.log("my flag is",modalConfig.flag)
+  console.log("my flag is",flag)
   let myinterest = "BDA_Sept";
-  if(modalConfig.flag === "launches"){
+  if(flag === "launches"){
     myinterest = "Comparison North Bangalore";
   }
   // You can also destructure individually if needed
-  let flag=modalConfig.flag;
+  
 
   // Initialize UTM tracking
   useTrackUTMParams();
@@ -565,7 +566,7 @@ const handleSubmit = async (e) => {
             </button>
             
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 text-center font-[Montserrat] pr-8">
-               {modalConfig.flag === "launches" 
+               {flag === "launches" 
                  ? "Download this Investment Report" 
                  : "Explore BDA Auction"
                }
@@ -658,7 +659,7 @@ const handleSubmit = async (e) => {
                 ) : (
                   
                   <>
-                    {modalConfig.flag === "launches" 
+                    {flag === "launches" 
                       ? "Download Report" 
                       : "View BDA Auction"
                     }
@@ -696,14 +697,14 @@ const handleSubmit = async (e) => {
             </div>
             
             <h2 className="text-xl sm:text-2xl font-bold font-[Montserrat] text-gray-800 mb-2">
-              {modalConfig.flag === "launches" 
+              {flag === "launches" 
                  ? "Your report download has started" 
                  : "You haven't signed up yet?"
                }
             </h2>
             
             <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-              {modalConfig.flag === "launches" 
+              {flag === "launches" 
                  ? "We have over 200 properties for you to explore" 
                  : "Sign up to view BDA"
                }

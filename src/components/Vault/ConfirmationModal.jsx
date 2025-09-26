@@ -1,4 +1,3 @@
-import React from "react";
 const warningIcon = '/assets/ui/icons/caution.svg';
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
@@ -8,7 +7,7 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, title="Want to leave t
   if (!isOpen) return null; // Only render if isOpen is true
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50 px-4">
+    <div className="fixed inset-0 z-[999] flex justify-center items-center bg-black bg-opacity-50 px-4">
       <div className="bg-white rounded-lg p-6 w-full max-w-sm">
         <div className="flex flex-col gap-2">
           <img src={warningIcon} alt="Success" className="w-6 h-6" />

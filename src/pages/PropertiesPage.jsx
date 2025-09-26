@@ -7,7 +7,7 @@ import Table from "../components/Table/Table";
 import ProjectPopupMap from "../components/Project_popup/ProjectPopupMap";
 import PageInstantSearch from "../components/InstantSearch/PageInstantSearch";
 import PropertiesPageHeader from "../components/Headers/PropertiesPageHeader";
-import { fetchTableProjects } from "../slices/projectSlice";
+import { fetchTableProjects, selectAllProjects } from "../slices/projectSlice";
 import { getProjectImages } from "../utils/common";
 import Loader from "../components/Loader";
 import { showLoader, hideLoader } from "../slices/loaderSlice";
@@ -32,7 +32,7 @@ const PropertiesPage = () => {
 
   // Get loading state from Redux
   const { table_projects, totalProjects, allProjects, loading } = useSelector(
-    (state) => state.projectsState
+    selectAllProjects
   );
 
   useEffect(() => {

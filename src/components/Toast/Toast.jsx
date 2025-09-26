@@ -1,10 +1,12 @@
-import React from "react";
-import './ToastStyles.css'; // Import the updated CSS
+
+import './ToastStyles.css';
 import dangerIcon from "../../../public/images/danger.png";
 import checkCircleIcon from "../../../public/images/check-circle.png";
 import close from "../../../public/images/x.png";
 
 const Toast = ({ heading, description, id, type, removeToast }) => {
+  console.log("Toast component rendered with type:", type); // Debug log
+
   // Function to get the appropriate icon based on the type
   const getIcon = () => {
     switch (type) {
@@ -12,8 +14,18 @@ const Toast = ({ heading, description, id, type, removeToast }) => {
         return checkCircleIcon;
       case "error":
         return dangerIcon;
+      case "loading":
+        return null; // We'll use a spinner instead
       default:
-        return checkCircleIcon; // Default to success icon
+        return checkCircleIcon;
+    }
+  };
+
+  const renderIcon = () => {
+    if (type === "loading") {
+      return <div className="loading-spinner"></div>;
+    } else {
+      return <img src={getIcon()} alt={type} />;
     }
   };
 
@@ -21,7 +33,7 @@ const Toast = ({ heading, description, id, type, removeToast }) => {
     <div className={`toast ${type}`}>
       {/* Icon section */}
       <div className="toast-icon">
-        <img src={getIcon()} alt={type} />
+        {renderIcon()}
       </div>
 
       {/* Content section */}
@@ -30,10 +42,12 @@ const Toast = ({ heading, description, id, type, removeToast }) => {
         <p className="toast-description">{description}</p>
       </div>
 
-      {/* Close Button */}
-      <button className="toast-close" onClick={() => removeToast(id)}>
-        <img src={close}></img>
-      </button>
+      {/* Close Button - hide for loading toasts */}
+      {type !== "loading" && (
+        <button className="toast-close" onClick={() => removeToast(id)}>
+          <img src={close} alt="close" />
+        </button>
+      )}
     </div>
   );
 };

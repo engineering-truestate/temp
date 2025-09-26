@@ -109,7 +109,7 @@ const Hero = ({ featuredBlog }) => {
           {/* Featured Blog Image */}
           <div className="lg:w-7/12 flex md:justify-end">
             <img 
-              src={featuredBlog.image} 
+              src={featuredBlog.blogImageUrl} 
               alt={featuredBlog.title} 
               className="rounded-lg md:w-full lg:w-[35rem] md:h-auto lg:h-[21rem] object-cover"
               style={{
