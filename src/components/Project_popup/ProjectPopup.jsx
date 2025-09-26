@@ -10,8 +10,6 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
 import { APARTMENT_CONFIGURATION_KEYS } from "../../constants/apartmentTypes";
 
-// Import your icons here
-
 const truSelected = "/assets/properties/icons/recommended-badge.svg";
 import LitigationIcon from "/assets/icons/status/litigation.svg";
 import rerasel from "/assets/icons/brands/rera.svg";
@@ -53,6 +51,7 @@ import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { Loader } from "lucide-react";
 import { updateWishlist, removeWishlist } from "../../slices/wishlistSlice";
 import { addProjectForComparison } from "../../slices/compareSlice";
+import truEstimateSymbol from "../../../public/assets/icons/brands/truestate-logo-alt.svg";
 import { handleStatus, handleStatusColour, handleTruGrowthStatus, handleTruValueStatus, handleGrowthAndValueStatusColour, handleGrowthStatusColour, handleGrowthStatusTextColour } from "../../utils/propertyHelpers.js";
 
 const PropCard = ({ project }) => {
@@ -79,8 +78,8 @@ const PropCard = ({ project }) => {
         }, 0);
       }
       return 0;
-    } 
-    
+    }
+
     if (project?.assetType === "apartment") {
       const configKeys = APARTMENT_CONFIGURATION_KEYS;
       let maxPrice = 0;
@@ -99,8 +98,8 @@ const PropCard = ({ project }) => {
         });
       }
       return maxPrice;
-    } 
-    
+    }
+
     if (project?.assetType === "villa") {
       if (project?.configuration && Array.isArray(project.configuration)) {
         return project.configuration.reduce((max, item) => {
@@ -110,7 +109,7 @@ const PropCard = ({ project }) => {
       }
       return 0;
     }
-    
+
     return 0;
   }, [project?.assetType, project?.configuration]);
   const dispatch = useDispatch();
@@ -160,126 +159,126 @@ const PropCard = ({ project }) => {
   };
 
   const toggleWishlist = async () => {
-  console.log("PropCard toggleWishlist called:", {
-    projectId: project.projectId,
-    projectName: project.projectName,
-    propertyType: project.propertyType,
-    defaultPropertyType: project.propertyType || "preLaunch",
-    showOnTruEstate: project.showOnTruEstate,
-    isAuthenticated,
-    userId,
-    currentWishlistState: isWishlisted,
-    wishlistItems: wishlistItems.length,
-  });
+    console.log("PropCard toggleWishlist called:", {
+      projectId: project.projectId,
+      projectName: project.projectName,
+      propertyType: project.propertyType,
+      defaultPropertyType: project.propertyType || "preLaunch",
+      showOnTruEstate: project.showOnTruEstate,
+      isAuthenticated,
+      userId,
+      currentWishlistState: isWishlisted,
+      wishlistItems: wishlistItems.length,
+    });
 
-  const newState = !isWishlisted;
-  setIsWishlisted(newState); // Optimistic update
+    const newState = !isWishlisted;
+    setIsWishlisted(newState); // Optimistic update
 
-  try {
-    logEvent(
-      analytics,
-      newState ? "added-to-wishlist" : "removed-from-wishlist",
-      { name: project.projectName }
-    );
-
-    if (newState) {
-      await dispatch(
-        updateWishlist({
-          userId,
-          propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId,
-        })
+    try {
+      logEvent(
+        analytics,
+        newState ? "added-to-wishlist" : "removed-from-wishlist",
+        { name: project.projectName }
       );
-    } else {
-      await dispatch(
-        removeWishlist({
-          userId,
-          propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId,
-        })
+
+      if (newState) {
+        await dispatch(
+          updateWishlist({
+            userId,
+            propertyType: project.propertyType || "preLaunch",
+            projectId: project.projectId,
+          })
+        );
+      } else {
+        await dispatch(
+          removeWishlist({
+            userId,
+            propertyType: project.propertyType || "preLaunch",
+            projectId: project.projectId,
+          })
+        );
+      }
+
+      // ✅ Success toast for add, negative/error toast for remove
+      addToast(
+        "Dummy",
+        newState ? "success" : "error",
+        newState
+          ? "Property Added to Wishlist"
+          : "Property Removed from Wishlist",
+        newState
+          ? "The property has been added to the Wishlist."
+          : "The property has been removed from the Wishlist."
       );
+
+      // Refresh wishlist
+      await dispatch(fetchWishlistedProjects(userId));
+    } catch (error) {
+      console.error("Error in toggleWishlist:", error);
+      addToast(
+        "Dummy",
+        "error",
+        "Wishlist Action Failed",
+        error.message || "An unexpected error occurred. Please try again."
+      );
+      setIsWishlisted(!newState); // Revert UI on error
+    }
+  };
+
+  const toggleCompare = async () => {
+    const newState = !isCompared;
+
+    // 🔒 Check max 4 projects before adding
+    if (!isCompared && compareProjects.length >= 4) {
+      addToast(
+        "Compare Limit Reached",
+        "error",
+        "You can only compare 4 properties at a time.",
+        "Remove a property from compare before adding a new one."
+      );
+      return;
     }
 
-    // ✅ Success toast for add, negative/error toast for remove
-    addToast(
-      "Dummy",
-      newState ? "success" : "error",
-      newState
-        ? "Property Added to Wishlist"
-        : "Property Removed from Wishlist",
-      newState
-        ? "The property has been added to the Wishlist."
-        : "The property has been removed from the Wishlist."
-    );
+    setIsCompared(newState); // Optimistic UI update
 
-    // Refresh wishlist
-    await dispatch(fetchWishlistedProjects(userId));
-  } catch (error) {
-    console.error("Error in toggleWishlist:", error);
-    addToast(
-      "Dummy",
-      "error",
-      "Wishlist Action Failed",
-      error.message || "An unexpected error occurred. Please try again."
-    );
-    setIsWishlisted(!newState); // Revert UI on error
-  }
-};
+    try {
+      logEvent(
+        analytics,
+        newState ? "added-to-compare" : "removed-from-compare",
+        { name: project.projectName }
+      );
 
-const toggleCompare = async () => {
-  const newState = !isCompared;
+      if (newState) {
+        await dispatch(addProjectForComparison(project.projectId));
+      } else {
+        await dispatch(removeProjectFromComparison(project.projectId));
+      }
 
-  // 🔒 Check max 4 projects before adding
-  if (!isCompared && compareProjects.length >= 4) {
-    addToast(
-      "Compare Limit Reached",
-      "error",
-      "You can only compare 4 properties at a time.",
-      "Remove a property from compare before adding a new one."
-    );
-    return;
-  }
+      // ✅ Success toast for add, negative/error toast for remove
+      addToast(
+        "Dummy",
+        newState ? "success" : "error",
+        newState
+          ? "Property Added to Compare"
+          : "Property Removed from Compare",
+        newState
+          ? "The property has been added to the compare list."
+          : "The property has been removed from the compare list."
+      );
 
-  setIsCompared(newState); // Optimistic UI update
-
-  try {
-    logEvent(
-      analytics,
-      newState ? "added-to-compare" : "removed-from-compare",
-      { name: project.projectName }
-    );
-
-    if (newState) {
-      await dispatch(addProjectForComparison(project.projectId));
-    } else {
-      await dispatch(removeProjectFromComparison(project.projectId));
+      // Refresh compare projects
+      dispatch(fetchCompareProjects());
+    } catch (error) {
+      console.error("Error in toggleCompare:", error);
+      addToast(
+        "Dummy",
+        "error",
+        "Compare Action Failed",
+        error.message || "An unexpected error occurred. Please try again."
+      );
+      setIsCompared(!newState); // Revert UI on failure
     }
-
-    // ✅ Success toast for add, negative/error toast for remove
-    addToast(
-      "Dummy",
-      newState ? "success" : "error",
-      newState
-        ? "Property Added to Compare"
-        : "Property Removed from Compare",
-      newState
-        ? "The property has been added to the compare list."
-        : "The property has been removed from the compare list."
-    );
-
-    // Refresh compare projects
-    dispatch(fetchCompareProjects());
-  } catch (error) {
-    console.error("Error in toggleCompare:", error);
-    addToast(
-      "Dummy",
-      "error",
-      "Compare Action Failed",
-      error.message || "An unexpected error occurred. Please try again."
-    );
-    setIsCompared(!newState); // Revert UI on failure
-  }
-};
+  };
 
 
 
@@ -367,12 +366,11 @@ const toggleCompare = async () => {
       setShowSignInModal({ showSignInModal: true, redirectUrl: "/properties" })
     );
   };
-
+  console.log("my project data is",project);
   return (
     <Card
-      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${
-        isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
-      }  `}
+      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
+        }  `}
     >
       <CardHeader
         floated={false}
@@ -495,8 +493,8 @@ const toggleCompare = async () => {
             <span className="font-montserrat font-bold text-[#252626] text-[16px] leading-[1.5] line-clamp-1">
               {project?.projectName
                 ? Object.keys(upperCaseProperties).includes(
-                    project?.projectName
-                  )
+                  project?.projectName
+                )
                   ? upperCaseProperties[project?.projectName]
                   : toCapitalizedWords(project?.projectName)
                 : "___"}
@@ -505,98 +503,134 @@ const toggleCompare = async () => {
 
           <div className="flex flex-wrap justify-items-start  w-full  gap-2  mb-4 ">
             <div className="flex items-center gap-1 w-fit pr-2 border-r-[1px]">
-              <img src={locicon} className="w-[14px] h-[14px]" />
-              <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
-                {toCapitalizedWords(project.micromarket)}
-              </p>
+              {project?.micromarket && (
+                <>
+                  <img src={locicon} className="w-[14px] h-[14px]" />
+                  <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
+                    {toCapitalizedWords(project.micromarket)}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="flex items-center gap-1 pr-2 w-fit border-r-[1px]">
-              <img src={statu} className="w-[14px] h-[14px]" />
-              <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
-                {toCapitalizedWords(project.projectOverview?.stage)}
-              </p>
+              {project.projectOverview?.stage && (
+                <>
+                  <img src={statu} className="w-[14px] h-[14px]" />
+                  <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
+                    {toCapitalizedWords(project.projectOverview?.stage)}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="flex items-center gap-1 pr-2 w-fit ">
-              <img src={asset} className="w-[14px] h-[14px]" />
-              <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
-                {toCapitalizedWords(project.assetType)}
-              </p>
+              {project.assetType && (
+                <>
+                  <img src={asset} className="w-[14px] h-[14px]" />
+                  <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
+                    {toCapitalizedWords(project.assetType)}
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 w-full ">
             <div className="py-1">
-              <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
-                Price / Sq ft
-              </p>
-              <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">
-                {project?.projectOverview?.pricePerSqft
-                  ? formatCost(project.projectOverview.pricePerSqft)
-                  : maxPricePerSqft
-                  ? formatCost(maxPricePerSqft)
-                  : "NA"}
-              </p>
+              {(project?.projectOverview?.pricePerSqft || maxPricePerSqft) ? (
+                <>
+                  <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
+                    Price / Sq ft
+                  </p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    {project?.projectOverview?.pricePerSqft
+                      ? formatCost(project.projectOverview.pricePerSqft)
+                      : formatCost(maxPricePerSqft)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
+                    Price / Sq ft
+                  </p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">NA</p>
+                </>
+              )}
             </div>
+
 
             <div className="py-1 ">
-              <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
-                Min. Investment
-              </p>
+              {project.investmentOverview.minInvestment && (
+                <>
+                  <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
+                    Min. Investment
+                  </p>
 
-              <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">
-                {" "}
-                {project?.investmentOverview?.minInvestment
-                  ? formatCostSuffix(project.investmentOverview.minInvestment)
-                  : "NA"}
-              </p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">
+                    {" "}
+                    {project?.investmentOverview?.minInvestment
+                      ? formatCostSuffix(project.investmentOverview.minInvestment)
+                      : "NA"}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="py-1">
+              {project.truEstimate && (
+                <>
+              <div className="flex items-center">
+              <img src={truEstimateSymbol} alt="TruEstimate" className="inline h-4 w-4 mr-1" />
               <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
-                Investment Period
+                TruEstimate
               </p>
+              </div>
               {/* <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">{project?.handOverDate ? `${parseInt(project?.handOverDate.split("/")[1]) - date.getFullYear() + 1} Years`: "NA"} </p> */}
               <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">
-                {"4 Years"}{" "}
+                {project?.truEstimate ? project.truEstimate : "NA"}
+                {" / Sqft"}
               </p>
+              </>)}
             </div>
 
             <div className="py-1">
-              <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
-                <span>XIRR</span>
+              {project?.investmentOverview?.xirr && (
+                <>
+                  <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
+                    <span>XIRR</span>
 
-                {/* more info icon with tooltip  */}
-                <div
-                  className={`${styles.tooltip} cursor-pointer`}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <img
-                    src={infoIcon}
-                    className="ml-1 mr-2 mt-[1px]"
-                    alt="info"
-                  />
-                  <span className={`${styles.tooltiptext} min-w-[120px]`}>
-                    Calculates an investment’s annualized return over irregular
-                    cash flow dates, offering a more precise measure than
-                    standard IRR.
-                  </span>
-                </div>
-              </p>
-              {
-                <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">
-                  {!isAuthenticated ? (
-                    <img onClick={handleClickLock} src={xirrLock} />
-                  ) : project?.investmentOverview?.xirr &&
-                    project?.investmentOverview?.xirr !== "#NUM!" ? (
-                    `${project?.investmentOverview.xirr} %`
-                  ) : (
-                    <Loader />
-                  )}
-                </p>
-              }
+                    {/* more info icon with tooltip */}
+                    <div
+                      className={`${styles.tooltip} cursor-pointer`}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <img
+                        src={infoIcon}
+                        className="ml-1 mr-2 mt-[1px]"
+                        alt="info"
+                      />
+                      <span className={`${styles.tooltiptext} min-w-[120px]`}>
+                        Calculates an investment’s annualized return over irregular
+                        cash flow dates, offering a more precise measure than
+                        standard IRR.
+                      </span>
+                    </div>
+                  </p>
+
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    {!isAuthenticated ? (
+                      <img onClick={handleClickLock} src={xirrLock} alt="locked" />
+                    ) : project?.investmentOverview?.xirr !== "#NUM!" ? (
+                      `${project.investmentOverview.xirr} %`
+                    ) : (
+                      <Loader />
+                    )}
+                  </p>
+                </>
+              )}
             </div>
+
           </div>
 
           <hr className="mt-3" style={{ borderTop: " 1px solid #E3E3E3" }} />

@@ -61,7 +61,6 @@ const AuctionFilters = ({
 
   const flag = hits.length <= 1 ? true : false;
 
-
   const handleToggle = () => {
     // Log event for toggling More Filters - Auction specific
     logEvent(analytics, "auction_more_filters_toggle", {
@@ -75,17 +74,17 @@ const AuctionFilters = ({
   const filters = [
     {
       title: "Strategy",
-      attribute: "unitDetails.Strategy",
+      attribute: "strategy",
       type: "tab",
     },
     {
       title: "Growth Potential",
-      attribute: "auctionOverview.auctionCAGR", // assuming it maps to growth classification
+      attribute: "auctionOverview.auctionCAGR",
       type: "tab",
     },
     {
       title: "Value",
-      attribute: "auctionOverview.auctionValue", // assuming truValue returns valuation category
+      attribute: "auctionOverview.auctionValue",
       type: "tab",
     },
     {
@@ -101,7 +100,7 @@ const AuctionFilters = ({
     {
       title: "Budget",
       attribute: "auctionReservePrice",
-      type:'range'
+      type: "range"
     },
     {
       title: "Loan Eligible",
@@ -110,10 +109,11 @@ const AuctionFilters = ({
     },
     {
       title: "Possession",
-      attribute: "auctions.units.possession", // physical or symbolic
+      attribute: "possession",
       type: "tab",
     },
   ];
+
   const visibleFilters = () => {
     console.log(isMobile, isTablet, isDesktop);
     if (isMobile) return []; // No filters except "More Filters" for mobile
@@ -125,7 +125,6 @@ const AuctionFilters = ({
   const areFiltersApplied = () => {
     const { refinementList, query, menu, range } = indexUiState;
     dispatch(setSearchTerm(query));
-    // console.log(query, 'refinementList it is');
 
     const filteredRefinementList = Object.fromEntries(
       Object.entries(refinementList || {}).filter(
@@ -133,8 +132,7 @@ const AuctionFilters = ({
       )
     );
 
-    //  console.log(filteredRefinementList);
-    // Check if any refinement lists have selections
+    // Check if any refinement lists have selections (including possession filter)
     const hasRefinementListFilters = Object.values(
       filteredRefinementList || {}
     ).some((filter) => filter && filter.length > 0);
@@ -161,7 +159,6 @@ const AuctionFilters = ({
         rangeFilter.includes(":")
     );
 
-    // console.log( hasRefinementListFilters , hasQuery ,  hasMenuFilters);
     return (
       hasRefinementListFilters ||
       hasQuery ||
@@ -180,7 +177,7 @@ const AuctionFilters = ({
       page_type: "auction",
     });
 
-    // Reset the UI state to clear all refinements
+    // Reset the UI state to clear all refinements (including possession)
     setIndexUiState((prevState) => ({
       ...prevState,
       refinementList: {},
@@ -224,7 +221,6 @@ const AuctionFilters = ({
               // Submit Button
               submitIconComponent={() => (
                 <button
-                  // onClick={(state)=> console.log(state)}
                   type="button"
                   onClick={() => {
                     logEvent(analytics, "auction_click_search_button", {
@@ -267,7 +263,6 @@ const AuctionFilters = ({
                 // Submit Button
                 submitIconComponent={() => (
                   <button
-                    // onClick={(state)=> console.log(state)}
                     type="button"
                     onClick={() => {
                       logEvent(analytics, "auction_click_search_button", {
@@ -288,7 +283,7 @@ const AuctionFilters = ({
         )}
 
         <div className="flex items-center md:gap-3 md:w-fit">
-          {/* Asset Type Filter */}
+          {/* Render all filter dropdowns including the possession filter */}
           {visibleFilters().map((filter, index) => (
             <DropdownRefinementList
               key={index}
