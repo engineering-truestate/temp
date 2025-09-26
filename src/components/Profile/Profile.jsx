@@ -31,6 +31,8 @@ import { useToast } from "../../hooks/useToast.jsx";
 import { profilePic } from "../helper/profilePicHelper.js";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
+import { showLoader, hideLoader } from "../../slices/loaderSlice.js";
+import Loader from "../Loader.jsx";
 
 const Profile = () => {
   const { addToast, updateToast } = useToast();
@@ -48,11 +50,21 @@ const Profile = () => {
     dispatch(setEditing(false));
   };
 
-  useEffect(() => {
-    if (userPhoneNumber) {
-      dispatch(fetchUserProfile(userPhoneNumber));
+useEffect(() => {
+  const fetchData = async () => {
+    dispatch(showLoader());
+    try {
+      if (userPhoneNumber) {
+        await dispatch(fetchUserProfile(userPhoneNumber));
+      }
+    } finally {
+      dispatch(hideLoader());
     }
-  }, [dispatch, userPhoneNumber]);
+  };
+
+  fetchData();
+}, [dispatch, userPhoneNumber]);
+
 
   const toCapitalCase = (str) => {
     return str.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -278,12 +290,10 @@ const Profile = () => {
     localStorage.removeItem("unsavedProfileData");
   };
 
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
+
 
   if (status === "failed") {
-    return <div>Error: {error}</div>;
+    console.error(error)
   }
 
   return (
