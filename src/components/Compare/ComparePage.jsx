@@ -21,7 +21,7 @@ const ComparePage = () => {
   const compareProjects = useSelector(selectCompareProjects);
   const isLoading = useSelector(selectCompareLoading);
   const [isMobile, setIsMobile] = useState(false);
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
   const navigate = useNavigate();
 
   // Fetch compare projects on mount
@@ -42,24 +42,36 @@ const ComparePage = () => {
   const handleNavigateToAddCompare = () => navigate("/compare/addcompare");
 
   // Remove project from comparison
-  const handleRemoveProject = (id) => {
-    try {
-      dispatch(removeProjectFromComparison(id));
-      addToast(
-        "Dummy",
-        "error",
-        "Property Removed from Compare",
-        "The property has been removed from the compare list."
-      );
-    } catch (error) {
-      addToast(
-        "Dummy",
-        "error",
-        "Compare Action Failed",
-        "You are offline or there's an issue updating the compare list. Please try again."
-      );
-    }
-  };
+  const handleRemoveProject = async (id) => {
+  // show loading toast immediately
+  const loadingToastId = addToast(
+    "Compare",
+    "loading",
+    "Removing Property",
+    "Removing property from compare list..."
+  );
+
+  try {
+    await dispatch(removeProjectFromComparison(id));
+
+    updateToast(loadingToastId, {
+      type: "success",
+      heading: "Property Removed",
+      description: "The property has been removed from the compare list.",
+    });
+  } catch (error) {
+    console.error("Error in handleRemoveProject:", error);
+
+    updateToast(loadingToastId, {
+      type: "error",
+      heading: "Compare Action Failed",
+      description:
+        error.message ||
+        "You are offline or there's an issue updating the compare list. Please try again.",
+    });
+  }
+};
+
 
   // View project details
   const handleViewDetails = (project) => {

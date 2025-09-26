@@ -48,7 +48,7 @@ function useDebouncedValue(value, delay = 500) {
 const AddCompare = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
 
   const compareProjects = useSelector(selectCompareProjects) || [];
 
@@ -79,48 +79,75 @@ const AddCompare = () => {
           return;
         }
 
-        addToast(
-          "Dummy",
-          "success",
-          "Property Added to Compare",
-          "The property has been added to the compare list."
+        // Show loading toast immediately
+        const loadingToastId = addToast(
+          "Compare",
+          "loading",
+          "Adding Property"
         );
 
         await dispatch(addProjectForComparison(project.objectID)).unwrap();
         await dispatch(fetchCompareProjects()).unwrap();
+
+        // Update loading toast to success
+        updateToast(loadingToastId, {
+          type: "success",
+          heading: "Property Added to Compare",
+          description: "The property has been added to the compare list.",
+        });
       } catch (error) {
-        addToast(
-          "Dummy",
-          "error",
-          "Compare Action Failed",
-          "You are offline or there's an issue updating the compare list. Please try again."
-        );
+        // If loading toast was created, update it to error
+        // Otherwise create a new error toast
+        if (compareProjects.length < MAX_COMPARE_PROJECTS) {
+          updateToast(loadingToastId, {
+            type: "error",
+            heading: "Compare Action Failed",
+            description:
+              "You are offline or there's an issue updating the compare list. Please try again.",
+          });
+        } else {
+          addToast(
+            "Dummy",
+            "error",
+            "Compare Action Failed",
+            "You are offline or there's an issue updating the compare list. Please try again."
+          );
+        }
       }
     },
-    [closeSearch, compareProjects.length, addToast, dispatch]
+    [closeSearch, compareProjects.length, addToast, updateToast, dispatch]
   );
 
   const handleRemoveProject = useCallback(
     async (id) => {
+      // Show loading toast immediately
+      const loadingToastId = addToast(
+        "Compare",
+        "loading",
+        "Removing Property"
+      );
+
       try {
         await dispatch(removeProjectFromComparison(id)).unwrap();
         await dispatch(fetchCompareProjects()).unwrap();
-        addToast(
-          "Dummy",
-          "error",
-          "Property Removed from Compare",
-          "The property has been removed from the compare list."
-        );
+
+        // Update loading toast to success (using error type for red color since it's removal)
+        updateToast(loadingToastId, {
+          type: "error", // Red color for removal action
+          heading: "Property Removed from Compare",
+          description: "The property has been removed from the compare list.",
+        });
       } catch (error) {
-        addToast(
-          "Dummy",
-          "error",
-          "Compare Action Failed",
-          "You are offline or there's an issue updating the compare list. Please try again."
-        );
+        // Update loading toast to error
+        updateToast(loadingToastId, {
+          type: "error",
+          heading: "Compare Action Failed",
+          description:
+            "You are offline or there's an issue updating the compare list. Please try again.",
+        });
       }
     },
-    [dispatch, addToast]
+    [dispatch, addToast, updateToast]
   );
 
   const handleNavigateToCompare = useCallback(() => {

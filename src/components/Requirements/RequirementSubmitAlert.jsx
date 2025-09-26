@@ -6,7 +6,7 @@ const RequirementSubmitAlert = ({ isOpen, onClose, onContinue, continuing }) => 
     if (!isOpen) return null;
   
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[999]">
         <div className="bg-[#FAFAFA] p-6 rounded-lg sm:max-w-sm max-w-[300px] w-full text-left">
           <div className="mb-4">
             <img src={Danger} />

@@ -155,22 +155,7 @@ const DropdownRefinementList = ({
                 `}
         onClick={handleDropdownContentClick} // Add click handler to dropdown content
       >
-        {isRange && (
-          <div onClick={(e) => e.stopPropagation()}> {/* Prevent closing for range inputs */}
-            <RangeInput
-              attribute={attribute}
-              translations={{ separator: "to", submitButtonText: "Apply" }}
-              classNames={{
-                root: "flex flex-col gap-2", // Make the root a column layout to separate the button
-                form: "", // Keeps inputs and separator in a row
-                input:
-                  "mx-1 p-2 w-24 border border-[#E1E1E1] rounded-[8px] text-[12px] leading-[17.92px] text-[#5A5A5A] focus:outline-none focus:ring-2 focus:ring-[#0F2C2A] focus:border-[#0F2C2A]",
-                submit:
-                  "mt-2 w-full bg-[#0F2C2A] hover:bg-[#064f4c] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium transition-colors", // Adds margin-top to move the button down
-              }}
-            />
-          </div>
-        )}
+
         {!isRange && attribute!=="investmentOverview.minInvestment" && attribute!=="auctionReservePrice" && (
           <>
             {enableLocalSearch ? (

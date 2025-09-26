@@ -12,9 +12,7 @@ import {
   addProjectForComparison,
   selectCompareProjects,
 } from "../../slices/compareSlice";
-import {
-  getInvestmentReport
-} from "../../slices/reportSlice";
+import { getInvestmentReport } from "../../slices/reportSlice";
 import {
   fetchProjectByName,
   selectCurrentProject,
@@ -22,11 +20,15 @@ import {
   selectProjectError,
 } from "../../slices/projectSlice";
 import { setShowSignInModal } from "../../slices/modalSlice.js";
-import { selectUserPhoneNumber, selectUserDocId } from "../../slices/userAuthSlice";
+import {
+  selectUserPhoneNumber,
+  selectUserDocId,
+} from "../../slices/userAuthSlice";
 import {
   fetchWishlistedProjects,
   updateWishlist,
   selectWishlistItems,
+  removeWishlist,
 } from "../../slices/wishlistSlice";
 import {
   customRound,
@@ -37,7 +39,7 @@ import {
   formatToOneDecimal,
   getTruGrowthStatus,
   toCapitalizedWords,
-  upperCaseProperties
+  upperCaseProperties,
 } from "../../utils/common.js";
 import MyBreadcrumb from "../BreadCrumbs/Breadcrumb.jsx";
 import Loader from "../Loader";
@@ -91,12 +93,13 @@ const ProjectDetails = () => {
   const wishlistItems = useSelector(selectWishlistItems);
   const compareProjects = useSelector(selectCompareProjects);
 
-  // Determine if current project is wishlisted or compared
-  const isWishlisted = wishlistItems.some(item => item.projectId === project?.projectId);
-  const isCompared = compareProjects.some(item => item.projectId === project?.projectId);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const isCompared = compareProjects.some(
+    (item) => item.projectId === project?.projectId
+  );
   const [sellingCost, setSellingCost] = useState(300000);
 
-  const { addToast } = useToast(); // Access the toast function
+  const { addToast, updateToast } = useToast(); // Access the toast function
   const tenure = 20;
   const interestRate = 8.5;
   const [loanPercentage, setLoanPercentage] = useState(85);
@@ -120,7 +123,9 @@ const ProjectDetails = () => {
     amounttNotDisbursed: null, // loan amount not disbursed till last
   });
   const [projectOverviewDetails, setProjectOverviewDetails] = useState([]);
-  const [investmentOverviewDetails, setInvestmentOverviewDetails] = useState([]);
+  const [investmentOverviewDetails, setInvestmentOverviewDetails] = useState(
+    []
+  );
 
   // data to sent to TruReportHeading
 
@@ -139,7 +144,6 @@ const ProjectDetails = () => {
       window.removeEventListener("resize", checkIsMobile);
     };
   }, []);
-
 
   const handleShare = async () => {
     try {
@@ -183,9 +187,14 @@ const ProjectDetails = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchCompareProjects());
-  }, [dispatch]);
-
+    const fetchData = async () => {
+      await dispatch(fetchCompareProjects());
+      wishlistItems.map((i) => {
+        if (i.projectId == project.projectId) setIsWishlisted(true);
+      });
+    };
+    fetchData();
+  }, [dispatch, wishlistItems, project]);
 
   const isReport = false;
 
@@ -197,7 +206,9 @@ const ProjectDetails = () => {
         {
           label: "Current Price",
           value: project?.projectOverview?.pricePerSqft
-            ? `${formatCost(parseInt(project?.projectOverview?.pricePerSqft))} / sqft`
+            ? `${formatCost(
+                parseInt(project?.projectOverview?.pricePerSqft)
+              )} / sqft`
             : "NA",
         },
         {
@@ -205,8 +216,8 @@ const ProjectDetails = () => {
           value: !isAuthenticated
             ? null
             : project?.truEstimate
-              ? `${formatCost(project?.truEstimate)} / sqft`
-              : "NA",
+            ? `${formatCost(project?.truEstimate)} / sqft`
+            : "NA",
         },
         {
           label: "Est. Price in 4 Yrs",
@@ -214,8 +225,13 @@ const ProjectDetails = () => {
             ? null
             : project?.investmentOverview.cagr &&
               project?.projectOverview?.pricePerSqft
-              ? `${formatCost(parseInt(project?.projectOverview?.pricePerSqft * Math.pow(1 + project?.investmentOverview?.cagr / 100, 4)))} / sqft`
-              : "NA",
+            ? `${formatCost(
+                parseInt(
+                  project?.projectOverview?.pricePerSqft *
+                    Math.pow(1 + project?.investmentOverview?.cagr / 100, 4)
+                )
+              )} / sqft`
+            : "NA",
         },
         { label: "Value", value: project?.investmentOverview.value || "NA" },
         {
@@ -243,7 +259,13 @@ const ProjectDetails = () => {
             project?.reraId && project.reraId != "N/A"
               ? "Launch Date"
               : "Est. Launch Date",
-          value: `${project?.projectOverview?.launchDate ? formatTimestampDateWithoutDate(project?.projectOverview?.launchDate) : "NA"} `,
+          value: `${
+            project?.projectOverview?.launchDate
+              ? formatTimestampDateWithoutDate(
+                  project?.projectOverview?.launchDate
+                )
+              : "NA"
+          } `,
         },
         {
           label:
@@ -252,8 +274,8 @@ const ProjectDetails = () => {
               : "Est. Handover Date",
           value: project?.projectOverview?.handOverDate
             ? formatTimestampDateWithoutDate(
-              project?.projectOverview?.handOverDate
-            )
+                project?.projectOverview?.handOverDate
+              )
             : "NA",
         },
         {
@@ -266,9 +288,12 @@ const ProjectDetails = () => {
           label: "Project Density",
           value:
             project?.projectOverview.totalUnits != "NA" &&
-              project?.projectOverview.totalUnits &&
-              project?.projectOverview.projectSize
-              ? `${parseFloat(project?.projectOverview.totalUnits / project?.projectOverview.projectSize).toFixed(2)} / acre`
+            project?.projectOverview.totalUnits &&
+            project?.projectOverview.projectSize
+              ? `${parseFloat(
+                  project?.projectOverview.totalUnits /
+                    project?.projectOverview.projectSize
+                ).toFixed(2)} / acre`
               : "NA",
         },
         {
@@ -324,17 +349,17 @@ const ProjectDetails = () => {
                   const configName = getConfigDisplayName(configKey);
 
                   TruReportConfigWiseData[configName] &&
-                    TruReportConfigWiseData[configName].length > 0
+                  TruReportConfigWiseData[configName].length > 0
                     ? TruReportConfigWiseData[configName].push({
-                      area: eachData?.sbua,
-                      price: eachData?.currentPrice,
-                    })
-                    : (TruReportConfigWiseData[configName] = [
-                      {
                         area: eachData?.sbua,
                         price: eachData?.currentPrice,
-                      },
-                    ]);
+                      })
+                    : (TruReportConfigWiseData[configName] = [
+                        {
+                          area: eachData?.sbua,
+                          price: eachData?.currentPrice,
+                        },
+                      ]);
                 }
               });
             }
@@ -345,25 +370,25 @@ const ProjectDetails = () => {
             const configName = "Villa";
 
             TruReportConfigWiseData[configName] &&
-              TruReportConfigWiseData[configName].length > 0
+            TruReportConfigWiseData[configName].length > 0
               ? TruReportConfigWiseData[configName].push({
-                area:
-                  eachData?.landDetails?.sbua ||
-                  eachData?.landDetails?.landArea,
-                price:
-                  eachData?.pricePerSqft *
-                  (eachData?.landDetails?.sbua || eachData?.plotArea),
-              })
-              : (TruReportConfigWiseData[configName] = [
-                {
                   area:
                     eachData?.landDetails?.sbua ||
                     eachData?.landDetails?.landArea,
                   price:
                     eachData?.pricePerSqft *
                     (eachData?.landDetails?.sbua || eachData?.plotArea),
-                },
-              ]);
+                })
+              : (TruReportConfigWiseData[configName] = [
+                  {
+                    area:
+                      eachData?.landDetails?.sbua ||
+                      eachData?.landDetails?.landArea,
+                    price:
+                      eachData?.pricePerSqft *
+                      (eachData?.landDetails?.sbua || eachData?.plotArea),
+                  },
+                ]);
           });
         }
 
@@ -404,7 +429,7 @@ const ProjectDetails = () => {
       }
 
       setActiveTruReportConfigTab(InitialActiveTruReportConfigTab);
-      console.log("report is", InitialActiveTruReportConfigTab)
+      console.log("report is", InitialActiveTruReportConfigTab);
       setActiveTruReportAreaTab(InitialActiveTruReportAreaTab);
     }
   }, [project]);
@@ -419,7 +444,7 @@ const ProjectDetails = () => {
       console.log("Here is the donnn", activeTruReportAreaTab);
       SellingCost = parseInt(
         activeTruReportAreaTab?.price *
-        Math.pow(1 + cagrToConsider, HOLDING_PERIOD)
+          Math.pow(1 + cagrToConsider, HOLDING_PERIOD)
       );
 
       setSellingCost(SellingCost);
@@ -438,8 +463,8 @@ const ProjectDetails = () => {
         value: !isAuthenticated
           ? null
           : sellingCost
-            ? formatCostSuffix(SellingCost)
-            : "NA",
+          ? formatCostSuffix(SellingCost)
+          : "NA",
       },
       {
         label: "Current Price",
@@ -447,7 +472,7 @@ const ProjectDetails = () => {
           formatCostSuffix(
             parseInt(
               activeTruReportAreaTab?.area *
-              project?.projectOverview?.pricePerSqft
+                project?.projectOverview?.pricePerSqft
             )
           ) || "NA",
       },
@@ -487,8 +512,7 @@ const ProjectDetails = () => {
     }
   }, [userPhoneNumber, dispatch]);
 
-
-  const toggleCompare = () => {
+  const toggleCompare = async () => {
     if (!userDocId || !project?.projectId) {
       addToast(
         "Error",
@@ -499,48 +523,54 @@ const ProjectDetails = () => {
       return;
     }
 
+    // Show loading toast right away
+    const loadingToastId = addToast(
+      "Compare",
+      "loading",
+      isCompared ? "Removing Property" : "Adding Property",
+      isCompared
+        ? "Removing property from compare list..."
+        : "Adding property to compare list..."
+    );
+
     try {
       if (isCompared) {
-        dispatch(removeProjectFromComparison(project.projectId));
-        addToast(
-          "Success",
-          "success",
-          "Property Removed from Compare",
-          "The property has been removed from the compare list."
-        );
+        await dispatch(removeProjectFromComparison(project.projectId));
+
+        updateToast(loadingToastId, {
+          type: "success",
+          heading: "Property Removed",
+          description: "The property has been removed from the compare list.",
+        });
       } else {
         if (compareProjects.length < 4) {
-          dispatch(addProjectForComparison({
-            projectId: project.projectId,
-            projectName: project.projectName,
-            // Add other necessary project data
-          }));
-          addToast(
-            "Success",
-            "success",
-            "Property Added to Compare",
-            "The property has been added to the compare list."
-          );
+          await dispatch(addProjectForComparison(project.projectId));
+
+          updateToast(loadingToastId, {
+            type: "success",
+            heading: "Property Added",
+            description: "The property has been added to the compare list.",
+          });
         } else {
-          addToast(
-            "Error",
-            "error",
-            "Maximum Limit Reached",
-            "Maximum 4 properties can be compared"
-          );
+          // update existing loading toast → error
+          updateToast(loadingToastId, {
+            type: "error",
+            heading: "Maximum Limit Reached",
+            description: "You can only compare up to 4 properties.",
+          });
         }
       }
     } catch (error) {
       console.error("Error updating compare:", error);
-      addToast(
-        "Error",
-        "error",
-        "Compare Action Failed",
-        "Failed to update compare list. Please try again."
-      );
+
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Compare Action Failed",
+        description:
+          error.message || "Failed to update compare list. Please try again.",
+      });
     }
   };
-
 
   const toggleWishlist = async () => {
     if (!userDocId || !project?.projectId) {
@@ -553,8 +583,20 @@ const ProjectDetails = () => {
       return;
     }
 
+    const newState = !isWishlisted;
+
+    // Optimistically update the UI
+    setIsWishlisted(newState);
+
+    // Show loading toast right away
+    const loadingToastId = addToast(
+      "Wishlist",
+      "loading",
+      newState ? "Adding Property" : "Removing Property"
+    );
+
     try {
-      const propertyType = 'auction'; // Default to auction, update this based on your project structure
+      const propertyType = "preLaunch"; // or project?.propertyType || 'preLaunch'
       const projectDefaults = {
         projectName: project.projectName,
         builderName: project.builderName,
@@ -570,41 +612,59 @@ const ProjectDetails = () => {
         investmentOverview: project.investmentOverview || null,
       };
 
-      const resultAction = await dispatch(
-        updateWishlist({
-          userId: userDocId,
-          propertyType,
-          projectId: project.projectId,
-          defaults: projectDefaults,
-        })
-      );
+      if (newState) {
+        // Adding to wishlist
+        logEvent(analytics, "added-to-wishlist", {
+          name: project.projectName,
+        });
 
-      if (updateWishlist.fulfilled.match(resultAction)) {
-        const isAdded = !isWishlisted;
-        addToast(
-          "Success",
-          "success",
-          "Wishlist Updated",
-          isAdded
-            ? `${project.projectName} added to wishlist!`
-            : `${project.projectName} removed from wishlist!`
-        );
+        await dispatch(
+          updateWishlist({
+            userId: userDocId,
+            propertyType,
+            projectId: project.projectId,
+            defaults: projectDefaults,
+          })
+        ).unwrap();
+
+        updateToast(loadingToastId, {
+          type: "success",
+          heading: "Property Added",
+          description: "The property has been added to your wishlist.",
+        });
       } else {
-        addToast(
-          "Error",
-          "error",
-          "Wishlist Action Failed",
-          resultAction.payload || "Failed to update wishlist. Please try again."
-        );
+        // Removing from wishlist
+        logEvent(analytics, "removed-from-wishlist", {
+          name: project.projectName,
+        });
+
+        await dispatch(
+          removeWishlist({
+            userId: userDocId,
+            propertyType,
+            projectId: project.projectId,
+          })
+        ).unwrap();
+
+        updateToast(loadingToastId, {
+          type: "error", // 👈 negative effect for removal
+          heading: "Property Removed",
+          description: "The property has been removed from your wishlist.",
+        });
       }
     } catch (error) {
       console.error("Error updating wishlist:", error);
-      addToast(
-        "Error",
-        "error",
-        "Wishlist Action Failed",
-        "An unexpected error occurred. Please try again."
-      );
+
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Wishlist Action Failed",
+        description:
+          error.message ||
+          "There was an issue updating the wishlist. Please try again.",
+      });
+
+      // Revert optimistic UI update
+      setIsWishlisted(!newState);
     }
   };
 
@@ -620,8 +680,6 @@ const ProjectDetails = () => {
       );
     }
   };
-
-
 
   const handleChangeActiveTruReportAreaTab = (tab) => {
     setActiveTruReportAreaTab(tab);
@@ -640,20 +698,25 @@ const ProjectDetails = () => {
   useEffect(() => {
     // Only run when project is loaded and not in loading state
     if (projectLoading || !project) {
-      console.log("Skipping useEffect - project loading or null:", { projectLoading, project: !!project });
+      console.log("Skipping useEffect - project loading or null:", {
+        projectLoading,
+        project: !!project,
+      });
       return;
     }
 
     // For non-plot assets, wait for activeTruReportAreaTab to be initialized
     if (project?.assetType !== "plot" && !activeTruReportAreaTab) {
-      console.log("Skipping useEffect - waiting for activeTruReportAreaTab:", { assetType: project?.assetType, activeTruReportAreaTab });
+      console.log("Skipping useEffect - waiting for activeTruReportAreaTab:", {
+        assetType: project?.assetType,
+        activeTruReportAreaTab,
+      });
       return;
     }
 
     const fetchData = async () => {
       try {
         if (project?.assetType) {
-
           const payload = {
             acquisitionPrice: activeTruReportAreaTab?.price || 500000,
             tenure,
@@ -672,67 +735,100 @@ const ProjectDetails = () => {
             const apiData = resultAction.payload;
             console.log("API response payload:", apiData);
             setResults(apiData);
-          setFinancialCalculationData({
-            booking_amt: apiData.monthly_cf && apiData.monthly_cf.length > 0 ? parseFloat(apiData.monthly_cf[0][8] || 0) : null,
-            intrest: apiData.total_interest || 0,
-            principal: apiData.total_principal || 0,
-            constructionCompletionDate: project?.projectOverview?.handOverDate, // handover date
-            finalPrice: sellingCost, // final selling cost
-            selectedCharge, // transfer fee or stamp duty & reg charges
-            charges_value: apiData.charges_value ? parseFloat(apiData.charges_value) : null, // value of the above charge
-            possessionAmount: apiData.possession_amount ? parseFloat(apiData.possession_amount) : null,
-            amounttNotDisbursed: apiData.amount_not_disbursed ? parseFloat(apiData.amount_not_disbursed) : null, // loan amount not disbursed till last
+            setFinancialCalculationData({
+              booking_amt:
+                apiData.monthly_cf && apiData.monthly_cf.length > 0
+                  ? parseFloat(apiData.monthly_cf[0][8] || 0)
+                  : null,
+              intrest: apiData.total_interest || 0,
+              principal: apiData.total_principal || 0,
+              constructionCompletionDate:
+                project?.projectOverview?.handOverDate, // handover date
+              finalPrice: sellingCost, // final selling cost
+              selectedCharge, // transfer fee or stamp duty & reg charges
+              charges_value: apiData.charges_value
+                ? parseFloat(apiData.charges_value)
+                : null, // value of the above charge
+              possessionAmount: apiData.possession_amount
+                ? parseFloat(apiData.possession_amount)
+                : null,
+              amounttNotDisbursed: apiData.amount_not_disbursed
+                ? parseFloat(apiData.amount_not_disbursed)
+                : null, // loan amount not disbursed till last
 
-            // Additional fields that InvestmentBreakdownChart might expect
-            transferCharges: selectedCharge === "Transfer Fees" ? (apiData.charges_value ? parseFloat(apiData.charges_value) : null) : null,
-            stampRegCharges: selectedCharge === "Stamp Duty" ? (apiData.charges_value ? parseFloat(apiData.charges_value) : null) : null,
-          });
+              // Additional fields that InvestmentBreakdownChart might expect
+              transferCharges:
+                selectedCharge === "Transfer Fees"
+                  ? apiData.charges_value
+                    ? parseFloat(apiData.charges_value)
+                    : null
+                  : null,
+              stampRegCharges:
+                selectedCharge === "Stamp Duty"
+                  ? apiData.charges_value
+                    ? parseFloat(apiData.charges_value)
+                    : null
+                  : null,
+            });
 
-          console.log(apiData.minInvestment, "apiData.minInvestment");
-          console.log("Setting investmentOverviewData with API data");
+            console.log(apiData.minInvestment, "apiData.minInvestment");
+            console.log("Setting investmentOverviewData with API data");
 
-          setInvestmentOverviewData([
-            {
-              label: "Total Investment",
-              value: formatCostSuffix(apiDatada.minInvestment), // Use minInvestment directly from apiData
-            },
-            {
-              label: "Total Returns",
-              value: formatCostSuffix(Math.abs(apiData.total_returns)), // total_returns is at root level
-            },
-            {
-              label: "Price",
-              value: `${activeTruReportAreaTab?.area ? Math.round(activeTruReportAreaTab.price / activeTruReportAreaTab.area) : 'N/A'}/ Sq ft`,
-            },
-            {
-              label: "Gross Price",
-              value: formatCost(activeTruReportAreaTab?.price || 0),
-            },
-            {
-              label: "XIRR",
-              value:
-                apiData.xirr > 0
-                  ? `+${formatToOneDecimal(apiData.xirr)}% ` // xirr is at root level
-                  : apiData.xirr < 0
+            setInvestmentOverviewData([
+              {
+                label: "Total Investment",
+                value: formatCostSuffix(apiDatada.minInvestment), // Use minInvestment directly from apiData
+              },
+              {
+                label: "Total Returns",
+                value: formatCostSuffix(Math.abs(apiData.total_returns)), // total_returns is at root level
+              },
+              {
+                label: "Price",
+                value: `${
+                  activeTruReportAreaTab?.area
+                    ? Math.round(
+                        activeTruReportAreaTab.price /
+                          activeTruReportAreaTab.area
+                      )
+                    : "N/A"
+                }/ Sq ft`,
+              },
+              {
+                label: "Gross Price",
+                value: formatCost(activeTruReportAreaTab?.price || 0),
+              },
+              {
+                label: "XIRR",
+                value:
+                  apiData.xirr > 0
+                    ? `+${formatToOneDecimal(apiData.xirr)}% ` // xirr is at root level
+                    : apiData.xirr < 0
                     ? `${formatToOneDecimal(apiData.xirr)}%`
                     : "__",
-            },
-            {
-              label: "Equity Multiplier",
-              value: `${formatToOneDecimal(apiData.equity_multiplier)}`, // equity_multiplier is at root level
-            },
-            {
-              label: "CAGR",
-              value: project?.investmentOverview?.cagr
-                ? `${formatToOneDecimal(project?.investmentOverview?.cagr)}%`
-                : "N/A",
-            },
-          ]);
+              },
+              {
+                label: "Equity Multiplier",
+                value: `${formatToOneDecimal(apiData.equity_multiplier)}`, // equity_multiplier is at root level
+              },
+              {
+                label: "CAGR",
+                value: project?.investmentOverview?.cagr
+                  ? `${formatToOneDecimal(project?.investmentOverview?.cagr)}%`
+                  : "N/A",
+              },
+            ]);
           } else {
-            console.error('Failed to fetch investment report:', resultAction.payload);
+            console.error(
+              "Failed to fetch investment report:",
+              resultAction.payload
+            );
           }
         }
-        console.log("Final investmentOverviewData in useEffect:", investmentOverviewData);
+        console.log(
+          "Final investmentOverviewData in useEffect:",
+          investmentOverviewData
+        );
 
         // setting investment overview data
       } catch (err) {
@@ -747,7 +843,9 @@ const ProjectDetails = () => {
       setInvestmentOverviewData([
         {
           label: "Total Investment",
-          value: formatCostSuffix(project?.investmentOverview.minInvestment || 4325342),
+          value: formatCostSuffix(
+            project?.investmentOverview.minInvestment || 4325342
+          ),
         },
         {
           label: "Total Returns",
@@ -798,9 +896,8 @@ const ProjectDetails = () => {
     sellingCost,
     activeTruReportAreaTab,
     dispatch,
-    isAuthenticated
+    isAuthenticated,
   ]);
-
 
   return (
     <>
@@ -808,29 +905,34 @@ const ProjectDetails = () => {
         <div className={`col-span-full flex justify-center my-4 h-[80vh]`}>
           <Loader />
         </div>
-      )  : (
+      ) : (
         <>
-
           <div
-            className={`relative h-full  ${!isAuthenticated ? `md:px-20 lg:px-24` : ``} `}
+            className={`relative h-full  ${
+              !isAuthenticated ? `md:px-20 lg:px-24` : ``
+            } `}
           >
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4  mt-0 ">
               <div className="md:col-span-2 ">
                 <div
-                  className={`  px-4 mt-3 mb-3 ${isAuthenticated ? `md:px-8 ` : `md:px-0`} `}
+                  className={`  px-4 mt-3 mb-3 ${
+                    isAuthenticated ? `md:px-8 ` : `md:px-0`
+                  } `}
                 >
                   <MyBreadcrumb />
                 </div>
 
                 <div
-                  className={`h-full w-full px-4  pb-[30px] ${isAuthenticated ? `md:px-8` : `md:px-0`} `}
+                  className={`h-full w-full px-4  pb-[30px] ${
+                    isAuthenticated ? `md:px-8` : `md:px-0`
+                  } `}
                 >
                   <div className="flex gap-2.5 flex-wrap md:flex-nowrap ">
                     <div className={styles.bigheading}>
                       {project?.projectName
                         ? Object.keys(upperCaseProperties).includes(
-                          project?.projectName
-                        )
+                            project?.projectName
+                          )
                           ? upperCaseProperties[project?.projectName]
                           : toCapitalizedWords(project?.projectName)
                         : "___"}
@@ -842,20 +944,24 @@ const ProjectDetails = () => {
                         className="lg:ml-2 w-auto hidden lg:block"
                       />
                     )}
-                    {project && project?.projectOverview && project?.projectOverview?.litigation && (
-                      <img
-                        src={LitigationIcon}
-                        alt="Litigation"
-                        className="lg:ml-2 w-auto hidden lg:block"
-                      />
-                    )}
-                    {project && project?.otherData.isReraApproved && project?.otherData.isReraApproved != "NA" && (
-                      <img
-                        src={Rera}
-                        alt="Rera"
-                        className="lg:ml-2 w-auto hidden lg:block"
-                      />
-                    )}
+                    {project &&
+                      project?.projectOverview &&
+                      project?.projectOverview?.litigation && (
+                        <img
+                          src={LitigationIcon}
+                          alt="Litigation"
+                          className="lg:ml-2 w-auto hidden lg:block"
+                        />
+                      )}
+                    {project &&
+                      project?.otherData.isReraApproved &&
+                      project?.otherData.isReraApproved != "NA" && (
+                        <img
+                          src={Rera}
+                          alt="Rera"
+                          className="lg:ml-2 w-auto hidden lg:block"
+                        />
+                      )}
                     {project &&
                       project?.projectOverview &&
                       project?.projectOverview?.availability === "sold out" && (
@@ -879,21 +985,25 @@ const ProjectDetails = () => {
                     {project && project.showOnTruEstate && (
                       <img src={True} alt="True Selected" className=" w-auto" />
                     )}
-                    {project && project?.otherData.isReraApproved && project?.otherData.isReraApproved != "NA" && (
-                      <img src={Rera} alt="Rera" className=" w-auto" />
-                    )}
+                    {project &&
+                      project?.otherData.isReraApproved &&
+                      project?.otherData.isReraApproved != "NA" && (
+                        <img src={Rera} alt="Rera" className=" w-auto" />
+                      )}
                     {project &&
                       project?.projectOverview &&
                       project?.projectOverview?.availability === "sold out" && (
                         <img src={soldOut} alt="Sold Out" className="w-auto" />
                       )}
-                    {project && project?.projectOverview && project?.projectOverview?.litigation && (
-                      <img
-                        src={LitigationIcon}
-                        alt="Litigation"
-                        className="lg:ml-2 w-auto lg:hidden "
-                      />
-                    )}
+                    {project &&
+                      project?.projectOverview &&
+                      project?.projectOverview?.litigation && (
+                        <img
+                          src={LitigationIcon}
+                          alt="Litigation"
+                          className="lg:ml-2 w-auto lg:hidden "
+                        />
+                      )}
                   </div>
 
                   <div className="relative ">
@@ -986,8 +1096,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don't have the project's configuration, so we're
-                          considering it only for analysis
+                          * We don&apos;t have the project&apos;s configuration,
+                          so we&apos;re considering it only for analysis
                         </div>
                       )}
 
@@ -1003,8 +1113,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don't have the project's configurations yet.
-                          We'll be updating soon!
+                          * We don&apos;t have the project&apos;s configurations
+                          yet. We&apos;ll be updating soon!
                         </div>
                       )}
 
@@ -1018,8 +1128,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don't have the project's configuration, so we're
-                          considering it only for analysis
+                          * We don&apos;t have the project&apos;s configuration,
+                          so we&apos;re considering it only for analysis
                         </div>
                       )}
 
@@ -1030,8 +1140,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don't have the project's configurations yet.
-                          We'll be updating soon!
+                          * We don&apos;t have the project&apos;s configurations
+                          yet. We&apos;ll be updating soon!
                         </div>
                       )}
 
@@ -1044,8 +1154,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don't have the project's configurations yet.
-                          We'll be updating soon!
+                          * We don&apos;t have the project&apos;s configurations
+                          yet. We&apos;ll be updating soon!
                         </div>
                       )}
 
@@ -1056,8 +1166,8 @@ const ProjectDetails = () => {
                         <div
                           className={`font-lato mt-1 font-medium text-[14px] text-[red]`}
                         >
-                          * We don't have the project's configurations yet.
-                          We'll be updating soon!
+                          * We don&apos;t have the project&apos;s configurations
+                          yet. We&apos;ll be updating soon!
                         </div>
                       )}
 
@@ -1085,13 +1195,16 @@ const ProjectDetails = () => {
                   </div>
 
                   {project?.assetType === "plot" &&
-                    project?.configurations?.length === 0 ? (
+                  project?.configurations?.length === 0 ? (
                     <></>
                   ) : (
                     <>
                       {
                         <div className="mb-9  lg:mb-12 ">
-                          {console.log("About to render InvestmentOverview with data:", investmentOverviewData)}
+                          {console.log(
+                            "About to render InvestmentOverview with data:",
+                            investmentOverviewData
+                          )}
                           <InvestmentOverview
                             data={investmentOverviewData}
                             isReport={isReport}
@@ -1108,7 +1221,9 @@ const ProjectDetails = () => {
                           </div>
                           <InvestmentBreakdownChart
                             data2={financialCalculationData}
-                            totalInvestment={project?.investmentOverview?.minInvestment}
+                            totalInvestment={
+                              project?.investmentOverview?.minInvestment
+                            }
                             holdingPeriod={HOLDING_PERIOD}
                             results={results}
                           />
@@ -1159,11 +1274,7 @@ const ProjectDetails = () => {
                     </>
                   )}
 
-                  {project && (
-                    <LocationAnalysis
-                      project={project}
-                    />
-                  )}
+                  {project && <LocationAnalysis project={project} />}
                   {/* <hr style={{ borderTop: 'solid 1px #E3E3E3' }} /> */}
                   <div className="hidden">
                     {/* <Documents documents={data.documents} /> */}
@@ -1171,7 +1282,11 @@ const ProjectDetails = () => {
                   </div>
 
                   <div
-                    className={`z-[9] fixed bottom-0 right-0  bg-[#FAFAFA] lg:hidden border-t  ${isAuthenticated ? `md:left-[119px] md:right-[40px] px-4 md:pr-[134px] w-full` : `w-full px-4`} `}
+                    className={`z-[9] fixed bottom-0 right-0  bg-[#FAFAFA] lg:hidden border-t  ${
+                      isAuthenticated
+                        ? `md:left-[119px] md:right-[40px] px-4 md:pr-[134px] w-full`
+                        : `w-full px-4`
+                    } `}
                   >
                     <ContactInvestmentManager
                       projectName={project?.projectName}
@@ -1182,7 +1297,11 @@ const ProjectDetails = () => {
               </div>
               {
                 <div
-                  className={`md:col-span-1  ${isAuthenticated ? "md:fixed" : "absolute"} right-0 md:w-1/4  mt-11 hidden md:block ${isAuthenticated ? `mr-8` : `mr-24`} `}
+                  className={`md:col-span-1  ${
+                    isAuthenticated ? "md:fixed" : "absolute"
+                  } right-0 md:w-1/4  mt-11 hidden md:block ${
+                    isAuthenticated ? `mr-8` : `mr-24`
+                  } `}
                 >
                   <div className="sticky">
                     <div className={`sticky top-0  pl-6 hidden lg:block   `}>

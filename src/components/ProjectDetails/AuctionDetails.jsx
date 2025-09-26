@@ -15,7 +15,10 @@ import {
   updateWishlist,
   removeWishlist,
 } from "../../slices/wishlistSlice";
-import { selectUserPhoneNumber } from "../../slices/userAuthSlice";
+import {
+  selectUserDocId,
+  selectUserPhoneNumber,
+} from "../../slices/userAuthSlice";
 
 // Components
 import StatusTag from "./StatusTag.jsx";
@@ -90,10 +93,11 @@ const AuctionDetails = ({ data }) => {
   // 📌 React Router
   const params = useParams();
   const { projectName, id } = params;
+  const userId = useSelector(selectUserDocId);
 
   // 🔧 Redux & Toast
   const dispatch = useDispatch();
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
 
   // 🧠 Global Auth Info
   const userPhoneNumber = useSelector(selectUserPhoneNumber);
@@ -131,21 +135,17 @@ const AuctionDetails = ({ data }) => {
     // Optimistically update the UI
     setIsWishlisted(newState);
 
+    // Show loading toast right away
+    const loadingToastId = addToast(
+      "Wishlist",
+      "loading",
+      newState ? "Adding Property" : "Removing Property",
+      newState
+        ? "Adding property to your wishlist..."
+        : "Removing property from your wishlist..."
+    );
+
     try {
-      // Get userId from user document
-      const q = query(
-        collection(db, "truEstateUsers"),
-        where("phoneNumber", "==", userPhoneNumber)
-      );
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        throw new Error("User not found");
-      }
-
-      const userDoc = querySnapshot.docs[0];
-      const userId = userDoc.id;
-
       // Determine property type
       const propertyType = project?.propertyType || "auction";
 
@@ -170,13 +170,11 @@ const AuctionDetails = ({ data }) => {
           })
         ).unwrap();
 
-        // Show success toast
-        addToast(
-          "Dummy",
-          "success",
-          "Property Added to Wishlist",
-          "The property has been added to the Wishlist."
-        );
+        updateToast(loadingToastId, {
+          type: "success",
+          heading: "Property Added",
+          description: "The property has been added to your wishlist.",
+        });
       } else {
         // Removing from wishlist
         logEvent(analytics, "removed-from-wishlist", {
@@ -191,30 +189,24 @@ const AuctionDetails = ({ data }) => {
           })
         ).unwrap();
 
-        // Show negative/error toast
-        addToast(
-          "Dummy",
-          "error", // Negative toast for removal
-          "Property Removed from Wishlist",
-          "The property has been removed from the Wishlist."
-        );
+        updateToast(loadingToastId, {
+          type: "error", // 👈 negative effect for removal
+          heading: "Property Removed",
+          description: "The property has been removed from your wishlist.",
+        });
       }
-
-      // Re-fetch the updated wishlist
-      dispatch(fetchWishlistedProjects(userId));
     } catch (error) {
       console.error("Error updating wishlist:", error);
 
-      // Show error toast
-      addToast(
-        "Dummy",
-        "error",
-        "Wishlist Action Failed",
-        error.message ||
-          "There was an issue updating the wishlist. Please try again."
-      );
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Wishlist Action Failed",
+        description:
+          error.message ||
+          "There was an issue updating the wishlist. Please try again.",
+      });
 
-      // Revert the optimistic UI update
+      // Revert optimistic UI update
       setIsWishlisted(!newState);
     }
   };

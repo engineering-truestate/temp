@@ -1,4 +1,4 @@
-# TruEstate Pulse Report 2024: Real Estate Insights and Market Trends
+<!-- <  TruEstate Pulse Report 2024: Real Estate Insights and Market Trends -->
 
 The TruEstate Pulse Report 2024 offers a detailed analysis of India's real estate sector, exploring key trends, investment opportunities, and economic factors driving growth in 2024. With a projected 9.2% CAGR from 2023 to 2028, the report covers residential, commercial, industrial, and data center market trends.
 
@@ -30,7 +30,7 @@ Download the full report to get detailed insights that help capitalize on Indiaâ
   style="background-color: #FAF1CE"
 >
   <img
-    src="../blogs/images/pulseReportDownloadCover.svg"
+    src="/content/blogs/images/pulseReportDownloadCover.svg"
     alt="Pulse Report Cover"
     className="w-20 md:w-28 rounded shadow-sm object-cover"
   />
@@ -43,30 +43,26 @@ Download the full report to get detailed insights that help capitalize on Indiaâ
       Real Estate Insights and market trends
     </span>
     <a
-      href="../blogs/TruEstate Pulse Report.pdf"
-      target="_blank"
-      className="inline-flex items-center gap-2 font-medium px-4 py-2 rounded-md text-white"
-      style="background-color: #153E3B"
+        href="/content/blogs/TruEstate Pulse Report.pdf"
+        target="_blank"
+        class="inline-flex items-center gap-2 font-medium px-4 py-2 rounded-md text-white"
+        style="background-color: #153E3B"
     >
       <img
-        src="../blogs/images/blogPdfDownloadIcon.svg"
+        src="/content/blogs/images/blogPdfDownloadIcon.svg"
         alt="Download Icon"
         className="w-4 h-4 md:w-5 md:h-5"
       />
-      <span className="text-sm md:text-base whitespace-nowrap">Download Report</span>
+      <span className="text-sm md:text-base whitespace-nowrap">
+      Download Report
+      </span>
     </a>
   </div>
 
-  <img
-    src="../blogs/images/blogBannerComponent.svg"
+<img
+    src="/content/blogs/images/blogBannerComponent.svg"
     alt="Arrows"
     className="absolute right-0 bottom-0 h-full z-0 hidden md:block"
   />
 </div>
-
-
-
-
-
-
 
