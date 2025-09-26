@@ -51,6 +51,7 @@ import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { Loader } from "lucide-react";
 import { updateWishlist, removeWishlist } from "../../slices/wishlistSlice";
 import { addProjectForComparison } from "../../slices/compareSlice";
+import truEstimateSymbol from "../../../public/assets/icons/brands/truestate-logo-alt.svg";
 import { handleStatus, handleStatusColour, handleTruGrowthStatus, handleTruValueStatus, handleGrowthAndValueStatusColour, handleGrowthStatusColour, handleGrowthStatusTextColour } from "../../utils/propertyHelpers.js";
 
 const PropCard = ({ project }) => {
@@ -579,10 +580,12 @@ const PropCard = ({ project }) => {
             <div className="py-1">
               {project.truEstimate && (
                 <>
-              
+              <div className="flex items-center">
+              <img src={truEstimateSymbol} alt="TruEstimate" className="inline h-4 w-4 mr-1" />
               <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
                 TruEstimate
               </p>
+              </div>
               {/* <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">{project?.handOverDate ? `${parseInt(project?.handOverDate.split("/")[1]) - date.getFullYear() + 1} Years`: "NA"} </p> */}
               <p className="font-lato text-sm font-bold text-[#2B2928]  leading-[150%]">
                 {project?.truEstimate ? project.truEstimate : "NA"}
