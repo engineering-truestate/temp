@@ -1,11 +1,8 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardHeader, CardBody } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  selectUserPhoneNumber,
-  selectUserDocId,
-} from "../../slices/userAuthSlice";
+import { selectUserDocId } from "../../slices/userAuthSlice";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
 import { APARTMENT_CONFIGURATION_KEYS } from "../../constants/apartmentTypes";
@@ -53,12 +50,11 @@ import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { Loader } from "lucide-react";
 import { updateWishlist, removeWishlist } from "../../slices/wishlistSlice";
 import { addProjectForComparison } from "../../slices/compareSlice";
-import { handleStatus, handleStatusColour, handleTruGrowthStatus, handleTruValueStatus, handleGrowthAndValueStatusColour, handleGrowthStatusColour, handleGrowthStatusTextColour } from "../../utils/propertyHelpers.js";
 
 const PropCard = ({ project }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const userPhoneNumber = useSelector(selectUserPhoneNumber);
+  // const userPhoneNumber = useSelector(selectUserPhoneNumber);
   const userId = useSelector(selectUserDocId);
   const wishlistItems = useSelector(selectWishlistItems);
   const compareProjects = useSelector(selectCompareProjects);
@@ -67,7 +63,7 @@ const PropCard = ({ project }) => {
   const [isShared] = useState(false);
   const [projectStatus] = useState("");
   const [isLitigation, setIsLitigation] = useState(false);
-  const { addToast } = useToast(); // Access the toast function
+  const { addToast, updateToast } = useToast(); // Access the toast function
 
   // console.log(isAuthenticated);
   const maxPricePerSqft = useMemo(() => {
@@ -79,8 +75,8 @@ const PropCard = ({ project }) => {
         }, 0);
       }
       return 0;
-    } 
-    
+    }
+
     if (project?.assetType === "apartment") {
       const configKeys = APARTMENT_CONFIGURATION_KEYS;
       let maxPrice = 0;
@@ -99,8 +95,8 @@ const PropCard = ({ project }) => {
         });
       }
       return maxPrice;
-    } 
-    
+    }
+
     if (project?.assetType === "villa") {
       if (project?.configuration && Array.isArray(project.configuration)) {
         return project.configuration.reduce((max, item) => {
@@ -110,7 +106,7 @@ const PropCard = ({ project }) => {
       }
       return 0;
     }
-    
+
     return 0;
   }, [project?.assetType, project?.configuration]);
   const dispatch = useDispatch();
@@ -160,128 +156,134 @@ const PropCard = ({ project }) => {
   };
 
   const toggleWishlist = async () => {
-  console.log("PropCard toggleWishlist called:", {
-    projectId: project.projectId,
-    projectName: project.projectName,
-    propertyType: project.propertyType,
-    defaultPropertyType: project.propertyType || "preLaunch",
-    showOnTruEstate: project.showOnTruEstate,
-    isAuthenticated,
-    userId,
-    currentWishlistState: isWishlisted,
-    wishlistItems: wishlistItems.length,
-  });
+    console.log("PropCard toggleWishlist called:", {
+      projectId: project.projectId,
+      projectName: project.projectName,
+      propertyType: project.propertyType,
+      defaultPropertyType: project.propertyType || "preLaunch",
+      showOnTruEstate: project.showOnTruEstate,
+      isAuthenticated,
+      userId,
+      currentWishlistState: isWishlisted,
+      wishlistItems: wishlistItems.length,
+    });
 
-  const newState = !isWishlisted;
-  setIsWishlisted(newState); // Optimistic update
+    const newState = !isWishlisted;
+    setIsWishlisted(newState); // Optimistic update
 
-  try {
-    logEvent(
-      analytics,
-      newState ? "added-to-wishlist" : "removed-from-wishlist",
-      { name: project.projectName }
+    // Show loading toast immediately
+    const loadingToastId = addToast(
+      "Processing",
+      "loading",
+      newState ? "Adding Property" : "Removing Property"
     );
 
-    if (newState) {
-      await dispatch(
-        updateWishlist({
-          userId,
-          propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId,
-        })
+    try {
+      logEvent(
+        analytics,
+        newState ? "added-to-wishlist" : "removed-from-wishlist",
+        { name: project.projectName }
       );
-    } else {
-      await dispatch(
-        removeWishlist({
-          userId,
-          propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId,
-        })
+
+      if (newState) {
+        await dispatch(
+          updateWishlist({
+            userId,
+            propertyType: project.propertyType || "preLaunch",
+            projectId: project.projectId,
+          })
+        );
+      } else {
+        await dispatch(
+          removeWishlist({
+            userId,
+            propertyType: project.propertyType || "preLaunch",
+            projectId: project.projectId,
+          })
+        );
+      }
+
+      // Update loading toast to success/info
+      updateToast(loadingToastId, {
+        type: newState ? "success" : "error", // or use "info" for remove
+        heading: newState
+          ? "Property Added to Wishlist"
+          : "Property Removed from Wishlist",
+        description: newState
+          ? "The property has been added to your wishlist."
+          : "The property has been removed from your wishlist.",
+      });
+    } catch (error) {
+      console.error("Error in toggleWishlist:", error);
+
+      // Update loading toast to error
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Wishlist Action Failed",
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+      });
+
+      setIsWishlisted(!newState); // Revert UI on error
+    }
+  };
+
+  const toggleCompare = async () => {
+    const newState = !isCompared;
+
+    // 🔒 Check max 4 projects before adding
+    if (!isCompared && compareProjects.length >= 4) {
+      addToast(
+        "Compare Limit Reached",
+        "error",
+        "You can only compare 4 properties at a time.",
+        "Remove a property from compare before adding a new one."
       );
+      return;
     }
 
-    // ✅ Success toast for add, negative/error toast for remove
-    addToast(
-      "Dummy",
-      newState ? "success" : "error",
-      newState
-        ? "Property Added to Wishlist"
-        : "Property Removed from Wishlist",
-      newState
-        ? "The property has been added to the Wishlist."
-        : "The property has been removed from the Wishlist."
+    const loadingToastId = addToast(
+      "Processing",
+      "loading",
+      newState ? "Adding Property" : "Removing Property"
     );
 
-    // Refresh wishlist
-    await dispatch(fetchWishlistedProjects(userId));
-  } catch (error) {
-    console.error("Error in toggleWishlist:", error);
-    addToast(
-      "Dummy",
-      "error",
-      "Wishlist Action Failed",
-      error.message || "An unexpected error occurred. Please try again."
-    );
-    setIsWishlisted(!newState); // Revert UI on error
-  }
-};
+    setIsCompared(newState); // Optimistic UI update
 
-const toggleCompare = async () => {
-  const newState = !isCompared;
+    try {
+      logEvent(
+        analytics,
+        newState ? "added-to-compare" : "removed-from-compare",
+        { name: project.projectName }
+      );
 
-  // 🔒 Check max 4 projects before adding
-  if (!isCompared && compareProjects.length >= 4) {
-    addToast(
-      "Compare Limit Reached",
-      "error",
-      "You can only compare 4 properties at a time.",
-      "Remove a property from compare before adding a new one."
-    );
-    return;
-  }
+      if (newState) {
+        await dispatch(addProjectForComparison(project.projectId));
+      } else {
+        await dispatch(removeProjectFromComparison(project.projectId));
+      }
 
-  setIsCompared(newState); // Optimistic UI update
-
-  try {
-    logEvent(
-      analytics,
-      newState ? "added-to-compare" : "removed-from-compare",
-      { name: project.projectName }
-    );
-
-    if (newState) {
-      await dispatch(addProjectForComparison(project.projectId));
-    } else {
-      await dispatch(removeProjectFromComparison(project.projectId));
+      // ✅ Success toast for add, negative/error toast for remove
+      updateToast(loadingToastId, {
+        type: newState ? "success" : "error",
+        heading: newState
+          ? "Property Added to Compare"
+          : "Property Removed from Compare",
+        description: newState
+          ? "The property has been added to the compare list."
+          : "The property has been removed from the compare list.",
+      });
+    } catch (error) {
+      console.error("Error in toggleCompare:", error);
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Compare Action Failed",
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+      });
+      setIsCompared(!newState); // Revert UI on failure
     }
-
-    // ✅ Success toast for add, negative/error toast for remove
-    addToast(
-      "Dummy",
-      newState ? "success" : "error",
-      newState
-        ? "Property Added to Compare"
-        : "Property Removed from Compare",
-      newState
-        ? "The property has been added to the compare list."
-        : "The property has been removed from the compare list."
-    );
-
-    // Refresh compare projects
-    dispatch(fetchCompareProjects());
-  } catch (error) {
-    console.error("Error in toggleCompare:", error);
-    addToast(
-      "Dummy",
-      "error",
-      "Compare Action Failed",
-      error.message || "An unexpected error occurred. Please try again."
-    );
-    setIsCompared(!newState); // Revert UI on failure
-  }
-};
-
-
+  };
 
   const imageUrl = project?.images?.length > 0 ? project?.images[0] : null;
 
@@ -349,16 +351,16 @@ const toggleCompare = async () => {
     }
   };
 
-  const handleGrowthStatusTextColour = (status) => {
-    if (status === "High CAGR") {
-      // return "#0E8345";
-      return "#151413";
-    } else if (status === "Low CAGR") {
-      return "#BD0E2D";
-    } else if (status === "Medium CAGR") {
-      return "#866106";
-    }
-  };
+  // const handleGrowthStatusTextColour = (status) => {
+  //   if (status === "High CAGR") {
+  //     // return "#0E8345";
+  //     return "#151413";
+  //   } else if (status === "Low CAGR") {
+  //     return "#BD0E2D";
+  //   } else if (status === "Medium CAGR") {
+  //     return "#866106";
+  //   }
+  // };
 
   const handleClickLock = (e) => {
     e.stopPropagation();

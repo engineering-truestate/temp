@@ -38,7 +38,7 @@ const AuctionCard = ({ project }) => {
   const userId = useSelector(selectUserDocId);
   const wishlistItems = useSelector(selectWishlistItems);
   const [isLitigation, setIsLitigation] = useState(false);
-  const { addToast } = useToast(); // Access the toast function
+  const { addToast, updateToast } = useToast(); // Access the toast function
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -91,64 +91,68 @@ const AuctionCard = ({ project }) => {
   }, []);
 
   const toggleWishlist = async (e) => {
-    e.stopPropagation();
+  e.stopPropagation();
 
-    const newState = !isWishlisted;
-    setIsWishlisted(newState); // 🔥 Optimistic UI update
+  const newState = !isWishlisted;
+  setIsWishlisted(newState); // 🔥 Optimistic UI update
 
-    try {
-      logEvent(
-        analytics,
-        newState ? "added-to-wishlist" : "removed-from-wishlist",
-        { name: project.projectName }
+  // Show loading toast immediately
+  const loadingToastId = addToast(
+    "Wishlist",
+    "loading",
+    newState ? "Adding Property" : "Removing Property",
+    newState ? "Adding property to your wishlist..." : "Removing property from your wishlist..."
+  );
+
+  try {
+    logEvent(
+      analytics,
+      newState ? "added-to-wishlist" : "removed-from-wishlist",
+      { name: project.projectName }
+    );
+
+    if (newState) {
+      await dispatch(
+        updateWishlist({
+          userId,
+          propertyType: project.propertyType || "auction",
+          projectId: project.projectId,
+        })
       );
-
-      if (newState) {
-        await dispatch(
-          updateWishlist({
-            userId,
-            propertyType: project.propertyType || "auction",
-            projectId: project.projectId,
-          })
-        );
-        addToast(
-          "Wishlist",
-          "success",
-          "Property Added",
-          "The property has been added to your wishlist."
-        );
-      } else {
-        await dispatch(
-          removeWishlist({
-            userId,
-            propertyType: project.propertyType || "auction",
-            projectId: project.projectId,
-          })
-        );
-        addToast(
-          "Wishlist",
-          "error", // 👈 changed from warning → error for negative effect
-          "Property Removed",
-          "The property has been removed from your wishlist."
-        );
-      }
-
-      // optionally refresh in background, but not required for UI
-      dispatch(fetchWishlistedProjects(userId));
-    } catch (error) {
-      console.error("Error in toggleWishlist:", error);
-
-      // revert optimistic update on error
-      setIsWishlisted(!newState);
-
-      addToast(
-        "Wishlist",
-        "error",
-        "Wishlist Action Failed",
-        error.message || "An unexpected error occurred. Please try again."
+      updateToast(loadingToastId, {
+        type: "success",
+        heading: "Property Added",
+        description: "The property has been added to your wishlist.",
+      });
+    } else {
+      await dispatch(
+        removeWishlist({
+          userId,
+          propertyType: project.propertyType || "auction",
+          projectId: project.projectId,
+        })
       );
+      updateToast(loadingToastId, {
+        type: "error", // 👈 negative effect
+        heading: "Property Removed",
+        description: "The property has been removed from your wishlist.",
+      });
     }
-  };
+
+  } catch (error) {
+    console.error("Error in toggleWishlist:", error);
+
+    // revert optimistic update on error
+    setIsWishlisted(!newState);
+
+    updateToast(loadingToastId, {
+      type: "error",
+      heading: "Wishlist Action Failed",
+      description: error.message || "An unexpected error occurred. Please try again.",
+    });
+  }
+};
+
 
   const imageUrl = project?.images?.length > 0 ? project?.images[0] : null;
 
