@@ -73,8 +73,7 @@ const AuctionCard = ({ project }) => {
   }
   const handleViewMore = () => {
     navigate(
-      `/auction/${project.projectName.replace(/[\s/]+/g, "-")}/${
-        project.projectId
+      `/auction/${project.projectName.replace(/[\s/]+/g, "-")}/${project.projectId
       }`,
       {
         state: { name: project.projectName },
@@ -183,9 +182,8 @@ const AuctionCard = ({ project }) => {
 
   return (
     <Card
-      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${
-        isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
-      }  `}
+      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
+        }  `}
     >
       <CardHeader
         floated={false}
@@ -255,95 +253,132 @@ const AuctionCard = ({ project }) => {
             <span className="font-montserrat font-bold text-[#252626] text-[16px] leading-[1.5] line-clamp-1">
               {project.projectId}
               {" : "}
-              {project?.projectName
+              {project.projectName && (project?.projectName
                 ? Object.keys(upperCaseProperties).includes(
-                    project?.projectName
-                  )
+                  project?.projectName
+                )
                   ? upperCaseProperties[project?.projectName]
                   : toCapitalizedWords(project?.projectName)
-                : "___"}
+                : "___")}
             </span>
           </div>
 
           <div className="flex flex-wrap justify-items-start  w-full  gap-2  mb-4 ">
-            <div className="flex items-center gap-1 w-fit pr-2 border-r-[1px]">
-              <img src={locicon} className="w-[14px] h-[14px]" />
-              <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
-                {toCapitalizedWords(project?.micromarket || "NA")}
-              </p>
+            <div className="flex items-center gap-1 w-fit pr-2 border-r">
+              {project?.micromarket && (
+                <>
+                  <img src={locicon} alt="location" className="w-[14px] h-[14px]" />
+                  <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
+                    {toCapitalizedWords(project.micromarket)}
+                  </p>
+                </>
+              )}
             </div>
 
+
             <div className="flex items-center gap-1 pr-2 w-fit ">
-              <img src={asset} className="w-[14px] h-[14px]" />
-              <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
-                {toCapitalizedWords(project?.assetType || "NA")}
-              </p>
+              {project?.assetType && (
+                <>
+                  <img src={asset} className="w-[14px] h-[14px]" />
+                  <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
+                    {toCapitalizedWords(project?.assetType || "NA")}
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 w-full flex-wrap">
             <div className=" py-1">
-              <p
-                className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]"
-                onClick={() => {
-                  console.log(project);
-                }}
-              >
-                Reserve Price
-              </p>
-              <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
-                {project?.auctionReservePrice
-                  ? `${project.auctionReservePrice.toFixed(1)} Cr`
-                  : "NA"}
-              </p>
+              {project?.auctionReservePrice && (
+                <>
+                  <p
+                    className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]"
+                    onClick={() => {
+                      console.log(project);
+                    }}
+                  >
+                    Reserve Price
+                  </p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    {project?.auctionReservePrice
+                      ? `${project.auctionReservePrice.toFixed(1)} Cr`
+                      : "NA"}
+                  </p>
+                </>)}
             </div>
+
+            <div className="py-1">
+              {(project?.minInvestmentOfAuction != null || project?.auctionReservePrice != null) && (
+                <>
+                  <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
+                    <span className="whitespace-nowrap">Min. Investment</span>
+                    <div
+                      className={`${styles.tooltip} cursor-pointer`}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <img
+                        src={infoIcon}
+                        className="ml-[2px] mr-2 mt-[1px]"
+                        alt="info"
+                      />
+                      <span className={`${styles.tooltiptext} min-w-[120px]`}>
+                        In partial buy, we fix the number of seats and split the
+                        total investment equally among them.
+                      </span>
+                    </div>
+                  </p>
+
+                  {project?.minInvestmentOfAuction != null && (
+                    <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                      {formatCostSuffix1(project.minInvestmentOfAuction.toFixed(0))}
+                    </p>
+                  )}
+
+                  {project?.auctionReservePrice != null && (
+                    <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                      {`${project.auctionReservePrice.toFixed(2)} Lacs`}
+                    </p>
+                  )}
+                </>
+              )}
+
+              {project?.minInvestmentOfAuction == null &&
+                project?.auctionReservePrice == null && (
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">NA</p>
+                )}
+            </div>
+
+
+            <div className="py-1">
+              {project?.unitDetails?.[0]?.holdingPeriodYears && (
+                <>
+                  <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
+                    Holding Period
+                  </p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    {`${project.unitDetails[0].holdingPeriodYears} Years`}
+                  </p>
+                </>
+              )}
+
+              {!project?.unitDetails?.[0]?.holdingPeriodYears && (
+                <>
+                  <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
+                    Holding Period
+                  </p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    1 Year
+                  </p>
+                </>
+              )}
+            </div>
+
 
             <div className=" py-1">
               <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
-                <span className="whitespace-nowrap">Min. Investment</span>
-                <div
-                  className={`${styles.tooltip} cursor-pointer`}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <img
-                    src={infoIcon}
-                    className="ml-[2px] mr-2 mt-[1px]"
-                    alt="info"
-                  />
-                  <span className={`${styles.tooltiptext} min-w-[120px]`}>
-                    In partial buy, we fix the number of seats and split the
-                    total investment equally among them.
-                  </span>
-                </div>
-              </p>
-
-              <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
-                {project?.minInvestmentOfAuction != null
-                  ? `${formatCostSuffix1(
-                      project.minInvestmentOfAuction.toFixed(0)
-                    )} `
-                  : project?.auctionReservePrice != null
-                  ? `${project.auctionReservePrice.toFixed(2)} Lacs`
-                  : "NA"}
-              </p>
-            </div>
-
-            <div className=" py-1">
-              <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
-                Holding Period
-              </p>
-              <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
-                {/* {project?.auctions?.[0]?.units?.[0]?.holdingPeriodYears
-                  ? `${project.auctions[0].units[0].holdingPeriodYears} Years`
-                  : "1 Year"} */}
-                {project?.unitDetails?.[0]?.holdingPeriodYears
-                  ? `${project.unitDetails[0].holdingPeriodYears} Years`
-                  : "1 Year"}
-              </p>
-            </div>
-
-            <div className=" py-1">
-              <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
+                {project?.unitDetails?.[0]?.cagr && (
+                <>
                 <span className="whitespace-nowrap">Exp Return</span>
                 <div
                   className={`${styles.tooltip} cursor-pointer`}
@@ -360,6 +395,8 @@ const AuctionCard = ({ project }) => {
                     time.
                   </span>
                 </div>
+                </>
+                )}
               </p>
 
               <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">

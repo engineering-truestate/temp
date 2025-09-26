@@ -1,5 +1,5 @@
 <!-- <  TruEstate Pulse Report 2024: Real Estate Insights and Market Trends -->
-
+import image from ''
 The TruEstate Pulse Report 2024 offers a detailed analysis of India's real estate sector, exploring key trends, investment opportunities, and economic factors driving growth in 2024. With a projected 9.2% CAGR from 2023 to 2028, the report covers residential, commercial, industrial, and data center market trends.
 
 ## Report Highlights

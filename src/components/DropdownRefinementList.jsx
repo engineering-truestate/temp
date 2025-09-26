@@ -22,7 +22,8 @@ const DropdownRefinementList = ({
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-
+  // console.log("attribute is",attribute)
+  // console.log("label is",label)
   // Fetch current refinements
   const { items: currentRefinements } = useCurrentRefinements();
 
