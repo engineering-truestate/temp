@@ -22,7 +22,8 @@ const Overview = ({
   const hasValidValue = (detail) => {
     if (!detail.value) return false;
     if (detail.value === "N/A" || detail.value === "NA") return false;
-    if (typeof detail.value === 'string' && detail.value.trim() === '') return false;
+    if (typeof detail.value === "string" && detail.value.trim() === "")
+      return false;
     return true;
   };
 
@@ -58,12 +59,12 @@ const Overview = ({
                   detail.label === "Rec. Bid Price") && (
                   <img src={truEstimateSymbol} alt="T" />
                 )}
-                
+
                 {/* label text */}
                 <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
                   {detail.label}
                 </p>
-                
+
                 {/* info icon and hover text */}
                 {labelsWithMoreInfo &&
                   Object.keys(labelsWithMoreInfo).includes(detail.label) && (
@@ -79,35 +80,15 @@ const Overview = ({
                     </div>
                   )}
               </div>
-              
+
               {/* value */}
               <div className={styles.heading1val}>
-                {!isAuthenticated ? (
-                  <img
-                    onClick={() => {
-                      dispatch(
-                        setShowSignInModal({
-                          showSignInModal: true,
-                          redirectUrl: '/properties',
-                        })
-                      );
-                      logEvent(
-                        analytics,
-                        `click_property_${detail.label}_lock`
-                      );
-                    }}
-                    className="mt-2 cursor-pointer"
-                    src={lockIcon}
-                  />
-                ) : (
-                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
-                    {typeof detail?.value === "string" 
-                      ? toCapitalizedWords(detail.value) 
-                      : detail.value
-                    }
-                    {detail.label === "TruEstimate" && " / Sqft"}
-                  </p>
-                )}
+                <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                  {typeof detail?.value === "string"
+                    ? toCapitalizedWords(detail.value)
+                    : detail.value}
+                  {detail.label === "TruEstimate" && " / Sqft"}
+                </p>
               </div>
             </div>
           ))}
