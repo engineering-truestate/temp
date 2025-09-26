@@ -1,38 +1,52 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import Map from "../Map/Map";
 import AuctionGrid from "./AuctionGrid";
 import AuctionTable from "./AuctionTable.jsx";
 import { getProjectImages } from "../../utils/common.js";
 import AuctionPopupMap from "../Project_popup/AuctionPopupMap.jsx";
+import Loader from "../Loader";
+import { showLoader, hideLoader } from "../../slices/loaderSlice";
 
-
-const AuctionProperties = ({ auctionView }) => {
-  // useEffect(() => {
-  //   setCurrentIndex("truEstateAuctions");
-  // }, []);
-
+const AuctionProperties = ({ auctionView}) => {
+  const dispatch = useDispatch();
+  const [initialDataLoaded,setInitialDataLoaded]=useState("false");
   // States
   const [selectedMapProject, setSelectedMapProject] = useState(null);
   const [trueS] = useState("all");
   const [imageData, setImageData] = useState(null);
 
   useEffect(() => {
-    fetch("/data/projects.json")
-      .then((response) => response.json())
-      .then((data) => setImageData(data))
-      .catch(() => {});
+    const loadInitialData = async () => {
+      try {
+        dispatch(showLoader());
+        
+        const response = await fetch("/data/projects.json");
+        const data = await response.json();
+        setImageData(data);
+        
+        // Set data loaded to true after fetch completes
+        setInitialDataLoaded(true);
+      } catch (error) {
+        console.error("Error loading auction data:", error);
+        // Still set to true to show the page even if there's an error
+        setInitialDataLoaded(true);
+      } finally {
+        dispatch(hideLoader());
+      }
+    };
+
+    loadInitialData();
   }, []);
 
+  // Don't render content until data is loaded
+  if (!initialDataLoaded) {
+    return null;
+  }
 
   return (
     <div>
-
-
       <div className="flex flex-col h-auto w-[100%] ">
-     
-
-        {/* Button container */}
-
         {/* Content area for auction properties */}
         <div className="h-auto">
           {auctionView === "grid" ? (
@@ -80,6 +94,9 @@ const AuctionProperties = ({ auctionView }) => {
           )}
         </div>
       </div>
+      
+      {/* Loader Component */}
+      <Loader />
     </div>
   );
 };

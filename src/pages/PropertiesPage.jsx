@@ -9,6 +9,8 @@ import PageInstantSearch from "../components/InstantSearch/PageInstantSearch";
 import PropertiesPageHeader from "../components/Headers/PropertiesPageHeader";
 import { fetchTableProjects, selectAllProjects } from "../slices/projectSlice";
 import { getProjectImages } from "../utils/common";
+import Loader from "../components/Loader";
+import { showLoader, hideLoader } from "../slices/loaderSlice";
 
 const PropertiesPage = () => {
   const dispatch = useDispatch();
@@ -17,6 +19,7 @@ const PropertiesPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedMapProject, setSelectedMapProject] = useState(null);
   const [imageData, setImageData] = useState(null);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false); // New state to track initial data load
   const [filters, setFilters] = useState({
     searchTerm: "",
     investmentType: "",
@@ -27,7 +30,8 @@ const PropertiesPage = () => {
   const [selectedSortOption, setSelectedSortOption] = useState("");
   const [isVisible, setIsVisible] = useState(window.innerWidth > 640);
 
-  const { table_projects, totalProjects, allProjects } = useSelector(
+  // Get loading state from Redux
+  const { table_projects, totalProjects, allProjects, loading } = useSelector(
     selectAllProjects
   );
 
@@ -41,20 +45,45 @@ const PropertiesPage = () => {
     }
   }, [totalProjects]);
 
+  // Initial data loading effect
   useEffect(() => {
-    if (propertiesView === "table") {
-      dispatch(fetchTableProjects(currentPage));
-    }
-  }, [propertiesView, dispatch, currentPage]);
+    const loadInitialData = async () => {
+      try {
+        dispatch(showLoader());
+        const response = await fetch("/data/projects.json");
+        const data = await response.json();
+        setImageData(data);
 
+        if (propertiesView === "table") {
+          await dispatch(fetchTableProjects(currentPage)).unwrap();
+        }
+        
+        setInitialDataLoaded(true);
+      } catch (error) {
+        console.error("Error loading initial data:", error);
+        setInitialDataLoaded(true); 
+      } finally {
+        dispatch(hideLoader());
+      }
+    };
+    
+    loadInitialData();
+  }, []); 
   useEffect(() => {
-    fetch("/data/projects.json")
-      .then((response) => response.json())
-      .then((data) => setImageData(data))
-      .catch((error) => {
-        console.log(error.message);
-      });
-  }, []);
+    if (initialDataLoaded && propertiesView === "table") {
+      const loadTableProjects = async () => {
+        try {
+          dispatch(showLoader());
+          await dispatch(fetchTableProjects(currentPage)).unwrap();
+        } catch (error) {
+          console.error("Error loading table projects:", error);
+        } finally {
+          dispatch(hideLoader());
+        }
+      };
+      loadTableProjects();
+    }
+  }, [propertiesView, dispatch, currentPage, initialDataLoaded]);
 
   const handleSearch = (term) => {
     setFilters((prevFilters) => ({ ...prevFilters, searchTerm: term }));
@@ -83,76 +112,88 @@ const PropertiesPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Show loader until initial data is loaded
+  if (!initialDataLoaded) {
+    return (
+      <div className="flex flex-col h-screen">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
-    <PageInstantSearch viewType={propertiesView}>
-      <MainContentLayout pageTitle="Properties">
-        <PropertiesPageHeader
-          propertiesView={propertiesView}
-          handleViewToggle={handleViewToggle}
-          selectedSortOption={selectedSortOption}
-          setSelectedSortOption={setSelectedSortOption}
-          isVisible={isVisible}
-        />
-        <div className="h-full">
-          {propertiesView === "grid" ? (
-            <ProjectGrid
-              trueS="all"
-              propertiesView={propertiesView}
-              setPropertiesView={setPropertiesView}
-            />
-          ) : propertiesView === "table" ? (
-            <Table
-              projects={table_projects}
-              type="properties"
-              trueS="all"
-              handleFirstPage={() => setCurrentPage(1)}
-              handlePreviousPage={() =>
-                currentPage > 1 && setCurrentPage(currentPage - 1)
-              }
-              handleNextPage={() =>
-                currentPage < totalPages &&
-                setCurrentPage(currentPage + 1)
-              }
-              handleLastPage={() => setCurrentPage(totalPages)}
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-            />
-          ) : propertiesView === "map" ? (
-            <div className="relative h-[70vh] ">
-              <div>
-                <Map
-                  projects={allProjects}
-                  selectedProject={selectedMapProject}
-                  setSelectedProject={setSelectedMapProject}
-                  onSearch={handleSearch}
-                  onFilterChange={handleFilterChange}
-                  minInvestment={filters.minInvestment}
-                  setMinInvestment={setMinInvestment}
-                  filters={filters}
-                  mapType={"all"}
-                  trueS="all"
-                />
-              </div>
-              {selectedMapProject && (
-                <div className="absolute bottom-0 sm:right-0   w-full sm:w-auto  sm:top-0 z-[8]">
-                  <ProjectPopupMap
-                    project={selectedMapProject}
-                    images={getProjectImages(
-                      selectedMapProject["Internal ID"],
-                      imageData
-                    )}
-                    onClose={setSelectedMapProject}
+    <div className="flex flex-col h-screen">
+      <PageInstantSearch viewType={propertiesView}>
+        <MainContentLayout pageTitle="Properties">
+          <PropertiesPageHeader
+            propertiesView={propertiesView}
+            handleViewToggle={handleViewToggle}
+            selectedSortOption={selectedSortOption}
+            setSelectedSortOption={setSelectedSortOption}
+            isVisible={isVisible}
+          />
+          <div className="h-full">
+            {propertiesView === "grid" ? (
+              <ProjectGrid
+                trueS="all"
+                propertiesView={propertiesView}
+                setPropertiesView={setPropertiesView}
+              />
+            ) : propertiesView === "table" ? (
+              <Table
+                projects={table_projects}
+                type="properties"
+                trueS="all"
+                handleFirstPage={() => setCurrentPage(1)}
+                handlePreviousPage={() =>
+                  currentPage > 1 && setCurrentPage(currentPage - 1)
+                }
+                handleNextPage={() =>
+                  currentPage < totalPages &&
+                  setCurrentPage(currentPage + 1)
+                }
+                handleLastPage={() => setCurrentPage(totalPages)}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+              />
+            ) : propertiesView === "map" ? (
+              <div className="relative h-[70vh] ">
+                <div>
+                  <Map
+                    projects={allProjects}
+                    selectedProject={selectedMapProject}
+                    setSelectedProject={setSelectedMapProject}
+                    onSearch={handleSearch}
+                    onFilterChange={handleFilterChange}
+                    minInvestment={filters.minInvestment}
+                    setMinInvestment={setMinInvestment}
+                    filters={filters}
+                    mapType={"all"}
+                    trueS="all"
                   />
                 </div>
-              )}
-            </div>
-          ) : (
-            ""
-          )}
-        </div>
-      </MainContentLayout>
-    </PageInstantSearch>
+                {selectedMapProject && (
+                  <div className="absolute bottom-0 sm:right-0   w-full sm:w-auto  sm:top-0 z-[8]">
+                    <ProjectPopupMap
+                      project={selectedMapProject}
+                      images={getProjectImages(
+                        selectedMapProject["Internal ID"],
+                        imageData
+                      )}
+                      onClose={setSelectedMapProject}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              ""
+            )}
+          </div>
+        </MainContentLayout>
+      </PageInstantSearch>
+      <Loader />
+    </div>
   );
 };
 
