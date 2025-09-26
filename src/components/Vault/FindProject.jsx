@@ -92,6 +92,7 @@ const FindProjectPage = () => {
   useEffect(() => {
     dispatch(hideLoader());
     const fetchProjects = async () => {
+      dispatch(hideLoader)
       const fetchedData = await getAllProjects();
       setProjects(fetchedData);
       console.log("Fetched Projects:", fetchedData);

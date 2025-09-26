@@ -5,7 +5,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 const ProfilePage = () => {
   return (
     <ProtectedRoute>
-      <MainContentLayout pageTitle="Profile">
+      <MainContentLayout pageTitle="Profile" >
         <Profile />
       </MainContentLayout>
     </ProtectedRoute>

@@ -86,7 +86,8 @@ const NavLinkItem = ({
         <div className="flex gap-1 items-center">
           {" "}
           {/* Flex container for label and icon */}
-          <span className="">{label}</span> {/* Link label */}
+          <span className="text-sm lg:text-[13px] xl:text-lg">{label}</span>
+          {/* Link label */}
           {showIcon &&
             forwardIcon && ( // Conditional rendering of forward icon
               <img
@@ -422,7 +423,6 @@ const Navbar = () => {
                 </ul>
 
                 <div className="lg:flex gap-3 items-center justify-center">
-                  {/* Button for Sign in */}
                   {!isAuthenticated ? (
                     <SignInButton
                       label="Sign up/Log in"
@@ -434,21 +434,29 @@ const Navbar = () => {
                           })
                         )
                       }
-                      classes="font-body lg:text-label-sm !bg-GableGreen !text-white"
-                      eventName="click_outside_navbar_sign/log" // Tracking event name
-                      eventCategory="CTA" // Tracking category
-                      eventAction="click" // Tracking action
-                      eventLabel="sign_up_cta_navbar" // Tracking label for Sign In button
+                      classes="
+        font-body 
+        text-xs lg:text-sm xl:text-base 
+        !bg-GableGreen !text-white
+      "
+                      eventName="click_outside_navbar_sign/log"
+                      eventCategory="CTA"
+                      eventAction="click"
+                      eventLabel="sign_up_cta_navbar"
                     />
                   ) : (
                     <SignInButton
                       label="Continue to Dashboard"
                       onClick={() => navigate("/properties")}
-                      classes="font-body lg:text-label-sm !bg-GableGreen !text-white"
-                      eventName="click_outside_nav_dashboard" // Tracking event name
-                      eventCategory="CTA" // Tracking category
-                      eventAction="click" // Tracking action
-                      eventLabel="sign_up_cta_navbar" // Tracking label for Sign In button
+                      classes="
+        font-body 
+        text-xs lg:text-sm xl:text-base 
+        !bg-GableGreen !text-white
+      "
+                      eventName="click_outside_nav_dashboard"
+                      eventCategory="CTA"
+                      eventAction="click"
+                      eventLabel="sign_up_cta_navbar"
                     />
                   )}
                 </div>

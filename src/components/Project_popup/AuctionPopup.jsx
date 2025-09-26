@@ -6,6 +6,7 @@ import { selectUserDocId } from "../../slices/userAuthSlice";
 
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
+import soldOut from "/assets/icons/status/sold-out.svg";
 
 // Import your icons here
 
@@ -38,7 +39,7 @@ const AuctionCard = ({ project }) => {
   const userId = useSelector(selectUserDocId);
   const wishlistItems = useSelector(selectWishlistItems);
   const [isLitigation, setIsLitigation] = useState(false);
-  const { addToast } = useToast(); // Access the toast function
+  const { addToast, updateToast } = useToast(); // Access the toast function
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -90,64 +91,68 @@ const AuctionCard = ({ project }) => {
   }, []);
 
   const toggleWishlist = async (e) => {
-    e.stopPropagation();
+  e.stopPropagation();
 
-    const newState = !isWishlisted;
-    setIsWishlisted(newState); // 🔥 Optimistic UI update
+  const newState = !isWishlisted;
+  setIsWishlisted(newState); // 🔥 Optimistic UI update
 
-    try {
-      logEvent(
-        analytics,
-        newState ? "added-to-wishlist" : "removed-from-wishlist",
-        { name: project.projectName }
+  // Show loading toast immediately
+  const loadingToastId = addToast(
+    "Wishlist",
+    "loading",
+    newState ? "Adding Property" : "Removing Property",
+    newState ? "Adding property to your wishlist..." : "Removing property from your wishlist..."
+  );
+
+  try {
+    logEvent(
+      analytics,
+      newState ? "added-to-wishlist" : "removed-from-wishlist",
+      { name: project.projectName }
+    );
+
+    if (newState) {
+      await dispatch(
+        updateWishlist({
+          userId,
+          propertyType: project.propertyType || "auction",
+          projectId: project.projectId,
+        })
       );
-
-      if (newState) {
-        await dispatch(
-          updateWishlist({
-            userId,
-            propertyType: project.propertyType || "auction",
-            projectId: project.projectId,
-          })
-        );
-        addToast(
-          "Wishlist",
-          "success",
-          "Property Added",
-          "The property has been added to your wishlist."
-        );
-      } else {
-        await dispatch(
-          removeWishlist({
-            userId,
-            propertyType: project.propertyType || "auction",
-            projectId: project.projectId,
-          })
-        );
-        addToast(
-          "Wishlist",
-          "error", // 👈 changed from warning → error for negative effect
-          "Property Removed",
-          "The property has been removed from your wishlist."
-        );
-      }
-
-      // optionally refresh in background, but not required for UI
-      dispatch(fetchWishlistedProjects(userId));
-    } catch (error) {
-      console.error("Error in toggleWishlist:", error);
-
-      // revert optimistic update on error
-      setIsWishlisted(!newState);
-
-      addToast(
-        "Wishlist",
-        "error",
-        "Wishlist Action Failed",
-        error.message || "An unexpected error occurred. Please try again."
+      updateToast(loadingToastId, {
+        type: "success",
+        heading: "Property Added",
+        description: "The property has been added to your wishlist.",
+      });
+    } else {
+      await dispatch(
+        removeWishlist({
+          userId,
+          propertyType: project.propertyType || "auction",
+          projectId: project.projectId,
+        })
       );
+      updateToast(loadingToastId, {
+        type: "error", // 👈 negative effect
+        heading: "Property Removed",
+        description: "The property has been removed from your wishlist.",
+      });
     }
-  };
+
+  } catch (error) {
+    console.error("Error in toggleWishlist:", error);
+
+    // revert optimistic update on error
+    setIsWishlisted(!newState);
+
+    updateToast(loadingToastId, {
+      type: "error",
+      heading: "Wishlist Action Failed",
+      description: error.message || "An unexpected error occurred. Please try again.",
+    });
+  }
+};
+
 
   const imageUrl = project?.images?.length > 0 ? project?.images[0] : null;
 
@@ -178,8 +183,9 @@ const AuctionCard = ({ project }) => {
 
   return (
     <Card
-      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
-        }  `}
+      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${
+        isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
+      }  `}
     >
       <CardHeader
         floated={false}
@@ -195,6 +201,7 @@ const AuctionCard = ({ project }) => {
           className="absolute inset-0 h-full w-full"
           onClick={handleViewMore}
         />
+        
         <div className="absolute top-4 left-3 md:left-4 flex space-x-2">
           {project?.truRecommended && (
             <div
@@ -239,6 +246,12 @@ const AuctionCard = ({ project }) => {
             </div>
           </div>
         )}
+        {(
+          <div className={`${styles.tooltip1}`}>
+            <img src={soldOut} alt="Sold Out" />
+            <span className={`${styles.tooltiptext1}`}>Project sold out</span>
+          </div>
+        )}
       </CardHeader>
       <CardBody
         className=" px-3 pt-3 pb-4  gap-4 bg-[#FAFAFA] rounded-b-xl"
@@ -249,13 +262,14 @@ const AuctionCard = ({ project }) => {
             <span className="font-montserrat font-bold text-[#252626] text-[16px] leading-[1.5] line-clamp-1">
               {project.projectId}
               {" : "}
-              {project.projectName && (project?.projectName
-                ? Object.keys(upperCaseProperties).includes(
-                  project?.projectName
-                )
-                  ? upperCaseProperties[project?.projectName]
-                  : toCapitalizedWords(project?.projectName)
-                : "___")}
+              {project.projectName &&
+                (project?.projectName
+                  ? Object.keys(upperCaseProperties).includes(
+                      project?.projectName
+                    )
+                    ? upperCaseProperties[project?.projectName]
+                    : toCapitalizedWords(project?.projectName)
+                  : "___")}
             </span>
           </div>
 
@@ -263,14 +277,17 @@ const AuctionCard = ({ project }) => {
             <div className="flex items-center gap-1 w-fit pr-2 border-r">
               {project?.micromarket && (
                 <>
-                  <img src={locicon} alt="location" className="w-[14px] h-[14px]" />
+                  <img
+                    src={locicon}
+                    alt="location"
+                    className="w-[14px] h-[14px]"
+                  />
                   <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
                     {toCapitalizedWords(project.micromarket)}
                   </p>
                 </>
               )}
             </div>
-
 
             <div className="flex items-center gap-1 pr-2 w-fit ">
               {project?.assetType && (
@@ -301,11 +318,13 @@ const AuctionCard = ({ project }) => {
                       ? `${project.auctionReservePrice.toFixed(1)} Cr`
                       : "NA"}
                   </p>
-                </>)}
+                </>
+              )}
             </div>
 
             <div className="py-1">
-              {(project?.minInvestmentOfAuction != null || project?.auctionReservePrice != null) && (
+              {(project?.minInvestmentOfAuction != null ||
+                project?.auctionReservePrice != null) && (
                 <>
                   <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
                     <span className="whitespace-nowrap">Min. Investment</span>
@@ -327,7 +346,9 @@ const AuctionCard = ({ project }) => {
 
                   {project?.minInvestmentOfAuction != null && (
                     <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
-                      {formatCostSuffix1(project.minInvestmentOfAuction.toFixed(0))}
+                      {formatCostSuffix1(
+                        project.minInvestmentOfAuction.toFixed(0)
+                      )}
                     </p>
                   )}
 
@@ -341,10 +362,11 @@ const AuctionCard = ({ project }) => {
 
               {project?.minInvestmentOfAuction == null &&
                 project?.auctionReservePrice == null && (
-                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">NA</p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    NA
+                  </p>
                 )}
             </div>
-
 
             <div className="py-1">
               {project?.unitDetails?.[0]?.holdingPeriodYears && (
@@ -370,28 +392,27 @@ const AuctionCard = ({ project }) => {
               )}
             </div>
 
-
             <div className=" py-1">
               <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
                 {project?.unitDetails?.[0]?.cagr && (
-                <>
-                <span className="whitespace-nowrap">Exp Return</span>
-                <div
-                  className={`${styles.tooltip} cursor-pointer`}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <img
-                    src={infoIcon}
-                    className="ml-[2px] mr-2 mt-[1px]"
-                    alt="info"
-                  />
-                  <span className={`${styles.tooltiptext} min-w-[120px]`}>
-                    Represents the compound annual growth rate — a measure of
-                    return assuming the investment grows at a steady rate over
-                    time.
-                  </span>
-                </div>
-                </>
+                  <>
+                    <span className="whitespace-nowrap">Exp Return</span>
+                    <div
+                      className={`${styles.tooltip} cursor-pointer`}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <img
+                        src={infoIcon}
+                        className="ml-[2px] mr-2 mt-[1px]"
+                        alt="info"
+                      />
+                      <span className={`${styles.tooltiptext} min-w-[120px]`}>
+                        Represents the compound annual growth rate — a measure
+                        of return assuming the investment grows at a steady rate
+                        over time.
+                      </span>
+                    </div>
+                  </>
                 )}
               </p>
 

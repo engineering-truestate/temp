@@ -777,7 +777,7 @@ const handleContinue = async () => {
               // onClick={() => navigate("/properties")}
               className="flex justify-center items-center"
             >
-              <img src="/assets/images/auth/login-logo.png" alt="loginLogo" className="w-[64px]" />
+              <img src="../../public/images/LoginLogo.png" alt="loginLogo" className="w-[64px]" />
             </div>
             <div>
               {currentForm === "A" && (

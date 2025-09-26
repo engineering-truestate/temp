@@ -39,6 +39,8 @@ import { useToast } from "../../hooks/useToast.jsx";
 import { getCurrentDateTime } from "../helper/dateTimeHelpers";
 import { formatCost, toCapitalizedWords } from "../../utils/common.js";
 import { setShowSignInModal } from "../../slices/modalSlice.js";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "../../firebase.js";
 
 function ProjectPopupMap({ project, onClose }) {
   const navigate = useNavigate();
@@ -54,7 +56,7 @@ function ProjectPopupMap({ project, onClose }) {
   const [isShared, setIsShared] = useState(false);
   const [wishlistStatus, setWishlistStatus] = useState("");
   const [isLitigation, setIsLitigation] = useState(false);
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
 
   const date = new Date();
 
@@ -99,133 +101,134 @@ function ProjectPopupMap({ project, onClose }) {
     setIsCompared(isProjectCompared);
   }, [compareProjects, project.projectId]);
 
-  const handleRemoveProject = (id) => {
-    dispatch(removeProjectFromComparison(id));
-    dispatch(fetchCompareProjects());
-  };
-
-  const handleRemoveProject2 = (id) => {
-    dispatch(removeWishlist({
-      userId,
-      propertyType: project.propertyType || "preLaunch",
-      projectId: id
-    }));
-    dispatch(fetchWishlistedProjects(userId));
-  };
-
 
   const toggleWishlist = async () => {
-    const newState = !isWishlisted;
-    setIsWishlisted(newState); // Optimistic update
-
-    try {
-      if (newState) {
-        await dispatch(updateWishlist({
-          userId,
-          propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId
-        }));
-        dispatch(fetchWishlistedProjects(userId));
-        addToast(
-          "Dummy",
-          "success",
-          "Property Added to Wishlist",
-          "The property has been added to the Wishlist."
-        );
-      } else {
-        await dispatch(removeWishlist({
-          userId,
-          propertyType: project.propertyType || "preLaunch",
-          projectId: project.projectId
-        }));
-        dispatch(fetchWishlistedProjects(userId));
-        addToast(
-          "Dummy",
-          "success",
-          "Property Removed from Wishlist",
-          "The property has been removed from the Wishlist."
-        );
-      }
-    } catch (error) {
-      console.error("Error in toggleWishlist:", error);
-      addToast(
-        "Dummy",
-        "error",
-        "Wishlist Action Failed",
-        error.message || "An unexpected error occurred. Please try again."
+      console.log("PropCard toggleWishlist called:", {
+        projectId: project.projectId,
+        projectName: project.projectName,
+        propertyType: project.propertyType,
+        defaultPropertyType: project.propertyType || "preLaunch",
+        showOnTruEstate: project.showOnTruEstate,
+        isAuthenticated,
+        userId,
+        currentWishlistState: isWishlisted,
+        wishlistItems: wishlistItems.length,
+      });
+  
+      const newState = !isWishlisted;
+      setIsWishlisted(newState); // Optimistic update
+  
+      // Show loading toast immediately
+      const loadingToastId = addToast(
+        "Processing",
+        "loading",
+        newState ? "Adding Property" : "Removing Property"
       );
-      setIsWishlisted(!newState); // Revert UI on error
-    }
-  };
+  
+      try {
+        logEvent(
+          analytics,
+          newState ? "added-to-wishlist" : "removed-from-wishlist",
+          { name: project.projectName }
+        );
+  
+        if (newState) {
+          await dispatch(
+            updateWishlist({
+              userId,
+              propertyType: project.propertyType || "preLaunch",
+              projectId: project.projectId,
+            })
+          );
+        } else {
+          await dispatch(
+            removeWishlist({
+              userId,
+              propertyType: project.propertyType || "preLaunch",
+              projectId: project.projectId,
+            })
+          );
+        }
+  
+        // Update loading toast to success/info
+        updateToast(loadingToastId, {
+          type: newState ? "success" : "error", // or use "info" for remove
+          heading: newState
+            ? "Property Added to Wishlist"
+            : "Property Removed from Wishlist",
+          description: newState
+            ? "The property has been added to your wishlist."
+            : "The property has been removed from your wishlist.",
+        });
+      } catch (error) {
+        console.error("Error in toggleWishlist:", error);
+  
+        // Update loading toast to error
+        updateToast(loadingToastId, {
+          type: "error",
+          heading: "Wishlist Action Failed",
+          description:
+            error.message || "An unexpected error occurred. Please try again.",
+        });
+  
+        setIsWishlisted(!newState); // Revert UI on error
+      }
+    };
 
   const toggleCompare = async () => {
     const newState = !isCompared;
-    setIsCompared(newState);
+
+    // Check max 4 projects before adding
+    if (!isCompared && compareProjects.length >= 4) {
+      addToast(
+        "Compare Limit Reached",
+        "error",
+        "You can only compare 4 properties at a time.",
+        "Remove a property from compare before adding a new one."
+      );
+      return;
+    }
+
+    const loadingToastId = addToast(
+      "Processing",
+      "loading",
+      newState ? "Adding Property" : "Removing Property"
+    );
+
+    setIsCompared(newState); // Optimistic UI update
 
     try {
-      await simulateNetworkRequest();
-      const q = query(
-        collection(db, "truEstateUsers"),
-        where("phoneNumber", "==", userPhoneNumber)
+      logEvent(
+        analytics,
+        newState ? "added-to-compare" : "removed-from-compare",
+        { name: project.projectName }
       );
-      const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        let userDocId = null;
-        let comparedProjects = [];
-
-        querySnapshot.forEach((doc) => {
-          userDocId = doc.id;
-          comparedProjects = doc.data().compare || [];
-        });
-
-        if (userDocId) {
-          const userDocRef = doc(db, "truEstateUsers", userDocId);
-
-          if (newState) {
-            // Add to compare
-            await updateDoc(userDocRef, {
-              compare: arrayUnion(project.id),
-            });
-            // Show success toast
-            addToast(
-              "Dummy",
-              "success",
-              "Property Added to Compare",
-              "The property has been added to the compare list."
-            );
-          } else {
-            // Remove from compare by filtering out the matching project ID
-            const updatedCompareList = comparedProjects.filter(
-              (id) => id !== project.id
-            );
-            await updateDoc(userDocRef, {
-              compare: updatedCompareList,
-            });
-            // Show removal toast
-            addToast(
-              "Dummy",
-              "error",
-              "Property Removed from Compare",
-              "The property has been removed from the compare list."
-            );
-          }
-
-          // Re-fetch the updated compare list immediately
-          dispatch(fetchCompareProjects());
-        }
+      if (newState) {
+        await dispatch(addProjectForComparison(project.projectId));
+      } else {
+        await dispatch(removeProjectFromComparison(project.projectId));
       }
-    } catch (error) {
-      // Show error toast if an issue occurs, e.g., offline or network issue
-      addToast(
-        "Dummy",
-        "error",
-        "Compare Action Failed",
-        "You are offline or there's an issue updating the compare list. Please try again."
-      );
 
-      // Reset the compare state in case of error to revert to previous state
-      setIsCompared(!newState);
+      // Success toast for add, negative/error toast for remove
+      updateToast(loadingToastId, {
+        type: newState ? "success" : "error",
+        heading: newState
+          ? "Property Added to Compare"
+          : "Property Removed from Compare",
+        description: newState
+          ? "The property has been added to the compare list."
+          : "The property has been removed from the compare list.",
+      });
+    } catch (error) {
+      console.error("Error in toggleCompare:", error);
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Compare Action Failed",
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+      });
+      setIsCompared(!newState); // Revert UI on failure
     }
   };
 
@@ -636,7 +639,7 @@ function ProjectPopupMap({ project, onClose }) {
                 Less than 20% availability
               </span>
             </div>
-          ) : project.combineAvailability === "sold out" ? (
+          ) : project.projectOverview?.availability === "sold out" ? (
             <div className={`${styles.tooltip1}`}>
               <img src={soldOut} />
               <span className={`${styles.tooltiptext1}`}>Project sold out</span>

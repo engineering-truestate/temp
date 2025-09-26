@@ -7,6 +7,7 @@ import {
   useCurrentRefinements,
   useRefinementList,
 } from "react-instantsearch";
+import Loader from "./Loader";
 import { useSelector } from "react-redux";
 import RangeMoreFilters from "./RangeMoreFilters";
 
@@ -22,8 +23,7 @@ const DropdownRefinementList = ({
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  // console.log("attribute is",attribute)
-  // console.log("label is",label)
+
   // Fetch current refinements
   const { items: currentRefinements } = useCurrentRefinements();
 
@@ -31,13 +31,38 @@ const DropdownRefinementList = ({
     attribute,
   });
 
-  // console.log(refinementItems, "refinementItems for", attribute);
+  // Enhanced logging for possession attribute
+  if (attribute === "possession") {
+    console.log("=== POSSESSION DEBUG ===");
+    console.log("Refinement items:", refinementItems);
+    console.log("Items count:", refinementItems?.length);
+    console.log("Items is array?", Array.isArray(refinementItems));
+    console.log("Current refinements:", currentRefinements);
+    console.log("Individual items:", refinementItems?.map(item => ({
+      label: item.label,
+      count: item.count,
+      isRefined: item.isRefined,
+      value: item.value
+    })));
+    console.log("=====================");
+  }
 
   const [isAvailable, setIsAvailable] = useState(true);
 
   useEffect(() => {
-    setIsAvailable(refinementItems?.length > 0);
-  });
+    // Special handling for array attributes
+    const arrayAttributes = ["possession", "strategy"];
+    
+    if (arrayAttributes.includes(attribute)) {
+      console.log(`${attribute} refinementItems:`, refinementItems);
+      console.log(`${attribute} refinementItems length:`, refinementItems?.length);
+      // For array attributes, even if refinementItems is empty initially,
+      // the filter should still be available
+      setIsAvailable(true);
+    } else {
+      setIsAvailable(refinementItems?.length > 0);
+    }
+  }, [refinementItems, attribute]);
   
   // Check if current attribute has any active refinements
   const isActive = currentRefinements.some(
@@ -155,22 +180,7 @@ const DropdownRefinementList = ({
                 `}
         onClick={handleDropdownContentClick} // Add click handler to dropdown content
       >
-        {isRange && (
-          <div onClick={(e) => e.stopPropagation()}> {/* Prevent closing for range inputs */}
-            <RangeInput
-              attribute={attribute}
-              translations={{ separator: "to", submitButtonText: "Apply" }}
-              classNames={{
-                root: "flex flex-col gap-2", // Make the root a column layout to separate the button
-                form: "", // Keeps inputs and separator in a row
-                input:
-                  "mx-1 p-2 w-24 border border-[#E1E1E1] rounded-[8px] text-[12px] leading-[17.92px] text-[#5A5A5A] focus:outline-none focus:ring-2 focus:ring-[#0F2C2A] focus:border-[#0F2C2A]",
-                submit:
-                  "mt-2 w-full bg-[#0F2C2A] hover:bg-[#064f4c] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium transition-colors", // Adds margin-top to move the button down
-              }}
-            />
-          </div>
-        )}
+
         {!isRange && attribute!=="investmentOverview.minInvestment" && attribute!=="auctionReservePrice" && (
           <>
             {enableLocalSearch ? (
@@ -200,7 +210,11 @@ const DropdownRefinementList = ({
             ) : (
               <RefinementList
                 attribute={attribute}
-                // label={attribute=== "independentBuilding" ? "yash": "harsh"}
+                // For array attributes like possession and strategy, we need to ensure proper configuration
+                operator={(attribute === "possession" || attribute === "strategy") ? "or" : "or"} // Default is "or" which works for arrays
+                // Special handling for array attributes
+                limit={(attribute === "possession" || attribute === "strategy") ? 1000 : 10} // Increase limit for array attributes
+                // showMore={(attribute === "possession" || attribute === "strategy") ? false : true}
                 // transformItems={combinedTransformItems}
                 sortBy={["name:asc"]}
                 {...props}

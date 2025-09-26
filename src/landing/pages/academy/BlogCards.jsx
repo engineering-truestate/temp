@@ -57,7 +57,7 @@ const BlogCards = ({ blogs }) => {
             {/* Blog Image */}
             <div className="w-full">
               <img 
-                src={blog.image} 
+                src={blog.blogImageUrl} 
                 alt={blog.title} 
                 className="rounded-xl w-full object-cover transition-opacity duration-300 ease-in-out group-hover:opacity-90"
                 style={{ aspectRatio: '16 / 9' }} 
@@ -95,7 +95,7 @@ const BlogCards = ({ blogs }) => {
               {/* Author Section */}
               <p className='text-heading-semibold-xxxs text-ShadedGrey font-body flex items-center gap-2.5 uppercase'>
                 {/* Author Image */}
-                <img src={blog.authorImage} alt={blog.author} className='h-6 md:h-7 w-6 md:w-7 rounded-full' /> 
+                <img src={blog.authorImageUrl} alt={blog.author} className='h-6 md:h-7 w-6 md:w-7 rounded-full' /> 
                 {/* Author Name */}
                 <span>{blog.author}</span>
               </p>

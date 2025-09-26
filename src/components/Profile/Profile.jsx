@@ -1,10 +1,18 @@
-import { PREVIOUS_INVESTMENT_OPTIONS, CREDIT_SCORE_OPTIONS} from "../../constants/profileConstants";
+import {
+  PREVIOUS_INVESTMENT_OPTIONS,
+  CREDIT_SCORE_OPTIONS,
+} from "../../constants/profileConstants";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./profile.module.css";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { fetchUserProfile, setEditing,updateUserProfile, clearUpdateStatus } from "../../slices/userSlice";
+import {
+  fetchUserProfile,
+  setEditing,
+  updateUserProfile,
+  clearUpdateStatus,
+} from "../../slices/userSlice";
 import { selectUserPhoneNumber } from "../../slices/userAuthSlice";
 import tickIcon from "/assets/icons/status/tick-white.svg";
 import editIcon from "/assets/icons/actions/edit-white.svg";
@@ -23,13 +31,15 @@ import { useToast } from "../../hooks/useToast.jsx";
 import { profilePic } from "../helper/profilePicHelper.js";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
+import { showLoader, hideLoader } from "../../slices/loaderSlice.js";
+import Loader from "../Loader.jsx";
 
 const Profile = () => {
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
   const dispatch = useDispatch();
   const { profile, status, error, isEditing, updateStatus } = useSelector(
-  (state) => state.user
-);
+    (state) => state.user
+  );
   const userPhoneNumber = useSelector(selectUserPhoneNumber);
 
   const setEditTrue = () => {
@@ -40,11 +50,21 @@ const Profile = () => {
     dispatch(setEditing(false));
   };
 
-  useEffect(() => {
-    if (userPhoneNumber) {
-      dispatch(fetchUserProfile(userPhoneNumber));
+useEffect(() => {
+  const fetchData = async () => {
+    dispatch(showLoader());
+    try {
+      if (userPhoneNumber) {
+        await dispatch(fetchUserProfile(userPhoneNumber));
+      }
+    } finally {
+      dispatch(hideLoader());
     }
-  }, [dispatch, userPhoneNumber]);
+  };
+
+  fetchData();
+}, [dispatch, userPhoneNumber]);
+
 
   const toCapitalCase = (str) => {
     return str.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -145,7 +165,7 @@ const Profile = () => {
           : [...prevState, value] // Add to the array
     );
   };
-  
+
   const handleToggleCreditScore = (value) => {
     setEditTrue();
     setCreditScore((prevValue) => (prevValue === value ? "" : value)); // Deselect if the value is the same, otherwise set the new value
@@ -156,7 +176,9 @@ const Profile = () => {
       <button
         key={option.value}
         type="button"
-        className={`${styles.button} ${currentValue.includes(option.value) ? styles.selected : ""}`}
+        className={`${styles.button} ${
+          currentValue.includes(option.value) ? styles.selected : ""
+        }`}
         onClick={() => {
           handleToggle(option.value);
           logEvent(analytics, `input_user_profile_${name}`, {
@@ -200,6 +222,14 @@ const Profile = () => {
   }
 
   if (isValid) {
+    // Show loading toast immediately
+    const loadingToastId = addToast(
+      "Profile",
+      "loading",
+      "Updating Profile",
+      "Please wait while we update your profile..."
+    );
+
     const userData = {
       name: name.toLowerCase(),
       gender: gender,
@@ -211,30 +241,41 @@ const Profile = () => {
     };
 
     try {
-      const result = await dispatch(updateUserProfile({
-        userData,
-        currentPhoneNumber: userPhoneNumber
-      })).unwrap();
+      const result = await dispatch(
+        updateUserProfile({
+          userData,
+          currentPhoneNumber: userPhoneNumber,
+        })
+      ).unwrap();
 
       // Success handling
       localStorage.removeItem("unsavedProfileData");
-      addToast("Success", "success", "Profile Updated", "Your profile has been updated successfully.");
       
+      // Update loading toast to success
+      updateToast(loadingToastId, {
+        type: "success",
+        heading: "Profile Updated",
+        description: "Your profile has been updated successfully."
+      });
+
       // Optionally refetch the profile to ensure data consistency
       if (userPhoneNumber) {
         dispatch(fetchUserProfile(userPhoneNumber));
       }
     } catch (error) {
-      // Error handling
+      // Update loading toast to error
       if (error.includes("phone number already exists")) {
-        addToast(
-          "Dummy",
-          "error",
-          "Duplicate Number Found",
-          "A user with this phone number already exists."
-        );
+        updateToast(loadingToastId, {
+          type: "error",
+          heading: "Duplicate Number Found",
+          description: "A user with this phone number already exists."
+        });
       } else {
-        addToast("Error", "error", "Update Failed", error || "Failed to update profile.");
+        updateToast(loadingToastId, {
+          type: "error",
+          heading: "Update Failed",
+          description: error || "Failed to update profile."
+        });
       }
     }
   }
@@ -249,12 +290,10 @@ const Profile = () => {
     localStorage.removeItem("unsavedProfileData");
   };
 
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
+
 
   if (status === "failed") {
-    return <div>Error: {error}</div>;
+    console.error(error)
   }
 
   return (
@@ -494,28 +533,28 @@ const Profile = () => {
         {isEditing ? (
           <div className="flex">
             <button
-  className={`${styles.saveButton}`}
-  onClick={() => {
-    handleUpdateProfile();
-    logEvent(analytics, "click_user_profile_save_button", {
-      Name: "profile_save_button",
-    });
-  }}
-  disabled={updateStatus === "loading"}
->
-  {updateStatus === "loading" ? (
-    <span className="font-lato text-[16px] leading-[24px] text-center text-[#FAFBFC] font-medium">
-      Saving...
-    </span>
-  ) : (
-    <>
-      <img src={tickIcon} alt="Tick Icon" className="w-5 h-5" />
-      <span className="font-lato text-[16px] leading-[24px] text-center text-[#FAFBFC] font-medium">
-        Save
-      </span>
-    </>
-  )}
-</button>
+              className={`${styles.saveButton}`}
+              onClick={() => {
+                handleUpdateProfile();
+                logEvent(analytics, "click_user_profile_save_button", {
+                  Name: "profile_save_button",
+                });
+              }}
+              disabled={updateStatus === "loading"}
+            >
+              {updateStatus === "loading" ? (
+                <span className="font-lato text-[16px] leading-[24px] text-center text-[#FAFBFC] font-medium">
+                  Saving...
+                </span>
+              ) : (
+                <>
+                  <img src={tickIcon} alt="Tick Icon" className="w-5 h-5" />
+                  <span className="font-lato text-[16px] leading-[24px] text-center text-[#FAFBFC] font-medium">
+                    Save
+                  </span>
+                </>
+              )}
+            </button>
             <button
               className={`${styles.deleteButton}`}
               onClick={() => {
