@@ -7,7 +7,7 @@ import Table from "../components/Table/Table";
 import ProjectPopupMap from "../components/Project_popup/ProjectPopupMap";
 import PageInstantSearch from "../components/InstantSearch/PageInstantSearch";
 import PropertiesPageHeader from "../components/Headers/PropertiesPageHeader";
-import { fetchTableProjects } from "../slices/projectSlice";
+import { fetchTableProjects, selectAllProjects } from "../slices/projectSlice";
 import { getProjectImages } from "../utils/common";
 
 const PropertiesPage = () => {
@@ -28,7 +28,7 @@ const PropertiesPage = () => {
   const [isVisible, setIsVisible] = useState(window.innerWidth > 640);
 
   const { table_projects, totalProjects, allProjects } = useSelector(
-    (state) => state.projectsState
+    selectAllProjects
   );
 
   useEffect(() => {

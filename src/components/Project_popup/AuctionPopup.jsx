@@ -6,6 +6,7 @@ import { selectUserDocId } from "../../slices/userAuthSlice";
 
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
+import soldOut from "/assets/icons/status/sold-out.svg";
 
 // Import your icons here
 
@@ -182,8 +183,9 @@ const AuctionCard = ({ project }) => {
 
   return (
     <Card
-      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
-        }  `}
+      className={` rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB]  ${
+        isAuthenticated ? `min-w-[278px]` : `min-w-[268px]`
+      }  `}
     >
       <CardHeader
         floated={false}
@@ -199,6 +201,7 @@ const AuctionCard = ({ project }) => {
           className="absolute inset-0 h-full w-full"
           onClick={handleViewMore}
         />
+        
         <div className="absolute top-4 left-3 md:left-4 flex space-x-2">
           {project?.truRecommended && (
             <div
@@ -243,6 +246,12 @@ const AuctionCard = ({ project }) => {
             </div>
           </div>
         )}
+        {(
+          <div className={`${styles.tooltip1}`}>
+            <img src={soldOut} alt="Sold Out" />
+            <span className={`${styles.tooltiptext1}`}>Project sold out</span>
+          </div>
+        )}
       </CardHeader>
       <CardBody
         className=" px-3 pt-3 pb-4  gap-4 bg-[#FAFAFA] rounded-b-xl"
@@ -253,13 +262,14 @@ const AuctionCard = ({ project }) => {
             <span className="font-montserrat font-bold text-[#252626] text-[16px] leading-[1.5] line-clamp-1">
               {project.projectId}
               {" : "}
-              {project.projectName && (project?.projectName
-                ? Object.keys(upperCaseProperties).includes(
-                  project?.projectName
-                )
-                  ? upperCaseProperties[project?.projectName]
-                  : toCapitalizedWords(project?.projectName)
-                : "___")}
+              {project.projectName &&
+                (project?.projectName
+                  ? Object.keys(upperCaseProperties).includes(
+                      project?.projectName
+                    )
+                    ? upperCaseProperties[project?.projectName]
+                    : toCapitalizedWords(project?.projectName)
+                  : "___")}
             </span>
           </div>
 
@@ -267,14 +277,17 @@ const AuctionCard = ({ project }) => {
             <div className="flex items-center gap-1 w-fit pr-2 border-r">
               {project?.micromarket && (
                 <>
-                  <img src={locicon} alt="location" className="w-[14px] h-[14px]" />
+                  <img
+                    src={locicon}
+                    alt="location"
+                    className="w-[14px] h-[14px]"
+                  />
                   <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
                     {toCapitalizedWords(project.micromarket)}
                   </p>
                 </>
               )}
             </div>
-
 
             <div className="flex items-center gap-1 pr-2 w-fit ">
               {project?.assetType && (
@@ -305,11 +318,13 @@ const AuctionCard = ({ project }) => {
                       ? `${project.auctionReservePrice.toFixed(1)} Cr`
                       : "NA"}
                   </p>
-                </>)}
+                </>
+              )}
             </div>
 
             <div className="py-1">
-              {(project?.minInvestmentOfAuction != null || project?.auctionReservePrice != null) && (
+              {(project?.minInvestmentOfAuction != null ||
+                project?.auctionReservePrice != null) && (
                 <>
                   <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
                     <span className="whitespace-nowrap">Min. Investment</span>
@@ -331,7 +346,9 @@ const AuctionCard = ({ project }) => {
 
                   {project?.minInvestmentOfAuction != null && (
                     <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
-                      {formatCostSuffix1(project.minInvestmentOfAuction.toFixed(0))}
+                      {formatCostSuffix1(
+                        project.minInvestmentOfAuction.toFixed(0)
+                      )}
                     </p>
                   )}
 
@@ -345,10 +362,11 @@ const AuctionCard = ({ project }) => {
 
               {project?.minInvestmentOfAuction == null &&
                 project?.auctionReservePrice == null && (
-                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">NA</p>
+                  <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
+                    NA
+                  </p>
                 )}
             </div>
-
 
             <div className="py-1">
               {project?.unitDetails?.[0]?.holdingPeriodYears && (
@@ -374,28 +392,27 @@ const AuctionCard = ({ project }) => {
               )}
             </div>
 
-
             <div className=" py-1">
               <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%] flex">
                 {project?.unitDetails?.[0]?.cagr && (
-                <>
-                <span className="whitespace-nowrap">Exp Return</span>
-                <div
-                  className={`${styles.tooltip} cursor-pointer`}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <img
-                    src={infoIcon}
-                    className="ml-[2px] mr-2 mt-[1px]"
-                    alt="info"
-                  />
-                  <span className={`${styles.tooltiptext} min-w-[120px]`}>
-                    Represents the compound annual growth rate — a measure of
-                    return assuming the investment grows at a steady rate over
-                    time.
-                  </span>
-                </div>
-                </>
+                  <>
+                    <span className="whitespace-nowrap">Exp Return</span>
+                    <div
+                      className={`${styles.tooltip} cursor-pointer`}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <img
+                        src={infoIcon}
+                        className="ml-[2px] mr-2 mt-[1px]"
+                        alt="info"
+                      />
+                      <span className={`${styles.tooltiptext} min-w-[120px]`}>
+                        Represents the compound annual growth rate — a measure
+                        of return assuming the investment grows at a steady rate
+                        over time.
+                      </span>
+                    </div>
+                  </>
                 )}
               </p>
 

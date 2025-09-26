@@ -30,7 +30,7 @@ const getTopAndLeastIRRs = async () => {
     // Process all projects: map, filter, and sort
     const allProjects = allProjectsSnapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() })) // Map to array of objects
-      .filter((doc) => doc.showOnTruEstate == true && doc.projectOverview.stage == "pre launch" && doc.combineAvailability!="sold out")
+      .filter((doc) => doc.showOnTruEstate == true && doc.projectOverview.stage == "pre launch" && doc.projectOverview?.availability!="sold out")
       .sort((a, b) => a.cagr - b.cagr); // Sort by cagr in ascending order
 
     console.log("new check", allProjects.length, allProjects)

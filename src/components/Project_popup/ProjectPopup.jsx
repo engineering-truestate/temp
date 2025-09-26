@@ -126,7 +126,7 @@ const PropCard = ({ project }) => {
       previousState: isWishlisted,
     });
     setIsWishlisted(isProjectWishlisted);
-  }, [wishlistItems, project.projectId ]);
+  }, [wishlistItems, project.projectId]);
 
   useEffect(() => {
     const isProjectCompared = compareProjects.some(
@@ -389,7 +389,7 @@ const PropCard = ({ project }) => {
             )}
         </div>
         <div className="absolute bottom-4 left-3 md:left-4 flex space-x-2">
-          {project.combineAvailability === "sold out" && (
+          {project.projectOverview?.availability === "sold out" && (
             <div className={`${styles.tooltip1}`}>
               <img src={soldOut} alt="Sold Out" />
               <span className={`${styles.tooltiptext1}`}>Project sold out</span>
@@ -468,7 +468,11 @@ const PropCard = ({ project }) => {
             <div className="flex items-center gap-1 w-fit pr-2 border-r-[1px]">
               {project?.micromarket && (
                 <>
-                  <img src={locicon} className="w-[14px] h-[14px]" alt="Location" />
+                  <img
+                    src={locicon}
+                    className="w-[14px] h-[14px]"
+                    alt="Location"
+                  />
                   <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
                     {toCapitalizedWords(project.micromarket)}
                   </p>
@@ -490,7 +494,11 @@ const PropCard = ({ project }) => {
             <div className="flex items-center gap-1 pr-2 w-fit">
               {project.assetType && (
                 <>
-                  <img src={asset} className="w-[14px] h-[14px]" alt="Asset Type" />
+                  <img
+                    src={asset}
+                    className="w-[14px] h-[14px]"
+                    alt="Asset Type"
+                  />
                   <p className="font-lato font-medium text-xs text-[#433F3E] leading-[150%]">
                     {toCapitalizedWords(project.assetType)}
                   </p>
@@ -501,7 +509,7 @@ const PropCard = ({ project }) => {
 
           <div className="grid grid-cols-2 w-full">
             <div className="py-1">
-              {(project?.projectOverview?.pricePerSqft || maxPricePerSqft) ? (
+              {project?.projectOverview?.pricePerSqft || maxPricePerSqft ? (
                 <>
                   <p className="font-montserrat text-xs font-medium text-[#433F3E] leading-[150%]">
                     Price / Sq ft

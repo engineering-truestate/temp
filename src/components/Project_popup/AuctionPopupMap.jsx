@@ -572,14 +572,14 @@ function AuctionPopupMap({ project, onClose }) {
               </span>
             </div>
           )}
-          {project.combineAvailability === "limited available" ? (
+          {project.projectOverview?.availability === "limited available" ? (
             <div className={`${styles.tooltip1}`}>
               <img src={limited} />
               <span className={`${styles.tooltiptext1}`}>
                 Less than 20% availability
               </span>
             </div>
-          ) : project.combineAvailability === "sold out" ? (
+          ) : project.projectOverview?.availability === "sold out" ? (
             <div className={`${styles.tooltip1}`}>
               <img src={soldOut} />
               <span className={`${styles.tooltiptext1}`}>Project sold out</span>

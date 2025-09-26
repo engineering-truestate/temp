@@ -639,7 +639,7 @@ function ProjectPopupMap({ project, onClose }) {
                 Less than 20% availability
               </span>
             </div>
-          ) : project.combineAvailability === "sold out" ? (
+          ) : project.projectOverview?.availability === "sold out" ? (
             <div className={`${styles.tooltip1}`}>
               <img src={soldOut} />
               <span className={`${styles.tooltiptext1}`}>Project sold out</span>
