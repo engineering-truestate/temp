@@ -4,7 +4,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 
 const ProjectDetailsPage = () => {
   return (
-    <MainContentLayout>
+    <MainContentLayout pageTitle={'Properties'}>
       <ProjectDetails />
     </MainContentLayout>
   );

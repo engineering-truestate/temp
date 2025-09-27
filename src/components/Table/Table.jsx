@@ -67,8 +67,6 @@ const Table = ({
 
   const userPhoneNumber = useSelector(selectUserPhoneNumber);
   const { loading } = useSelector((state) => state.projectsState);
-
-  const { addToast } = useToast();
   const { indexUiState, setIndexUiState, status } = useInstantSearch();
   const isReduxLoading = useSelector(selectLoader);
 

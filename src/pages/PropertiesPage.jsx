@@ -7,10 +7,15 @@ import Table from "../components/Table/Table";
 import ProjectPopupMap from "../components/Project_popup/ProjectPopupMap";
 import PageInstantSearch from "../components/InstantSearch/PageInstantSearch";
 import PropertiesPageHeader from "../components/Headers/PropertiesPageHeader";
-import { fetchTableProjects, selectAllProjects } from "../slices/projectSlice";
+import {
+  fetchAllProjects,
+  fetchTableProjects,
+  selectAllProjects,
+} from "../slices/projectSlice";
 import { getProjectImages } from "../utils/common";
 import Loader from "../components/Loader";
 import { showLoader, hideLoader } from "../slices/loaderSlice";
+import UnifiedTable from "../components/Table/UnifiedTable";
 
 const PropertiesPage = () => {
   const dispatch = useDispatch();
@@ -32,7 +37,7 @@ const PropertiesPage = () => {
 
   // Get loading state from Redux
   const { table_projects, totalProjects, allProjects, loading } = useSelector(
-    selectAllProjects
+    (state) => state.projectsState
   );
 
   useEffect(() => {
@@ -57,18 +62,22 @@ const PropertiesPage = () => {
         if (propertiesView === "table") {
           await dispatch(fetchTableProjects(currentPage)).unwrap();
         }
-        
+        if (propertiesView === "map") {
+          await dispatch(fetchAllProjects()).unwrap();
+        }
+
         setInitialDataLoaded(true);
       } catch (error) {
         console.error("Error loading initial data:", error);
-        setInitialDataLoaded(true); 
+        setInitialDataLoaded(true);
       } finally {
         dispatch(hideLoader());
       }
     };
-    
+
     loadInitialData();
-  }, []); 
+  }, [propertiesView]);
+
   useEffect(() => {
     if (initialDataLoaded && propertiesView === "table") {
       const loadTableProjects = async () => {
@@ -120,10 +129,11 @@ const PropertiesPage = () => {
       </div>
     );
   }
+  console.log("hmm", allProjects);
 
   return (
     <div className="flex flex-col h-screen">
-      <PageInstantSearch viewType={propertiesView}>
+      <PageInstantSearch viewType={propertiesView} sortOption={selectedSortOption}>
         <MainContentLayout pageTitle="Properties">
           <PropertiesPageHeader
             propertiesView={propertiesView}
@@ -140,7 +150,7 @@ const PropertiesPage = () => {
                 setPropertiesView={setPropertiesView}
               />
             ) : propertiesView === "table" ? (
-              <Table
+              <UnifiedTable
                 projects={table_projects}
                 type="properties"
                 trueS="all"
@@ -149,8 +159,7 @@ const PropertiesPage = () => {
                   currentPage > 1 && setCurrentPage(currentPage - 1)
                 }
                 handleNextPage={() =>
-                  currentPage < totalPages &&
-                  setCurrentPage(currentPage + 1)
+                  currentPage < totalPages && setCurrentPage(currentPage + 1)
                 }
                 handleLastPage={() => setCurrentPage(totalPages)}
                 totalPages={totalPages}

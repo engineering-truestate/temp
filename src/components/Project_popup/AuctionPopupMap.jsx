@@ -199,15 +199,21 @@ function AuctionPopupMap({ project, onClose }) {
     }
   };
 
-  const handleViewMore = () => {
-    onClose();
-    navigate(
-      `/auction/${project.projectName.replace(/[\s\/]+/g, "-")}/${project.id}`,
-      {
-        state: { name: project.projectName },
-      }
-    );
-  };
+ const handleViewMore = () => {
+  onClose();
+
+  const projectSlug = project.projectName
+    .toLowerCase()                 // lowercase
+    .trim()                        // remove leading/trailing spaces
+    .replace(/[^a-z0-9\s/]/g, "")  // remove special characters
+    .replace(/[\s/]+/g, "-")       // replace spaces and slashes with hyphens
+    .replace(/-+/g, "-");          // collapse multiple hyphens
+
+  navigate(`/auction/${projectSlug}/${project.id}`, {
+    state: { name: project.projectName },
+  });
+};
+
 
   const handleClickLock = (e) => {
     e.stopPropagation();

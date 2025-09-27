@@ -243,7 +243,7 @@ const AuctionDetails = ({ data }) => {
 
   // Fetch project data
   useEffect(() => {
-    const fetchProjectByName = async () => {
+    const fetchProjectByID = async () => {
       try {
         dispatch(showLoader());
         const q = query(
@@ -262,7 +262,7 @@ const AuctionDetails = ({ data }) => {
       }
     };
 
-    fetchProjectByName();
+    fetchProjectByID();
   }, [projectName]);
 
   // Set project overview data
@@ -364,10 +364,11 @@ const AuctionDetails = ({ data }) => {
       {
         label: "All Inclusive Price",
         value:
-          activeTruReportAreaTab?.allInclusivePrice != null
+          typeof activeTruReportAreaTab?.allInclusivePrice === "number"
             ? `₹${activeTruReportAreaTab.allInclusivePrice.toFixed(1)} Cr`
             : "NA",
       },
+
       {
         label: "Rec. Bid Price",
         value:
@@ -619,6 +620,12 @@ const AuctionDetails = ({ data }) => {
               value: project?.unitDetails[0].floor || "NA",
             },
           ]);
+    if (project?.unitDetails?.[0]?.soldPrice > 0) {
+      temp2.push({
+        label: "Sold Price",
+        value: `₹${project.unitDetails[0].soldPrice.toFixed(2)} Cr`,
+      });
+    }
 
     setTempProject2(temp2);
   }, [
