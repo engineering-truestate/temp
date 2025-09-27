@@ -68,7 +68,7 @@ const TableRow = ({
 
   const handleViewMore = () => {
     const projectName = project.projectName.replace(/\s+/g, "-");
-    navigate(`/properties/${project.projectName}`, {
+    navigate(`/properties/${project.projectName}/${project.projectId}`, {
       state: { name: project.projectName },
     });
   };

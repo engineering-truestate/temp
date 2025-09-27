@@ -15,7 +15,7 @@ import {
   arrayUnion,
   collection,
   doc,
-  getDoc, 
+  getDoc,
   getDocs,
   query,
   updateDoc,
@@ -178,7 +178,7 @@ const VaultInvestment = ({ data }) => {
   const [assetOverviewData, setAssetOverviewData] = useState([]);
   const [projectOverviewData, setProjectOverviewData] = useState([]);
 
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
   const [project1, setProject1] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -371,47 +371,47 @@ const VaultInvestment = ({ data }) => {
   }, [formId]);
 
   useEffect(() => {
-  const fetchTaskStatus = async () => {
-    if (project1?.projectId && userPhoneNumber) {
-      try {
-        // Query truEstateTasks collection for vault-service tasks
-        const tasksCollectionRef = collection(db, "truEstateTasks");
-        const q = query(
-          tasksCollectionRef,
-          where("taskType", "==", "vault-service"),
-          where("projectId", "==", project1.projectId),
-          //where("userPhoneNumber", "==", userPhoneNumber)
-        );
+    const fetchTaskStatus = async () => {
+      if (project1?.projectId && userPhoneNumber) {
+        try {
+          // Query truEstateTasks collection for vault-service tasks
+          const tasksCollectionRef = collection(db, "truEstateTasks");
+          const q = query(
+            tasksCollectionRef,
+            where("taskType", "==", "vault-service"),
+            where("projectId", "==", project1.projectId)
+            //where("userPhoneNumber", "==", userPhoneNumber)
+          );
 
-        const tasksSnapshot = await getDocs(q);
-        
-        // Map task names back to service titles
-        const taskToServiceMapping = {
-          "khata-transfer": "Khata Transfer",
-          "sell-property": "Sell Property",
-          "title-clearance": "Title Clearance", 
-          "electricity-bill": "Electricity Bill Transfer",
-          "find-tenant": "Find Tenant",
-          "rent-collection": "Collect Rent"
-        };
+          const tasksSnapshot = await getDocs(q);
 
-        const vaultTasks = tasksSnapshot.docs.map((doc) => {
-          const task = doc.data();
-          return {
-            name: taskToServiceMapping[task.taskName] || task.taskName,
-            status: task.status === "pending" ? "pending" : "completed",
+          // Map task names back to service titles
+          const taskToServiceMapping = {
+            "khata-transfer": "Khata Transfer",
+            "sell-property": "Sell Property",
+            "title-clearance": "Title Clearance",
+            "electricity-bill": "Electricity Bill Transfer",
+            "find-tenant": "Find Tenant",
+            "rent-collection": "Collect Rent",
           };
-        });
 
-        setClickedServices(vaultTasks);
-      } catch (error) {
-        console.error("Error fetching task status:", error);
+          const vaultTasks = tasksSnapshot.docs.map((doc) => {
+            const task = doc.data();
+            return {
+              name: taskToServiceMapping[task.taskName] || task.taskName,
+              status: task.status === "pending" ? "pending" : "completed",
+            };
+          });
+
+          setClickedServices(vaultTasks);
+        } catch (error) {
+          console.error("Error fetching task status:", error);
+        }
       }
-    }
-  };
+    };
 
-  fetchTaskStatus();
-}, [project1?.projectId, userPhoneNumber]);
+    fetchTaskStatus();
+  }, [project1?.projectId, userPhoneNumber]);
 
   // useEffect(() => {
   //   if (profile.tasks && project1?.id) {
@@ -435,7 +435,7 @@ const VaultInvestment = ({ data }) => {
 
   //     setClickedServices(vaultTasks);
   //   }
-  // }, [profile.tasks, project1?.id]); 
+  // }, [profile.tasks, project1?.id]);
 
   const formatToIndianSystem = (number) => {
     const numStr = number.toString();
@@ -462,100 +462,123 @@ const VaultInvestment = ({ data }) => {
   };
 
   const handleRaiseRequest = async (service) => {
-  setIsServiceModalOpen(false);
+    setIsServiceModalOpen(false);
 
-  try {
-    const result = await raiseRequest(service, project1, userPhoneNumber);
-    
-    if (result.success) {
-      addToast("Update Successful", "success", `Scheduled for ${service}`);
-    } else {
-      addToast("Error", "error", result.message);
+    // Show loading toast immediately
+    const loadingToastId = addToast(
+      "Processing",
+      "loading",
+      `Scheduling request for ${service}...`
+    );
+
+    try {
+      const result = await raiseRequest(service, project1, userPhoneNumber);
+
+      if (result.success) {
+        // Update toast to success
+        updateToast(loadingToastId, {
+          type: "success",
+          heading: "Update Successful",
+          description: `Scheduled for ${service}`,
+        });
+      } else {
+        // Update toast to error
+        updateToast(loadingToastId, {
+          type: "error",
+          heading: "Error",
+          description: result.message || "Failed to raise request",
+        });
+      }
+    } catch (error) {
+      console.error("Error in handleRaiseRequest:", error);
+
+      // Update toast to error
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Error",
+        description: error.message || "An unexpected error occurred",
+      });
     }
-  } catch (error) {
-    console.error("Error in handleRaiseRequest:", error);
-    addToast("Error", "error", error.message);
-  }
-};
+  };
 
-//   const handleRaiseRequest = async (service) => {
-//   setIsServiceModalOpen(false);
+  //   const handleRaiseRequest = async (service) => {
+  //   setIsServiceModalOpen(false);
 
-//   try {
-//     // Map service titles to task names
-    
-//     const serviceToTaskMapping = {
-//       "Khata Transfer": "khata-transfer",
-//       "Sell Property": "sell-property", 
-//       "Title Clearance": "title-clearance",
-//       "Electricity Bill Transfer": "electricity-bill",
-//       "Find Tenant": "find-tenant",
-//       "Collect Rent": "rent-collection"
-//     };
+  //   try {
+  //     // Map service titles to task names
 
-//     // Generate task ID
-//     const tasksCollectionRef = collection(db, "truEstateTasks");
-//     const tasksSnapshot = await getDocs(tasksCollectionRef);
-//     const taskCount = tasksSnapshot.size || 0;
+  //     const serviceToTaskMapping = {
+  //       "Khata Transfer": "khata-transfer",
+  //       "Sell Property": "sell-property",
+  //       "Title Clearance": "title-clearance",
+  //       "Electricity Bill Transfer": "electricity-bill",
+  //       "Find Tenant": "find-tenant",
+  //       "Collect Rent": "rent-collection"
+  //     };
 
-//     let nextTaskId = '1';
-//     if (taskCount >= 1000) {
-//       nextTaskId = `task${taskCount + 1}`;
-//     } else {
-//       nextTaskId = `task${(taskCount + 1).toString().padStart(3, '0')}`;
-//     }
+  //     // Generate task ID
+  //     const tasksCollectionRef = collection(db, "truEstateTasks");
+  //     const tasksSnapshot = await getDocs(tasksCollectionRef);
+  //     const taskCount = tasksSnapshot.size || 0;
 
-//     if (!nextTaskId) {
-//       throw new Error("Failed to generate task ID");
-//     }
+  //     let nextTaskId = '1';
+  //     if (taskCount >= 1000) {
+  //       nextTaskId = `task${taskCount + 1}`;
+  //     } else {
+  //       nextTaskId = `task${(taskCount + 1).toString().padStart(3, '0')}`;
+  //     }
 
-//     // Find user document
-//     const usersCollectionRef = collection(db, "truEstateUsers");
-//     const q = query(
-//       usersCollectionRef,
-//       where("phoneNumber", "==", userPhoneNumber)
-//     );
+  //     if (!nextTaskId) {
+  //       throw new Error("Failed to generate task ID");
+  //     }
 
-//     const querySnapshot = await getDocs(q);
-//     if (querySnapshot.empty) {
-//       throw new Error("User not found");
-//     }
+  //     // Find user document
+  //     const usersCollectionRef = collection(db, "truEstateUsers");
+  //     const q = query(
+  //       usersCollectionRef,
+  //       where("phoneNumber", "==", userPhoneNumber)
+  //     );
 
-//     const userDoc = querySnapshot.docs[0];
-//     const userId = userDoc.id;
+  //     const querySnapshot = await getDocs(q);
+  //     if (querySnapshot.empty) {
+  //       throw new Error("User not found");
+  //     }
 
-//     // Create task object
-//     const task = {
-//       taskId: nextTaskId,
-//       projectName: project1.projectName,
-//       actionType: "Call",
-//       agentId: "TRUES03", 
-//       agentName: "amit",
-//       //formType: "Not Discussed",
-//       createdTimestamp: getUnixDateTime(),
-//       schedule: getUnixDateTimeOneDayLater(),
-//       status: "pending",
-//       taskType: "vault-service",
-//       propertyType: "preLaunch",
-//       taskName: serviceToTaskMapping[service] || service.toLowerCase().replace(/\s+/g, '-'),
-//       userId: userId,
-//       userPhoneNumber: userPhoneNumber,
-//       projectId: project1.projectId
-//     };
+  //     const userDoc = querySnapshot.docs[0];
+  //     const userId = userDoc.id;
 
-//     // Save task to truEstateTasks collection
-//     const taskRef = doc(db, "truEstateTasks", nextTaskId);
-//     await setDoc(taskRef, task);
+  //     // Create task object
+  //     const task = {
+  //       taskId: nextTaskId,
+  //       projectName: project1.projectName,
+  //       actionType: "Call",
+  //       agentId: "TRUES03",
+  //       agentName: "amit",
+  //       //formType: "Not Discussed",
+  //       createdTimestamp: getUnixDateTime(),
+  //       schedule: getUnixDateTimeOneDayLater(),
+  //       status: "pending",
+  //       taskType: "vault-service",
+  //       propertyType: "preLaunch",
+  //       taskName: serviceToTaskMapping[service] || service.toLowerCase().replace(/\s+/g, '-'),
+  //       userId: userId,
+  //       userPhoneNumber: userPhoneNumber,
+  //       projectId: project1.projectId
+  //     };
 
-//     // Call toast with correct success message
-//     addToast("Update Successful", "success", `Scheduled for ${service}`);
-//   } catch (error) {
-//     console.error("Error in handleRaiseRequest:", error);
-//     // Display toast with error message
-//     addToast("Error", "error", error.message);
-//     return { success: false, message: error.message };
-//   }
-// };
+  //     // Save task to truEstateTasks collection
+  //     const taskRef = doc(db, "truEstateTasks", nextTaskId);
+  //     await setDoc(taskRef, task);
+
+  //     // Call toast with correct success message
+  //     addToast("Update Successful", "success", `Scheduled for ${service}`);
+  //   } catch (error) {
+  //     console.error("Error in handleRaiseRequest:", error);
+  //     // Display toast with error message
+  //     addToast("Error", "error", error.message);
+  //     return { success: false, message: error.message };
+  //   }
+  // };
   // const handleRaiseRequest = async (service) => {
   //   setIsServiceModalOpen(false);
   //   setIsConfirmationModalOpen(true);
@@ -623,7 +646,7 @@ const VaultInvestment = ({ data }) => {
 
   const handleUpload = async (doc) => {
     setLoadingDocument(true);
-    const response = await handleVaultDocumentUpload(doc, formId,profile);
+    const response = await handleVaultDocumentUpload(doc, formId, profile);
     if (response.success) {
       setDocument(null);
       setDocuments((prev) => [
@@ -643,50 +666,67 @@ const VaultInvestment = ({ data }) => {
   };
 
   const handleDelete = async (document, index) => {
-  try {
     setDeleting(true);
 
-    // ✅ Delete from Firebase Storage
-    const storage = getStorage();
-    const fileRef = ref(storage, document.path);
-    await deleteObject(fileRef);
+    // Show loading toast immediately
+    const loadingToastId = addToast(
+      "Processing",
+      "loading",
+      "Deleting file..."
+    );
 
-    // ✅ Delete from Firestore (remove doc object from unit.documents[])
-    const userRef = doc(db, "truEstateUsers", profile.id);
-    const userSnap = await getDoc(userRef);
+    try {
+      // ✅ Delete from Firebase Storage
+      const storage = getStorage();
+      const fileRef = ref(storage, document.path);
+      await deleteObject(fileRef);
 
-    if (!userSnap.exists()) {
-      throw new Error("User not found");
-    }
+      // ✅ Delete from Firestore (remove doc object from unit.documents[])
+      const userRef = doc(db, "truEstateUsers", profile.id);
+      const userSnap = await getDoc(userRef);
 
-    const userData = userSnap.data();
-    const updatedUnits = userData.units.map((unit) => {
-      if (unit.unitId === formId) {
-        return {
-          ...unit,
-          documents: (unit.documents || []).filter(
-            (d) => d.path !== document.path // remove matching document
-          ),
-        };
+      if (!userSnap.exists()) {
+        throw new Error("User not found");
       }
-      return unit;
-    });
 
-    await updateDoc(userRef, { units: updatedUnits });
+      const userData = userSnap.data();
+      const updatedUnits = userData.units.map((unit) => {
+        if (unit.unitId === formId) {
+          return {
+            ...unit,
+            documents: (unit.documents || []).filter(
+              (d) => d.path !== document.path
+            ),
+          };
+        }
+        return unit;
+      });
 
-    // ✅ Update local state
-    setDocuments((prev) => prev.filter((_, i) => i !== index));
+      await updateDoc(userRef, { units: updatedUnits });
 
-    addToast("Dummy", "success", "File deleted successfully");
-  } catch (error) {
-    console.error("Error deleting file:", error);
-    addToast("Dummy", "error", "Failed to delete file");
-  } finally {
-    setshowDeleteModal(false);
-    setDeleting(false);
-  }
-};
+      // ✅ Update local state
+      setDocuments((prev) => prev.filter((_, i) => i !== index));
 
+      // Update loading toast to success
+      updateToast(loadingToastId, {
+        type: "success",
+        heading: "File deleted successfully",
+        description: `The file "${document.name}" has been deleted.`,
+      });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+
+      // Update loading toast to error
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Failed to delete file",
+        description: error.message || "An unexpected error occurred.",
+      });
+    } finally {
+      setshowDeleteModal(false);
+      setDeleting(false);
+    }
+  };
 
   const handleStatusColour = (status) => {
     if (status === "pending") {

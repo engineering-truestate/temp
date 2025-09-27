@@ -64,7 +64,7 @@ const FindProjectPage = () => {
 
   const { userDocId, userPhoneNumber } = useSelector((state) => state.userAuth);
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
   const [currentStep, setCurrentStep] = useState(0); 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false); 
@@ -212,46 +212,72 @@ const FindProjectPage = () => {
   };
 
   const submitFormData = async () => {
-    try {
-      dispatch(showLoader());
+  // Show loading toast immediately
+  const loadingToastId = addToast(
+    "Processing",
+    "loading",
+    "Submitting your form..."
+  );
 
-      if (!selectedProperty) {
-        addToast("Error", "error", "No property selected");
-        dispatch(hideLoader());
-        return;
-      }
+  try {
+    dispatch(showLoader());
 
-      if (!formData || Object.keys(formData).length === 0) {
-        addToast("Error", "error", "Form data is missing");
-        dispatch(hideLoader());
-        return;
-      }
-
-      if (!userDocId || !userPhoneNumber) {
-        return;
-      }
-      
-      const reportUrl = `${window.location.origin}/vault/investment/${encodeURIComponent(selectedProperty.projectName)}`;
-
-      setFormData(null);
-      setCurrentStep((prevStep) => prevStep + 1);
-      dispatch(setVaultFormActive(false));
-      addToast(
-        "Form Submitted",
-        "success",
-        `Your form has been submitted successfully.`
-      );
-    } catch (error) {
-      addToast(
-        "Submission Failed",
-        "error",
-        `There was an error submitting your form.`
-      );
-      console.error("Form submission error:", error);
-    } finally {
+    if (!selectedProperty) {
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Error",
+        description: "No property selected",
+      });
       dispatch(hideLoader());
+      return;
     }
-  };
+
+    if (!formData || Object.keys(formData).length === 0) {
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Error",
+        description: "Form data is missing",
+      });
+      dispatch(hideLoader());
+      return;
+    }
+
+    if (!userDocId || !userPhoneNumber) {
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Error",
+        description: "User information missing",
+      });
+      dispatch(hideLoader());
+      return;
+    }
+
+    const reportUrl = `${window.location.origin}/vault/investment/${encodeURIComponent(selectedProperty.projectName)}`;
+
+    // Clear form and advance step
+    setFormData(null);
+    setCurrentStep((prevStep) => prevStep + 1);
+    dispatch(setVaultFormActive(false));
+
+    // Update toast to success
+    updateToast(loadingToastId, {
+      type: "success",
+      heading: "Form Submitted",
+      description: "Your form has been submitted successfully.",
+    });
+  } catch (error) {
+    console.error("Form submission error:", error);
+
+    // Update toast to error
+    updateToast(loadingToastId, {
+      type: "error",
+      heading: "Submission Failed",
+      description: "There was an error submitting your form.",
+    });
+  } finally {
+    dispatch(hideLoader());
+  }
+};
 
   const handleNextClick = async () => {
     if (currentStep === 0) {

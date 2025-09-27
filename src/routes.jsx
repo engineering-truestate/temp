@@ -77,7 +77,7 @@ const AppRoutes = () => {
 
       {/* Dashboard routes */}
       <Route path="/properties" element={<PropertiesPage />} />
-      <Route path="/properties/:projectName" element={<ProjectDetailsPage />} />
+      <Route path="/properties/:projectName/:id" element={<ProjectDetailsPage />} />
       <Route path="/properties/:projectName/report" element={<ProtectedRoute><ReportPage /></ProtectedRoute>} />
 
       <Route path="/auction" element={<ProtectedRoute><AuctionPage /></ProtectedRoute>} />

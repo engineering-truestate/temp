@@ -8,6 +8,7 @@ import selon from "/assets/icons/features/wishlist-active.svg";
 import seloff from "/assets/icons/features/wishlist-inactive.svg";
 import LitigationIcon from "/assets/icons/status/litigation.svg";
 import soldOut from "/assets/icons/status/sold-out.svg";
+import trueStateIcon from "../../../public/assets/icons/ui/truestateIcon.svg";
 
 // ================= COMPONENT IMPORTS ===================
 import { useEffect, useState } from "react";
@@ -30,6 +31,7 @@ import {
   selectCurrentProject,
   selectProjectLoading,
   selectProjectError,
+  fetchProjectById,
 } from "../../slices/projectSlice";
 import { setShowSignInModal } from "../../slices/modalSlice.js";
 import {
@@ -40,6 +42,7 @@ import {
   fetchWishlistedProjects,
   updateWishlist,
   selectWishlistItems,
+  removeWishlist,
 } from "../../slices/wishlistSlice";
 import {
   customRound,
@@ -53,7 +56,6 @@ import {
   upperCaseProperties,
 } from "../../utils/common.js";
 import MyBreadcrumb from "../BreadCrumbs/Breadcrumb.jsx";
-import Loader from "../Loader";
 import CashFlowsTable from "./CashFlowsTable";
 import ContactInvestmentManager from "./ContactInvManager";
 import InvestmentBreakdownChart from "./GanttChart";
@@ -68,7 +70,7 @@ import TruReportHeading from "./TruReportHeading";
 const ProjectDetails = () => {
   const HOLDING_PERIOD = 4; // in years, default
   const params = useParams();
-  const { projectName } = params;
+  const { projectName, id } = params;
   const name = projectName;
 
   // ============ REDUX STATE EXTRACTION ============
@@ -84,14 +86,10 @@ const ProjectDetails = () => {
   // ============ LOCAL STATE ============
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const isWishlisted = wishlistItems.some(
-    (item) => item.projectId === project?.projectId
-  );
-  const isCompared = compareProjects.some(
-    (item) => item.projectId === project?.projectId
-  );
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isCompared, setIsCompared] = useState(false);
   const [sellingCost, setSellingCost] = useState(300000);
-  const { addToast } = useToast();
+  const { addToast, updateToast } = useToast();
   const tenure = 20;
   const interestRate = 8.5;
   const [loanPercentage, setLoanPercentage] = useState(85);
@@ -143,10 +141,6 @@ const ProjectDetails = () => {
   // ====================================
   //              useEffects
   // ====================================
-
-  useEffect(() => {
-    dispatch(fetchCompareProjects());
-  }, [dispatch]);
 
   const isReport = false;
 
@@ -443,10 +437,13 @@ const ProjectDetails = () => {
   }, [project, activeTruReportAreaTab, sellingCost]);
 
   useEffect(() => {
-    if (name) {
-      dispatch(fetchProjectByName(name));
+    if (id) {
+      const fetchData = async () => {
+        await dispatch(fetchProjectById(id));
+      };
+      fetchData();
     }
-  }, [name, dispatch]);
+  }, [id, dispatch]);
 
   // Handle loan percentage based on asset type
   useEffect(() => {
@@ -457,11 +454,23 @@ const ProjectDetails = () => {
 
   // Initialize wishlist and compare data when component mounts
   useEffect(() => {
-    if (userPhoneNumber) {
-      dispatch(fetchWishlistedProjects(userPhoneNumber));
-      dispatch(fetchCompareProjects());
-    }
-  }, [userPhoneNumber, dispatch]);
+    if (!project) return; // exit early if project is null
+
+    // Check wishlist
+    const isWishlistedNow = wishlistItems?.some(
+      (item) => item.projectId === project.projectId
+    );
+    setIsWishlisted(!!isWishlistedNow);
+
+    // Check compare projects
+    const isComparedNow = compareProjects?.some(
+      (item) => item.projectId === project.projectId
+    );
+    setIsCompared(!!isComparedNow);
+
+    console.log("compareProjects", compareProjects);
+    console.log("project", project);
+  }, [wishlistItems, compareProjects, project]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -693,7 +702,7 @@ const ProjectDetails = () => {
   //            FUNCTIONS
   // ====================================
 
-  const toggleCompare = () => {
+  const toggleCompare = async () => {
     if (!userDocId || !project?.projectId) {
       addToast(
         "Error",
@@ -704,47 +713,64 @@ const ProjectDetails = () => {
       return;
     }
 
+    const newState = !isCompared;
+
+    // Optimistically update local UI
+    setIsCompared(newState);
+
+    // Show loading toast right away
+    const loadingToastId = addToast(
+      "Compare",
+      "loading",
+      newState ? "Adding Property" : "Removing Property",
+      newState
+        ? "Adding property to compare list..."
+        : "Removing property from compare list..."
+    );
+
     try {
-      if (isCompared) {
-        dispatch(removeProjectFromComparison(project.projectId));
-        addToast(
-          "Success",
-          "success",
-          "Property Removed from Compare",
-          "The property has been removed from the compare list."
-        );
-      } else {
+      if (newState) {
+        // Adding to compare
         if (compareProjects.length < 4) {
-          dispatch(
-            addProjectForComparison({
-              projectId: project.projectId,
-              projectName: project.projectName,
-              // Add other necessary project data
-            })
-          );
-          addToast(
-            "Success",
-            "success",
-            "Property Added to Compare",
-            "The property has been added to the compare list."
-          );
+          await dispatch(addProjectForComparison(project.projectId)).unwrap();
+
+          updateToast(loadingToastId, {
+            type: "success",
+            heading: "Property Added",
+            description: "The property has been added to the compare list.",
+          });
         } else {
-          addToast(
-            "Error",
-            "error",
-            "Maximum Limit Reached",
-            "Maximum 4 properties can be compared"
-          );
+          // Revert optimistic update
+          setIsCompared(false);
+
+          updateToast(loadingToastId, {
+            type: "error",
+            heading: "Maximum Limit Reached",
+            description: "You can only compare up to 4 properties.",
+          });
         }
+      } else {
+        // Removing from compare
+        await dispatch(removeProjectFromComparison(project.projectId)).unwrap();
+
+        updateToast(loadingToastId, {
+          type: "error", // 👈 consistent with wishlist removal
+          heading: "Property Removed",
+          description: "The property has been removed from the compare list.",
+        });
       }
     } catch (error) {
       console.error("Error updating compare:", error);
-      addToast(
-        "Error",
-        "error",
-        "Compare Action Failed",
-        "Failed to update compare list. Please try again."
-      );
+
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Compare Action Failed",
+        description:
+          error.message || "Failed to update compare list. Please try again.",
+      });
+
+      // Revert optimistic UI update
+      setIsCompared(!newState);
     }
   };
 
@@ -759,8 +785,20 @@ const ProjectDetails = () => {
       return;
     }
 
+    const newState = !isWishlisted;
+
+    // Optimistically update the UI
+    setIsWishlisted(newState);
+
+    // Show loading toast right away
+    const loadingToastId = addToast(
+      "Wishlist",
+      "loading",
+      newState ? "Adding Property" : "Removing Property"
+    );
+
     try {
-      const propertyType = "auction"; // Default to auction, update this based on your project structure
+      const propertyType = "preLaunch"; // or project?.propertyType || 'preLaunch'
       const projectDefaults = {
         projectName: project.projectName,
         builderName: project.builderName,
@@ -776,41 +814,59 @@ const ProjectDetails = () => {
         investmentOverview: project.investmentOverview || null,
       };
 
-      const resultAction = await dispatch(
-        updateWishlist({
-          userId: userDocId,
-          propertyType,
-          projectId: project.projectId,
-          defaults: projectDefaults,
-        })
-      );
+      if (newState) {
+        // Adding to wishlist
+        logEvent(analytics, "added-to-wishlist", {
+          name: project.projectName,
+        });
 
-      if (updateWishlist.fulfilled.match(resultAction)) {
-        const isAdded = !isWishlisted;
-        addToast(
-          "Success",
-          "success",
-          "Wishlist Updated",
-          isAdded
-            ? `${project.projectName} added to wishlist!`
-            : `${project.projectName} removed from wishlist!`
-        );
+        await dispatch(
+          updateWishlist({
+            userId: userDocId,
+            propertyType,
+            projectId: project.projectId,
+            defaults: projectDefaults,
+          })
+        ).unwrap();
+
+        updateToast(loadingToastId, {
+          type: "success",
+          heading: "Property Added",
+          description: "The property has been added to your wishlist.",
+        });
       } else {
-        addToast(
-          "Error",
-          "error",
-          "Wishlist Action Failed",
-          resultAction.payload || "Failed to update wishlist. Please try again."
-        );
+        // Removing from wishlist
+        logEvent(analytics, "removed-from-wishlist", {
+          name: project.projectName,
+        });
+
+        await dispatch(
+          removeWishlist({
+            userId: userDocId,
+            propertyType,
+            projectId: project.projectId,
+          })
+        ).unwrap();
+
+        updateToast(loadingToastId, {
+          type: "error", // 👈 negative effect for removal
+          heading: "Property Removed",
+          description: "The property has been removed from your wishlist.",
+        });
       }
     } catch (error) {
       console.error("Error updating wishlist:", error);
-      addToast(
-        "Error",
-        "error",
-        "Wishlist Action Failed",
-        "An unexpected error occurred. Please try again."
-      );
+
+      updateToast(loadingToastId, {
+        type: "error",
+        heading: "Wishlist Action Failed",
+        description:
+          error.message ||
+          "There was an issue updating the wishlist. Please try again.",
+      });
+
+      // Revert optimistic UI update
+      setIsWishlisted(!newState);
     }
   };
 
@@ -847,7 +903,19 @@ const ProjectDetails = () => {
     <>
       {projectLoading ? (
         <div className={`col-span-full flex justify-center my-4 h-[80vh]`}>
-          <Loader />
+          <div className="absolute inset-0 flex items-center justify-center  z-10">
+            <div className="text-center">
+              <div className="relative mx-auto mb-4 h-16 w-16">
+                <div className="animate-spin rounded-full h-full w-full border-4 border-green-900 border-t-transparent border-l-transparent"></div>
+                <img
+                  src={trueStateIcon}
+                  alt="Logo"
+                  className="absolute inset-0 m-auto h-8 w-8"
+                />
+              </div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
         </div>
       ) : (
         <>

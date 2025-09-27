@@ -5,7 +5,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 const VaultInvestmentPage = () => {
   return (
     <ProtectedRoute>
-      <MainContentLayout>
+      <MainContentLayout pageTitle={'Vault'}>
         <Investment />
       </MainContentLayout>
     </ProtectedRoute>
