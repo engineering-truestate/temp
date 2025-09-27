@@ -694,6 +694,8 @@ const ProjectDetails = () => {
       if(item.projectId== project.projectId)
         setIsCompared(true)
     })
+    console.log("hmm", compareProjects)
+    console.log("hmm", project)
   },[compareProjects, project])
 
   // ====================================

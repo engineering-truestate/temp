@@ -7,6 +7,7 @@ import { getProjectImages } from "../../utils/common.js";
 import AuctionPopupMap from "../Project_popup/AuctionPopupMap.jsx";
 import Loader from "../Loader";
 import { showLoader, hideLoader } from "../../slices/loaderSlice";
+import UnifiedTable from "../Table/UnifiedTable.jsx";
 
 const AuctionProperties = ({ auctionView}) => {
   const dispatch = useDispatch();
@@ -58,7 +59,12 @@ const AuctionProperties = ({ auctionView}) => {
             </>
           ) : auctionView === "table" ? (
             <>
-              <AuctionTable trueS={trueS} currentPage="1" />
+              <UnifiedTable
+  type="auction"
+  trueS={trueS}
+  currentPage={"1"}
+  // Other props as needed
+/>
             </>
           ) : auctionView === "map" ? (
             <>

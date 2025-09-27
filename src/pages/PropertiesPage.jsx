@@ -11,6 +11,7 @@ import { fetchAllProjects, fetchTableProjects, selectAllProjects } from "../slic
 import { getProjectImages } from "../utils/common";
 import Loader from "../components/Loader";
 import { showLoader, hideLoader } from "../slices/loaderSlice";
+import UnifiedTable from "../components/Table/UnifiedTable";
 
 const PropertiesPage = () => {
   const dispatch = useDispatch();
@@ -145,23 +146,22 @@ const PropertiesPage = () => {
                 setPropertiesView={setPropertiesView}
               />
             ) : propertiesView === "table" ? (
-              <Table
-                projects={table_projects}
-                type="properties"
-                trueS="all"
-                handleFirstPage={() => setCurrentPage(1)}
-                handlePreviousPage={() =>
-                  currentPage > 1 && setCurrentPage(currentPage - 1)
-                }
-                handleNextPage={() =>
-                  currentPage < totalPages &&
-                  setCurrentPage(currentPage + 1)
-                }
-                handleLastPage={() => setCurrentPage(totalPages)}
-                totalPages={totalPages}
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-              />
+              <UnifiedTable
+  projects={table_projects}
+  type="properties"
+  trueS="all"
+  handleFirstPage={() => setCurrentPage(1)}
+  handlePreviousPage={() =>
+    currentPage > 1 && setCurrentPage(currentPage - 1)
+  }
+  handleNextPage={() =>
+    currentPage < totalPages && setCurrentPage(currentPage + 1)
+  }
+  handleLastPage={() => setCurrentPage(totalPages)}
+  totalPages={totalPages}
+  currentPage={currentPage}
+  setCurrentPage={setCurrentPage}
+/>
             ) : propertiesView === "map" ? (
               <div className="relative h-[70vh] ">
                 <div>
