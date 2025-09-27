@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import VaultHeader from "./VaultHeader";
 import styles from "./AddProjectModal.module.css";
@@ -27,6 +27,37 @@ import InvManager from "../../utils/InvManager.js";
 import { setShowSignInModal } from "../../slices/modalSlice.js";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
+import algoliaService from "../../services/algoliaService.js";
+
+// Simple debounce hook
+function useDebouncedValue(value, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
+// Custom Hit Component for Algolia results
+const Hit = ({ hit, onSelect }) => {
+  return (
+    <div
+      className="flex items-center hover:bg-gray-100 cursor-pointer"
+      onClick={() => onSelect(hit)}
+    >
+      <li
+        key={hit.objectID}
+        className={`py-3 px-5 cursor-pointer ${styles.h2}`}
+      >
+        {toCapitalizedWords(hit.projectName)}
+      </li>
+      <p className={`ml-auto mr-5 ${styles.h2} italic`}>
+        {toCapitalizedWords(hit.assetType)}
+      </p>
+    </div>
+  );
+};
 
 const FindProjectPage = () => {
   const dispatch = useDispatch();
@@ -45,12 +76,11 @@ const FindProjectPage = () => {
     (state) => state.vaultConfirmation.isVaultFormActive
   );
 
-
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
   const [isSelected, setisSelected] = useState(false);
   const [iserror, setiserror] = useState(false);
-  const [filteredProjects, setFilteredProjects] = useState([]); 
-  const [projects, setProjects] = useState([]);
+  const [algoliaResults, setAlgoliaResults] = useState([]); // Algolia search results
   const [selectedProperty, setSelectedProperty] = useState(null);
 
   const [formData, setFormData] = useState({});
@@ -59,7 +89,8 @@ const FindProjectPage = () => {
   const vaultFormRef = useRef();
   const navigate = useNavigate();
   const [searchLoading, setSearchLoading] = useState(false);
-
+  const dropdownRef = useRef(null);
+  const searchContainerRef = useRef(null);
 
   useEffect(() => {
     if (currentStep === 1) {
@@ -91,31 +122,73 @@ const FindProjectPage = () => {
 
   useEffect(() => {
     dispatch(hideLoader());
-    const fetchProjects = async () => {
-      dispatch(hideLoader)
-      const fetchedData = await getAllProjects();
-      setProjects(fetchedData);
-      console.log("Fetched Projects:", fetchedData);
+  }, []);
+
+  // Algolia search effect
+  useEffect(() => {
+    let cancelled = false;
+
+    // Clear results when query is empty
+    if (!debouncedSearchTerm || debouncedSearchTerm.trim().length === 0) {
+      setAlgoliaResults([]);
+      setSearchLoading(false);
+      return;
+    }
+
+    setSearchLoading(true);
+
+    (async () => {
+      try {
+        const res = await algoliaService.client.search([
+          {
+            indexName: "truestate_restack", // Use your correct index name here
+            query: debouncedSearchTerm,
+            params: {
+              filters: "NOT source:restackStock", // Adjust filters as needed
+              hitsPerPage: 10,
+            },
+          },
+        ]);
+
+        if (cancelled) return;
+        
+        const hits = (res && res.results && res.results[0] && res.results[0].hits) || [];
+        setAlgoliaResults(hits);
+        setSearchLoading(false);
+      } catch (err) {
+        console.error("Algolia search error:", err);
+        if (!cancelled) {
+          setAlgoliaResults([]);
+          setSearchLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-    fetchProjects();
+  }, [debouncedSearchTerm]);
+
+  // Outside click handler to close dropdown
+  const handleClickOutside = useCallback((e) => {
+    if (
+      searchContainerRef.current &&
+      dropdownRef.current &&
+      !searchContainerRef.current.contains(e.target) &&
+      !dropdownRef.current.contains(e.target)
+    ) {
+      setIsDropdownVisible(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (searchTerm?.trim().length > 0) {
-      setSearchLoading(true);
-      let filtered = projects.filter((project) =>
-        project?.projectName?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      if (searchTerm === "") setiserror(false);
-      setTimeout(() => {
-        setFilteredProjects(filtered);
-        setSearchLoading(false);
-      }, [10]);
-    } else {
-      setFilteredProjects([]); 
-      setSearchLoading(false);
+    if (isDropdownVisible) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-  }, [searchTerm, projects]); 
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownVisible, handleClickOutside]);
 
   const handleProjectSelect = async (project, event) => {
     try {
@@ -127,7 +200,15 @@ const FindProjectPage = () => {
       const assetType = project.assetType; 
       project.assetType = assetType; 
       setSelectedProperty(project);
-    } catch (error) { }
+
+      logEvent(
+        analytics,
+        `choose_inside_vault_${project.assetType}`,
+        { Name: `choose_${project.assetType}` }
+      );
+    } catch (error) {
+      console.error("Error selecting project:", error);
+    }
   };
 
   const submitFormData = async () => {
@@ -149,9 +230,8 @@ const FindProjectPage = () => {
       if (!userDocId || !userPhoneNumber) {
         return;
       }
-      const reportUrl = `${window.location.origin
-        }/vault/investment/${encodeURIComponent(selectedProperty.projectName)}`;
-
+      
+      const reportUrl = `${window.location.origin}/vault/investment/${encodeURIComponent(selectedProperty.projectName)}`;
 
       setFormData(null);
       setCurrentStep((prevStep) => prevStep + 1);
@@ -172,6 +252,7 @@ const FindProjectPage = () => {
       dispatch(hideLoader());
     }
   };
+
   const handleNextClick = async () => {
     if (currentStep === 0) {
       if (!isSelected || searchTerm === "") {
@@ -223,10 +304,20 @@ const FindProjectPage = () => {
     setShowConfirmationModal(false);
     setPendingRoute(null); 
   };
+
   const handleInputChange = (event) => {
-    const searchValue = event.target.value.toLowerCase();
+    const searchValue = event.target.value;
     setSearchTerm(searchValue);
-    // dispatch(setSearchTerm(searchValue)); // Update the search term
+    
+    // Reset selection state when user starts typing again
+    if (isSelected && searchValue !== toCapitalizedWords(selectedProperty?.projectName || '')) {
+      setisSelected(false);
+      setSelectedProperty(null);
+    }
+    
+    if (searchValue === "") {
+      setiserror(false);
+    }
   };
 
   const handlebackclick = () => {
@@ -268,8 +359,7 @@ const FindProjectPage = () => {
                     Back
                   </span>
                 </div>
-                <VaultHeader currentStep={currentStep} />{" "}
-                {/* Pass currentStep to header */}
+                <VaultHeader currentStep={currentStep} />
               </div>
 
               <hr className="b-[2px] border-[#E3E3E3] mb-4 md:mb-5" />
@@ -291,7 +381,7 @@ const FindProjectPage = () => {
                         </label>
                       </div>
 
-                      <div>
+                      <div ref={searchContainerRef} className="relative">
                         <input
                           id="project-search"
                           onClick={() => {
@@ -303,8 +393,8 @@ const FindProjectPage = () => {
                           autoComplete="off"
                           value={searchTerm}
                           placeholder="Eg. Birla Trimaya"
-                          onFocus={handleInputFocus} // Show dropdown when input is focused
-                          onChange={handleInputChange} // Handle search input changes
+                          onFocus={handleInputFocus}
+                          onChange={handleInputChange}
                           className={`w-full px-4 py-2 border border-gray-300 bg-[#FAFAFA]   rounded-md ${styles.h2} focus:outline-none focus:border-gray-500 h-12`}
                         />
                       </div>
@@ -330,15 +420,19 @@ const FindProjectPage = () => {
                 />
               )}
 
+              {/* Algolia Search Results Dropdown */}
               {searchTerm != "" && (
                 <div className=" absolute overflow-x-hidden w-[90%] md:w-[100%] md:max-w-[574px] ">
-                  {isDropdownVisible && filteredProjects.length >= 0 && (
-                    <ul className="dropdown  bg-[#FAFAFA]  border border-gray-200 rounded-md shadow-lg w-full  max-h-60 overflow-y-auto z-10">
+                  {isDropdownVisible && (
+                    <ul 
+                      ref={dropdownRef}
+                      className="dropdown  bg-[#FAFAFA]  border border-gray-200 rounded-md shadow-lg w-full  max-h-60 overflow-y-auto z-10"
+                    >
                       {searchLoading ? (
                         <div className="flex justify-center items-center py-3">
-                          Loading...{/* or any small spinner */}
+                          Loading...
                         </div>
-                      ) : filteredProjects.length == 0 && searchTerm != "" ? (
+                      ) : algoliaResults.length == 0 && searchTerm != "" ? (
                         <div className="flex py-3 px-5 ">
                           <p className={` ${styles.h2} text-[#433F3E] `}>
                             Can't find your project?
@@ -367,31 +461,14 @@ const FindProjectPage = () => {
                           </div>
                         </div>
                       ) : (
-
-                        filteredProjects.map((project) => (
-                          <div
-                            className="flex items-center hover:bg-gray-100"
-                            onClick={(event) => {
-                              handleProjectSelect(project, event);
-                              logEvent(
-                                analytics,
-                                `choose_inside_vault_${project.assetType}`,
-                                { Name: `choose_${project.assetType}` }
-                              );
-                            }}
-                          >
-                            <li
-                              key={project.id}
-                              className={`py-3 px-5 cursor-pointer  ${styles.h2}  `}
-                            >
-                              {toCapitalizedWords(project.projectName)}
-                            </li>
-
-                            <p className={`ml-auto mr-5  ${styles.h2} italic`}>
-                              {toCapitalizedWords(project.assetType)}
-                            </p>
-                          </div>
-                        )))}
+                        algoliaResults.map((hit) => (
+                          <Hit
+                            key={hit.objectID}
+                            hit={hit}
+                            onSelect={(selectedHit) => handleProjectSelect(selectedHit, null)}
+                          />
+                        ))
+                      )}
                     </ul>
                   )}
                 </div>
@@ -418,7 +495,6 @@ const FindProjectPage = () => {
 
               {currentStep === 2 && formData && (
                 <div>
-                  {/* Pass formData to the summary component */}
                   <VaultSummary formData={formData} />
                 </div>
               )}
@@ -429,8 +505,7 @@ const FindProjectPage = () => {
                   {
                     logEvent(
                       analytics,
-                      `click_inside_vault_form_${currentStep === 1 ? "Submit" : "Next"
-                      }_button`,
+                      `click_inside_vault_form_${currentStep === 1 ? "Submit" : "Next"}_button`,
                       { Name: "vault_form_button" }
                     );
                   }
@@ -441,7 +516,6 @@ const FindProjectPage = () => {
               </button>
             </div>
           </div>
-          {/* {showExitFormModal && <ExitFormModal handleOnCloseModal={handleOnCloseExitFormModal} />} */}
         </>
       )}
     </>

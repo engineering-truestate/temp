@@ -13,7 +13,7 @@ const INDEX_CONFIGS = {
   map_preLaunch: "map_preLaunch",
   truEstateAuctions: "truEstateAuctions",
   truEstateBdaAuctions: "truEstateBdaAuctions",
-
+  truestate_restack: "truestate_restack",
   // Non-authenticated user indexes
   truEstate_preLaunch_outside: "truEstate_preLaunch_outside",
   map_preLaunch_outside: "map_preLaunch_outside",
