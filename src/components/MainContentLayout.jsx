@@ -203,7 +203,7 @@ function MainContentLayout({ children, pageTitle, showLoader = true }) {
           <div
             className={`fixed h-full transition-transform duration-300   ${
               sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            } md:translate-x-0 z-[20] w-auto`}
+            } md:translate-x-0 z-[50] w-auto`}
           >
             <SidebarWithLogo
               sidebarOpen={sidebarOpen}
@@ -249,7 +249,7 @@ function MainContentLayout({ children, pageTitle, showLoader = true }) {
             {/* Sidebar overlay for mobile */}
             {sidebarOpen && isAuthenticated && (
               <div
-                className="fixed inset-0 bg-black opacity-50 z-[100]"
+                className="fixed inset-0 bg-black opacity-50 z-[49]"
                 onClick={toggleSidebar}
               ></div>
             )}

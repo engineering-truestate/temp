@@ -446,11 +446,11 @@ const renderTableRows = () => {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row ml-8 space-y-4 md:space-y-0 pb-4">
+      {/* <div className="flex flex-col md:flex-row ml-8 space-y-4 md:space-y-0 pb-4">
         {type === "auction" && (
           <p className={`pt-2 ${styles.starp}`}>*Values are calculated for the handover year.</p>
         )}
-      </div>
+      </div> */}
 
       {!isAuthenticated && <Footer />}
     </>

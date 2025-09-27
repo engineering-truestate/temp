@@ -13,7 +13,7 @@ const VaultInvestmentDetailsPage = () => {
 
   return (
     <ProtectedRoute>
-      <MainContentLayout>
+      <MainContentLayout pageTitle={'Vault'}>
         <Vault_Investment data={data} />
       </MainContentLayout>
     </ProtectedRoute>
