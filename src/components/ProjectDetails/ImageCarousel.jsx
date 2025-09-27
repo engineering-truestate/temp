@@ -5,8 +5,8 @@ import { fetchAllProjectsAtOnce, fetchProjectById } from '../../slices/projectSl
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { getCurrentDateTime } from "../helper/dateTimeHelpers";
-import ListIconLeft from '/assets/icons/ui/info.svg';
-import ListIconRight from '/assets/icons/ui/info.svg';
+import ListIconLeft from '../../../public/assets/icons/ui/ListIconLeft.svg';
+import ListIconRight from '../../../public/assets/icons/ui/ListIconRight.svg';
 import { useDispatch } from 'react-redux';
 import { fetchInitialProjects } from '../../slices/projectSlice'; // Import the fetchProjects action
 

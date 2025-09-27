@@ -7,6 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import InvManager from '../../utils/InvManager';
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
+import image from "../../../public/images/tnc.svg"
 
 const HelpModal = ({ closeHelpModal, helpModalRef }) => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ const HelpModal = ({ closeHelpModal, helpModalRef }) => {
               <img src={InvManagerIcon} alt="Contact IM" className="w-5 h-5" />
               <span>Contact Investment Manager</span>
             </div>
-            <img src="/icons-1/Arrow Right.svg" alt="Arrow Right" className="w-5 h-5" />
+            <img src="../../../public/images/Arrow Right.svg" alt="Arrow Right" className="w-5 h-5" />
           </Link>
           <Link to="/tnc" target="_blank" className={`cursor-pointer flex justify-between items-center mb-6 ${styles.labelSmall1} hover:underline`}
             onClick={() => {
@@ -76,10 +77,10 @@ const HelpModal = ({ closeHelpModal, helpModalRef }) => {
                       }
           >
             <div className=" flex items-center space-x-2">
-              <img src="/icons-1/tnc.svg" alt="Terms and Conditions" className="w-5 h-5" />
+              <img src="../../../public/images/tnc.svg" alt="Terms and Conditions" className="w-5 h-5" />
               <span>Terms and Conditions</span>
             </div>
-            <img src="/icons-1/Arrow Right.svg" alt="Arrow Right" className="w-5 h-5" />
+            <img src="../../../public/images/Arrow Right.svg" alt="Arrow Right" className="w-5 h-5" />
           </Link>
           <Link to="/privacy" target="_blank" className={`cursor-pointer flex justify-between  items-center ${styles.labelSmall1} hover:underline`}
            onClick={() => {
@@ -87,10 +88,10 @@ const HelpModal = ({ closeHelpModal, helpModalRef }) => {
                       }
           >
             <div className=" flex items-center space-x-2">
-              <img src="/icons-1/lock.svg" alt="Privacy Policy" className="w-5 h-5" />
+              <img src="../../../public/images/lock.svg" alt="Privacy Policy" className="w-5 h-5" />
               <span>Privacy Policy</span>
             </div>
-            <img src="/icons-1/Arrow Right.svg" alt="Arrow Right" className="w-5 h-5" />
+            <img src="../../../public/images/Arrow Right.svg" alt="Arrow Right" className="w-5 h-5" />
           </Link>
         </div>
       </div>
