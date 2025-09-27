@@ -169,7 +169,7 @@ const AuctionCard = ({ project }) => {
       return "High Return";
     }
   };
-  console.log("check this", project?.unitDetails?.[0]?.strategy);
+
 
   const handleTruValueStatus = (status) => {
     return toCapitalizedWords(status);
@@ -205,7 +205,7 @@ const AuctionCard = ({ project }) => {
           className="absolute inset-0 h-full w-full"
           onClick={handleViewMore}
         />
-        
+
         <div className="absolute top-4 left-3 md:left-4 flex space-x-2">
           {project?.truRecommended && (
             <div
@@ -250,12 +250,12 @@ const AuctionCard = ({ project }) => {
             </div>
           </div>
         )}
-        {(
+        {
           <div className={`${styles.tooltip1}`}>
             <img src={soldOut} alt="Sold Out" />
             <span className={`${styles.tooltiptext1}`}>Project sold out</span>
           </div>
-        )}
+        }
       </CardHeader>
       <CardBody
         className=" px-3 pt-3 pb-4  gap-4 bg-[#FAFAFA] rounded-b-xl"
@@ -348,19 +348,17 @@ const AuctionCard = ({ project }) => {
                     </div>
                   </p>
 
-                  {project?.minInvestmentOfAuction != null && (
+                  {project?.minInvestmentOfAuction != null ? (
                     <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
                       {formatCostSuffix1(
                         project.minInvestmentOfAuction.toFixed(0)
                       )}
                     </p>
-                  )}
-
-                  {project?.auctionReservePrice != null && (
+                  ) : project?.auctionReservePrice != null ? (
                     <p className="font-lato text-sm font-bold text-[#2B2928] leading-[150%]">
                       {`${project.auctionReservePrice.toFixed(2)} Lacs`}
                     </p>
-                  )}
+                  ) : null}
                 </>
               )}
 

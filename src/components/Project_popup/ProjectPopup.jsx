@@ -351,8 +351,6 @@ const PropCard = ({ project }) => {
     );
   };
 
-  console.log("my project data is", project);
-
   return (
     <Card
       className={`rounded-xl bg-[#FAFAFA] shadow-none border hover:cursor-pointer border-[#CCCBCB] ${

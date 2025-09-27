@@ -152,6 +152,7 @@ export const usePageSearchParams = (viewType = "grid", sortOption = null) => {
     // Override index for specific view types or sorting
     if (pageType === "properties") {
       if (sortOption) {
+        
         indexName = algoliaService.getSortIndex(isAuthenticated, sortOption);
       } else if (viewType === "map") {
         indexName = algoliaService.getIndexName(isAuthenticated, "map");

@@ -133,7 +133,7 @@ const PropertiesPage = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <PageInstantSearch viewType={propertiesView}>
+      <PageInstantSearch viewType={propertiesView} sortOption={selectedSortOption}>
         <MainContentLayout pageTitle="Properties">
           <PropertiesPageHeader
             propertiesView={propertiesView}

@@ -218,16 +218,6 @@ function MainContentLayout({ children, pageTitle, showLoader = true }) {
             />
           </div>
         )}
-        <InstantSearch
-          searchClient={algoliaService.client}
-          indexName={indexName}
-          routing={true}
-        >
-          <Configure
-            analytics={true}
-            hitsPerPage={initialHits}
-            filters={initialProperties}
-          />
           {/* Main Content Area */}
           <div
             className={`flex-1 ${
@@ -262,7 +252,6 @@ function MainContentLayout({ children, pageTitle, showLoader = true }) {
               <div className="relative">{children}</div>
             </div>
           </div>
-        </InstantSearch>
 
         {/* Modals and Overlays */}
         {HelpmodalOpen && (
