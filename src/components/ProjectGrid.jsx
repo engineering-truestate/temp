@@ -28,7 +28,6 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const isReduxLoading = useSelector(selectLoader);
 
-
   const resetAllFilters = () => {
     logEvent(analytics, "reset_all_filters", {
       event_category: "interaction",
@@ -45,12 +44,10 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
     }));
   };
 
-
   // Initial refresh
   useEffect(() => {
     refresh();
   }, [refresh]);
-
 
   const observer = new MutationObserver(() => {
     const iframe = document.querySelector('iframe[title="reCAPTCHA"]');
@@ -133,7 +130,6 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
     }, 100);
   }, [location.pathname, location.search]); // Listen to both pathname and search changes
 
-
   // Observe changes in the document body
   observer.observe(document.body, { childList: true, subtree: true });
 
@@ -144,42 +140,46 @@ const ProjectGrid = ({ trueS, mainContentRef }) => {
       {/* {console.log( "this was reached" , location.pathname , location.search)} */}
       <div className="relative z-1" ref={mainContentRef}>
         <div
-          className={`grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pb-4  ${isAuthenticated ? `md:px-8` : `md:px-20 lg:px-24`} `}
+          className={`grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pb-4  ${
+            isAuthenticated ? `md:px-8` : `md:px-20 lg:px-24`
+          } `}
         >
-         {hits
-         .slice() // copy so original array is untouched
-         .sort((a, b) => {
-         if (!isAuthenticated) {
-         // Only sort when user is NOT logged in
-         return (b.recommended === true) - (a.recommended === true);
-        }
-        // Keep original order when logged in
-    return 0;
-  })
-  .map((project) => (
-    <div
-      key={project.id || project.objectID}
-      className="w-full px-4 sm:px-2"
-    >
-      <PropCard
-        project={project}
-        mainContentRef={mainContentRef}
-        onClick={() => {
-          logEvent(analytics, "click_property_card");
-        }}
-      />
-    </div>
-  ))}
+          {hits
+            .slice() // copy so original array is untouched
+            .sort((a, b) => {
+              if (!isAuthenticated) {
+                // Only sort when user is NOT logged in
+                return (b.recommended === true) - (a.recommended === true);
+              }
+              // Keep original order when logged in
+              return 0;
+            })
+            .map((project) => (
+              <div
+                key={project.id || project.objectID}
+                className="w-full px-4 sm:px-2"
+              >
+                <PropCard
+                  project={project}
+                  mainContentRef={mainContentRef}
+                  onClick={() => {
+                    logEvent(analytics, "click_property_card");
+                  }}
+                />
+              </div>
+            ))}
 
           {/* Empty state handling */}
-          {results.nbHits === 0 && status === "idle" && (
-            <div className="col-span-full">
-              <NoPropertiesFound
-                trueS={trueS}
-                onResetFilters={resetAllFilters}
-              />
-            </div>
-          )}
+          {results.nbHits === 0 &&
+            status ===
+              "idle" && (
+                <div className="col-span-full">
+                  <NoPropertiesFound
+                    trueS={trueS}
+                    onResetFilters={resetAllFilters}
+                  />
+                </div>
+              )}
 
           {/* Loader */}
           {(status === "loading" || status === "stalled" || isReduxLoading) && (

@@ -243,7 +243,7 @@ const AuctionDetails = ({ data }) => {
 
   // Fetch project data
   useEffect(() => {
-    const fetchProjectByName = async () => {
+    const fetchProjectByID = async () => {
       try {
         dispatch(showLoader());
         const q = query(
@@ -262,7 +262,7 @@ const AuctionDetails = ({ data }) => {
       }
     };
 
-    fetchProjectByName();
+    fetchProjectByID();
   }, [projectName]);
 
   // Set project overview data
@@ -1109,7 +1109,7 @@ const AuctionDetails = ({ data }) => {
                       markers={data?.locationAnalysis?.markers}
                       isAuction={true}
                     />
-                  )}sdf
+                  )}
 
                 {/* Mobile Contact Bar */}
                 <div

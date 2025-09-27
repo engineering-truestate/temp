@@ -78,14 +78,21 @@ const UnifiedTableRow = ({
 
   const handleViewMore = () => {
     if (customHandleViewMore) {
-      customHandleViewMore(project);
-    } else {
-      const basePath = type === "auction" ? "auction" : "properties";
-      const projectName = project.projectName.replace(/[\s\/]+/g, "-");
-      navigate(`/${basePath}/${projectName}/${project?.projectId}`, {
-        state: { name: project.projectName },
-      });
-    }
+  customHandleViewMore(project);
+} else {
+  const basePath = type === "auction" ? "auction" : "properties";
+  const projectNameSlug = project.projectName
+    .toLowerCase()                 // lowercase
+    .trim()                        // remove leading/trailing spaces
+    .replace(/[^a-z0-9\s/]/g, "")  // remove special characters first
+    .replace(/[\s/]+/g, "-")       // replace spaces and slashes with hyphens
+    .replace(/-+/g, "-");          // collapse multiple hyphens
+
+  navigate(`/${basePath}/${projectNameSlug}/${project?.projectId}`, {
+    state: { name: project.projectName },
+  });
+}
+
 
     // Analytics
     const eventName = type === "auction" ? "auction_table_view_details" : "property_view_details";

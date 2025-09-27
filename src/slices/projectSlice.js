@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { db } from '../firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 
 const initialState = {
   currentProject: null,
@@ -85,10 +85,22 @@ export const fetchAllProjectsAtOnce = createAsyncThunk(
   }
 );
 
+
 export const fetchProjectById = createAsyncThunk(
-  'projects/fetchProjectById',
+  "projects/fetchProjectById",
   async (projectId, { rejectWithValue }) => {
-    return rejectWithValue('fetchProjectById has been deprecated. Please migrate to appropriate service.');
+    try {
+      const docRef = doc(db, "truEstatePreLaunch", projectId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() }; // project object
+      } else {
+        return rejectWithValue("Project not found");
+      }
+    } catch (err) {
+      return rejectWithValue(err.message || "Failed to fetch project");
+    }
   }
 );
 
@@ -136,6 +148,20 @@ const projectsSlice = createSlice({
         state.currentProject = action.payload;
       })
       .addCase(fetchProjectByName.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.currentProject = null;
+      })
+
+      .addCase(fetchProjectById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProjectById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentProject = action.payload;
+      })
+      .addCase(fetchProjectById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.currentProject = null;

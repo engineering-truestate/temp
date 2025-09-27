@@ -140,7 +140,14 @@ const PropCard = ({ project }) => {
   }, [project]);
 
   const handleViewMore = () => {
-    navigate(`/properties/${project.projectName}`, {
+    const slug = project.projectName
+      .toLowerCase() // lowercase
+      .trim() // remove leading/trailing spaces
+      .replace(/[^a-z0-9\s/]/g, "") // remove special characters first
+      .replace(/[\s/]+/g, "-") // replace spaces and slashes with hyphens
+      .replace(/-+/g, "-"); // collapse multiple hyphens
+
+    navigate(`/properties/${slug}/${project.projectId}`, {
       state: { name: project.projectName },
     });
   };

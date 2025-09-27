@@ -7,7 +7,11 @@ import Table from "../components/Table/Table";
 import ProjectPopupMap from "../components/Project_popup/ProjectPopupMap";
 import PageInstantSearch from "../components/InstantSearch/PageInstantSearch";
 import PropertiesPageHeader from "../components/Headers/PropertiesPageHeader";
-import { fetchAllProjects, fetchTableProjects, selectAllProjects } from "../slices/projectSlice";
+import {
+  fetchAllProjects,
+  fetchTableProjects,
+  selectAllProjects,
+} from "../slices/projectSlice";
 import { getProjectImages } from "../utils/common";
 import Loader from "../components/Loader";
 import { showLoader, hideLoader } from "../slices/loaderSlice";
@@ -33,7 +37,7 @@ const PropertiesPage = () => {
 
   // Get loading state from Redux
   const { table_projects, totalProjects, allProjects, loading } = useSelector(
-    (state)=> state.projectsState
+    (state) => state.projectsState
   );
 
   useEffect(() => {
@@ -61,18 +65,18 @@ const PropertiesPage = () => {
         if (propertiesView === "map") {
           await dispatch(fetchAllProjects()).unwrap();
         }
-        
+
         setInitialDataLoaded(true);
       } catch (error) {
         console.error("Error loading initial data:", error);
-        setInitialDataLoaded(true); 
+        setInitialDataLoaded(true);
       } finally {
         dispatch(hideLoader());
       }
     };
-    
+
     loadInitialData();
-  }, [propertiesView]); 
+  }, [propertiesView]);
 
   useEffect(() => {
     if (initialDataLoaded && propertiesView === "table") {
@@ -125,7 +129,7 @@ const PropertiesPage = () => {
       </div>
     );
   }
-  console.log("hmm",allProjects)
+  console.log("hmm", allProjects);
 
   return (
     <div className="flex flex-col h-screen">
@@ -147,21 +151,21 @@ const PropertiesPage = () => {
               />
             ) : propertiesView === "table" ? (
               <UnifiedTable
-  projects={table_projects}
-  type="properties"
-  trueS="all"
-  handleFirstPage={() => setCurrentPage(1)}
-  handlePreviousPage={() =>
-    currentPage > 1 && setCurrentPage(currentPage - 1)
-  }
-  handleNextPage={() =>
-    currentPage < totalPages && setCurrentPage(currentPage + 1)
-  }
-  handleLastPage={() => setCurrentPage(totalPages)}
-  totalPages={totalPages}
-  currentPage={currentPage}
-  setCurrentPage={setCurrentPage}
-/>
+                projects={table_projects}
+                type="properties"
+                trueS="all"
+                handleFirstPage={() => setCurrentPage(1)}
+                handlePreviousPage={() =>
+                  currentPage > 1 && setCurrentPage(currentPage - 1)
+                }
+                handleNextPage={() =>
+                  currentPage < totalPages && setCurrentPage(currentPage + 1)
+                }
+                handleLastPage={() => setCurrentPage(totalPages)}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+              />
             ) : propertiesView === "map" ? (
               <div className="relative h-[70vh] ">
                 <div>

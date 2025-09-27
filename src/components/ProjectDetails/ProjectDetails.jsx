@@ -8,6 +8,7 @@ import selon from "/assets/icons/features/wishlist-active.svg";
 import seloff from "/assets/icons/features/wishlist-inactive.svg";
 import LitigationIcon from "/assets/icons/status/litigation.svg";
 import soldOut from "/assets/icons/status/sold-out.svg";
+import trueStateIcon from "../../../public/assets/icons/ui/truestateIcon.svg";
 
 // ================= COMPONENT IMPORTS ===================
 import { useEffect, useState } from "react";
@@ -30,6 +31,7 @@ import {
   selectCurrentProject,
   selectProjectLoading,
   selectProjectError,
+  fetchProjectById,
 } from "../../slices/projectSlice";
 import { setShowSignInModal } from "../../slices/modalSlice.js";
 import {
@@ -54,7 +56,6 @@ import {
   upperCaseProperties,
 } from "../../utils/common.js";
 import MyBreadcrumb from "../BreadCrumbs/Breadcrumb.jsx";
-import Loader from "../Loader";
 import CashFlowsTable from "./CashFlowsTable";
 import ContactInvestmentManager from "./ContactInvManager";
 import InvestmentBreakdownChart from "./GanttChart";
@@ -69,7 +70,7 @@ import TruReportHeading from "./TruReportHeading";
 const ProjectDetails = () => {
   const HOLDING_PERIOD = 4; // in years, default
   const params = useParams();
-  const { projectName } = params;
+  const { projectName, id } = params;
   const name = projectName;
 
   // ============ REDUX STATE EXTRACTION ============
@@ -85,8 +86,8 @@ const ProjectDetails = () => {
   // ============ LOCAL STATE ============
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [isWishlisted, setIsWishlisted]= useState(false)
-  const [isCompared, setIsCompared]= useState(false)
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isCompared, setIsCompared] = useState(false);
   const [sellingCost, setSellingCost] = useState(300000);
   const { addToast, updateToast } = useToast();
   const tenure = 20;
@@ -436,10 +437,13 @@ const ProjectDetails = () => {
   }, [project, activeTruReportAreaTab, sellingCost]);
 
   useEffect(() => {
-    if (name) {
-      dispatch(fetchProjectByName(name));
+    if (id) {
+      const fetchData = async () => {
+        await dispatch(fetchProjectById(id));
+      };
+      fetchData();
     }
-  }, [name, dispatch]);
+  }, [id, dispatch]);
 
   // Handle loan percentage based on asset type
   useEffect(() => {
@@ -450,11 +454,23 @@ const ProjectDetails = () => {
 
   // Initialize wishlist and compare data when component mounts
   useEffect(() => {
-    if (userDocId) {
-      dispatch(fetchWishlistedProjects(userDocId));
-      dispatch(fetchCompareProjects());
-    }
-  }, [userPhoneNumber, dispatch]);
+    if (!project) return; // exit early if project is null
+
+    // Check wishlist
+    const isWishlistedNow = wishlistItems?.some(
+      (item) => item.projectId === project.projectId
+    );
+    setIsWishlisted(!!isWishlistedNow);
+
+    // Check compare projects
+    const isComparedNow = compareProjects?.some(
+      (item) => item.projectId === project.projectId
+    );
+    setIsCompared(!!isComparedNow);
+
+    console.log("compareProjects", compareProjects);
+    console.log("project", project);
+  }, [wishlistItems, compareProjects, project]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -682,100 +698,83 @@ const ProjectDetails = () => {
     isAuthenticated,
   ]);
 
-  useEffect(()=>{
-    wishlistItems.map((item)=>{
-      if(item.projectId== project.projectId)
-        setIsWishlisted(true)
-    })
-  },[wishlistItems, project])
-
-  useEffect(()=>{
-    compareProjects.map((item)=>{
-      if(item.projectId== project.projectId)
-        setIsCompared(true)
-    })
-    console.log("hmm", compareProjects)
-    console.log("hmm", project)
-  },[compareProjects, project])
-
   // ====================================
   //            FUNCTIONS
   // ====================================
 
   const toggleCompare = async () => {
-  if (!userDocId || !project?.projectId) {
-    addToast(
-      "Error",
-      "error",
-      "Authentication Required",
-      "Please log in to manage your compare list."
+    if (!userDocId || !project?.projectId) {
+      addToast(
+        "Error",
+        "error",
+        "Authentication Required",
+        "Please log in to manage your compare list."
+      );
+      return;
+    }
+
+    const newState = !isCompared;
+
+    // Optimistically update local UI
+    setIsCompared(newState);
+
+    // Show loading toast right away
+    const loadingToastId = addToast(
+      "Compare",
+      "loading",
+      newState ? "Adding Property" : "Removing Property",
+      newState
+        ? "Adding property to compare list..."
+        : "Removing property from compare list..."
     );
-    return;
-  }
 
-  const newState = !isCompared;
+    try {
+      if (newState) {
+        // Adding to compare
+        if (compareProjects.length < 4) {
+          await dispatch(addProjectForComparison(project.projectId)).unwrap();
 
-  // Optimistically update local UI
-  setIsCompared(newState);
+          updateToast(loadingToastId, {
+            type: "success",
+            heading: "Property Added",
+            description: "The property has been added to the compare list.",
+          });
+        } else {
+          // Revert optimistic update
+          setIsCompared(false);
 
-  // Show loading toast right away
-  const loadingToastId = addToast(
-    "Compare",
-    "loading",
-    newState ? "Adding Property" : "Removing Property",
-    newState
-      ? "Adding property to compare list..."
-      : "Removing property from compare list..."
-  );
-
-  try {
-    if (newState) {
-      // Adding to compare
-      if (compareProjects.length < 4) {
-        await dispatch(addProjectForComparison(project.projectId)).unwrap();
-
-        updateToast(loadingToastId, {
-          type: "success",
-          heading: "Property Added",
-          description: "The property has been added to the compare list.",
-        });
+          updateToast(loadingToastId, {
+            type: "error",
+            heading: "Maximum Limit Reached",
+            description: "You can only compare up to 4 properties.",
+          });
+        }
       } else {
-        // Revert optimistic update
-        setIsCompared(false);
+        // Removing from compare
+        await dispatch(removeProjectFromComparison(project.projectId)).unwrap();
 
         updateToast(loadingToastId, {
-          type: "error",
-          heading: "Maximum Limit Reached",
-          description: "You can only compare up to 4 properties.",
+          type: "error", // 👈 consistent with wishlist removal
+          heading: "Property Removed",
+          description: "The property has been removed from the compare list.",
         });
       }
-    } else {
-      // Removing from compare
-      await dispatch(removeProjectFromComparison(project.projectId)).unwrap();
+    } catch (error) {
+      console.error("Error updating compare:", error);
 
       updateToast(loadingToastId, {
-        type: "error", // 👈 consistent with wishlist removal
-        heading: "Property Removed",
-        description: "The property has been removed from the compare list.",
+        type: "error",
+        heading: "Compare Action Failed",
+        description:
+          error.message || "Failed to update compare list. Please try again.",
       });
+
+      // Revert optimistic UI update
+      setIsCompared(!newState);
     }
-  } catch (error) {
-    console.error("Error updating compare:", error);
+  };
 
-    updateToast(loadingToastId, {
-      type: "error",
-      heading: "Compare Action Failed",
-      description:
-        error.message || "Failed to update compare list. Please try again.",
-    });
-
-    // Revert optimistic UI update
-    setIsCompared(!newState);
-  }
-};
-
-
-    const toggleWishlist = async () => {
+  const toggleWishlist = async () => {
     if (!userDocId || !project?.projectId) {
       addToast(
         "Error",
@@ -904,7 +903,19 @@ const ProjectDetails = () => {
     <>
       {projectLoading ? (
         <div className={`col-span-full flex justify-center my-4 h-[80vh]`}>
-          <Loader />
+          <div className="absolute inset-0 flex items-center justify-center  z-10">
+            <div className="text-center">
+              <div className="relative mx-auto mb-4 h-16 w-16">
+                <div className="animate-spin rounded-full h-full w-full border-4 border-green-900 border-t-transparent border-l-transparent"></div>
+                <img
+                  src={trueStateIcon}
+                  alt="Logo"
+                  className="absolute inset-0 m-auto h-8 w-8"
+                />
+              </div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
         </div>
       ) : (
         <>

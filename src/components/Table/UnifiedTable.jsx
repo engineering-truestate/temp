@@ -220,21 +220,26 @@ const UnifiedTable = ({
   };
 
   const handleViewMore = (project) => {
-    const basePath = type === "auction" ? "auction" : "properties";
-    const eventName = type === "auction" ? "auction_table_view_details" : "property_view_details";
-    
-    navigate(
-      `/${basePath}/${project.projectName.replace(/[\s\/]+/g, "-")}/${project?.projectId}`,
-      {
-        state: { name: project?.projectName },
-      }
-    );
+  const basePath = type === "auction" ? "auction" : "properties";
+  const eventName = type === "auction" ? "auction_table_view_details" : "property_view_details";
 
-    logEvent(analytics, eventName, {
-      [type === "auction" ? "auction_id" : "property_id"]: project.projectId,
-      page_type: type === "auction" ? "auction_table" : "properties_table",
-    });
-  };
+  const projectSlug = project.projectName
+    .toLowerCase()                 // lowercase
+    .trim()                        // remove leading/trailing spaces
+    .replace(/[^a-z0-9\s/]/g, "")  // remove special characters first
+    .replace(/[\s/]+/g, "-")       // replace spaces and slashes with hyphens
+    .replace(/-+/g, "-");          // collapse multiple hyphens
+
+  navigate(`/${basePath}/${projectSlug}/${project?.projectId}`, {
+    state: { name: project?.projectName },
+  });
+
+  logEvent(analytics, eventName, {
+    [type === "auction" ? "auction_id" : "property_id"]: project.projectId,
+    page_type: type === "auction" ? "auction_table" : "properties_table",
+  });
+};
+
 
   // Render header based on type
   const renderTableHeader = () => {
