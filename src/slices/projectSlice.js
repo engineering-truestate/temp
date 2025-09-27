@@ -24,7 +24,7 @@ export const fetchAllProjects = createAsyncThunk(
 
       const querySnapshot = await getDocs(q);
       const projects = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log(projects);
+      console.log("hmm",projects);
       return projects;
     } catch (error) {
       return rejectWithValue(error.message);

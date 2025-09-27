@@ -7,7 +7,7 @@ import Table from "../components/Table/Table";
 import ProjectPopupMap from "../components/Project_popup/ProjectPopupMap";
 import PageInstantSearch from "../components/InstantSearch/PageInstantSearch";
 import PropertiesPageHeader from "../components/Headers/PropertiesPageHeader";
-import { fetchTableProjects, selectAllProjects } from "../slices/projectSlice";
+import { fetchAllProjects, fetchTableProjects, selectAllProjects } from "../slices/projectSlice";
 import { getProjectImages } from "../utils/common";
 import Loader from "../components/Loader";
 import { showLoader, hideLoader } from "../slices/loaderSlice";
@@ -32,7 +32,7 @@ const PropertiesPage = () => {
 
   // Get loading state from Redux
   const { table_projects, totalProjects, allProjects, loading } = useSelector(
-    selectAllProjects
+    (state)=> state.projectsState
   );
 
   useEffect(() => {
@@ -57,6 +57,9 @@ const PropertiesPage = () => {
         if (propertiesView === "table") {
           await dispatch(fetchTableProjects(currentPage)).unwrap();
         }
+        if (propertiesView === "map") {
+          await dispatch(fetchAllProjects()).unwrap();
+        }
         
         setInitialDataLoaded(true);
       } catch (error) {
@@ -68,7 +71,8 @@ const PropertiesPage = () => {
     };
     
     loadInitialData();
-  }, []); 
+  }, [propertiesView]); 
+
   useEffect(() => {
     if (initialDataLoaded && propertiesView === "table") {
       const loadTableProjects = async () => {
@@ -120,6 +124,7 @@ const PropertiesPage = () => {
       </div>
     );
   }
+  console.log("hmm",allProjects)
 
   return (
     <div className="flex flex-col h-screen">
